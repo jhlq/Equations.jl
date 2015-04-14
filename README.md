@@ -8,7 +8,7 @@ Calculate with symbols as numbers.
 sqrt(:x^2)
 ```
 
-The resulting Expression is moderately human readable, multiplication is implied in adjacent components, however in the case of several nested expressions readability can be improved with componify:
+The resulting Expression is moderately human readable, multiplication is implied in adjacent components, in the case of several nested expressions readability can be improved with componify:
 ```
 ex=:x^2-:x*:y+:y*:x-:y^2
 componify(ex)
