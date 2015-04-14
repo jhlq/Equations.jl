@@ -1,5 +1,6 @@
 module Equations
+export Equation, equation, solve, Expression, expression, evaluate, simplify, simplify!, componify, componify!, Div, Sqrt, addparse
 
-# package code goes here
+include("equations.jl")
 
 end # module
