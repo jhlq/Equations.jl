@@ -14,6 +14,8 @@ componify(ex)
 
 For also combining factors and terms use:
 ```simplify((:x+:y)^3)
+simplify(:x*:y/:x)
+simplify(sqrt(:x*:z*:y*:z*:y*:x))
 ```
 
 [![Build Status](https://travis-ci.org/jhlq/Equations.jl.svg?branch=master)](https://travis-ci.org/jhlq/Equations.jl)
