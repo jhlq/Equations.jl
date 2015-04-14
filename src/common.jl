@@ -6,21 +6,10 @@ abstract SingleArg <: Component
 function getarg(c::Component,n::Integer=1)
 	getfield(c,names(c)[n])
 end
-type Components <: Component
-	components
+type Components <: Component 
+	components 
 	coef
-end
-type Term
-	factors
-end
-function ==(t1::Term,t2::Term)
-	for p in permutations(t2.factors)
-		if t1.factors==p
-			return true
-		end
-	end
-	return false
-end
+end #maybe this type should be deprecated and componify rewritten
 function ==(cs1::Components,cs2::Components)
 	nc=length(cs1.components)
 	if nc != length(cs2.components)
@@ -34,11 +23,22 @@ function ==(cs1::Components,cs2::Components)
 	end
 	return true
 end
+type Term
+	factors
+end #this is not really used except in a experimental expression type that stores its addparse
+function ==(t1::Term,t2::Term)
+	for p in permutations(t2.factors)
+		if t1.factors==p
+			return true
+		end
+	end
+	return false
+end
 
-type Expression #<: Component?
+type Expression #<: Component? Nope then there is no distinction between X and EX
 	components::Array{Any}
 end
-type ApExpression #<: Component?
+type ApExpression 
 	components::Array{Any}
 	ap::Array{Term}
 end
@@ -249,6 +249,15 @@ function has(term1,term2)
 	end
 	return false
 end
+function has(ex::Expression,x::Symbol)
+	for c in ex.components
+		if c==x || (isa(c,Expression)&&has(c,x)) || (isa(c,Component)&&has(c,x))
+			return true
+		end
+	end
+end
+has(c::Component,x::Symbol)=has(getarg(c),x)
+has(n::N,x::Symbol)=n==x
 function componify_dep(ex::Expression,raw=false)
 	lex=length(ex.components)
 	stuff=Array(Any,0)	
@@ -290,7 +299,7 @@ function componify(ex::Expression,raw=false)
 			tap=addparse(exs[1])
 			for x in xs
 				for tterm in tap
-					push!(tterm,x)
+					unshift!(tterm,x)
 				end
 			end
 			exs[1]=expression(tap)

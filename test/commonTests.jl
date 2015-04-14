@@ -1,6 +1,34 @@
-#using Base.Test
-#include("common.jl")
+###Expressions
+ex=:x+:y
+@test isa(ex,Expression)
+@test has(ex,:x)
+ex*=ex
+@test has(ex,:x)
 
+#addparse
+ex=:x+:y
+ap=addparse(ex)
+@test length(ap)==2
+@test expression(ap)==ex #maybe have isequivalent instead to give addparse some room, maybe have == = isequivalent, equivalent=isequivalent?
+i=1
+for term in ex
+	@test term==ap[i]
+	i+=1
+end
+
+#componify
+ex=:x+1-(:x+1)
+ex=componify(ex)
+@test has(ex,:x)
+
+#simplify
+ex=(:x+:x)/2
+@test simplify(ex)==:x
+
+#evaluate
+
+
+#original unsorted tests
 ex=:x+:y-3
 @test expression(addparse(ex))==ex
 
