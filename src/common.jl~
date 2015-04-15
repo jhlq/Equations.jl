@@ -582,11 +582,6 @@ end
 import Base.replace
 function replace(ex::Expression,symdic::Dict)
 	ex=deepcopy(ex)
-	for c in 1:length(ex.components)
-		if isa(ex.components[c],Ex)
-			ex.components[c]=replace(ex.components[c],symdic)
-		end
-	end
 	syminds=findsyms(ex,symdic)
 	for tup in symdic
 		sym,val=tup

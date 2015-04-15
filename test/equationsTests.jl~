@@ -1,6 +1,6 @@
 ###Equations
 eq=equation(:x)
-@test eq==Equation(:x,0)
+@test eq=Equation(:x,0)
 
 #evaluate
 eq=equation(1/:x-sqrt(:x))

@@ -26,9 +26,8 @@ function simplify!(eqa::Array{Equation})
 	for eq in 1:length(eqa)
 		eqa[eq]=simplify!(eqa[eq])
 	end
-	return eqa
+	return neqa
 end
-simplify(eqa::Array{Equation})=simplify!(deepcopy(eqa))
 relations=Equation[]
 eq1=Equation(cos(:x)-sin(:x+pi/2),0)
 function pushallunique!(a1::Array,a2::Array)

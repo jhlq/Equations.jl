@@ -24,7 +24,6 @@ ex=componify(ex)
 #simplify
 ex=(:x+:x)/2
 @test simplify(ex)==:x
-@test simplify(:x+:x)==2*:x
 
 #evaluate
 
