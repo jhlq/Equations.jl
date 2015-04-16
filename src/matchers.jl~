@@ -66,6 +66,7 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 									end
 									if !nomatch
 										a=Any[]
+										println(mp)
 										for tl in 1:length(mp)
 											if !in(tl,[1+shif:2l+shif])
 												push!(a,mp[tl])

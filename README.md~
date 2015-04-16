@@ -35,7 +35,7 @@ meq=matches(ex,quadratic)[1]
 evaluate(ex,[:x=>mat.rhs])
 ```
 
-If you try to evaluate an equation that has been constructed through division by setting one of the divided symbols to zero an error will be thrown:
+If you try to evaluate an equation that has been constructed through division by setting one of the divided symbols to zero an error will be thrown. 
 ```
 meq=matches(:x^2+:a*:x,Div)[1]
 evaluate(meq,[:x=>0])

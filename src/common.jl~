@@ -14,7 +14,7 @@ setarg(c::Component,newarg,argn::Integer=1)=setarg!(deepcopy(c),newarg,argn)
 type Components <: Component 
 	components 
 	coef
-end #maybe this type should be deprecated and componify rewritten
+end #maybe this type should be deprecated and sumsym rewritten
 function ==(cs1::Components,cs2::Components)
 	nc=length(cs1.components)
 	if nc != length(cs2.components)
@@ -137,11 +137,7 @@ push!(x::X,a)=Expression([x,a])
 -(a::X,ex::Expression)=a+(-1*ex)#begin;ex=deepcopy(ex);unshift!(ex.components,:+);unshift!(ex.components,-a);unshift!(ex.components,-1);ex;end
 -(ex1::Expression,ex2::Expression)=begin;ex=deepcopy(ex1);push!(ex.components,:+);push!(ex.components,-1);push!(ex.components,ex2);ex;end
 +(a::X,ex::Expression)=begin;ex=deepcopy(ex);insert!(ex.components,1,:+);insert!(ex.components,1,a);ex;end
-#-(ex::Expression,a)=begin;ex=deepcopy(ex);push!(ex.components,:+);push!(ex.components,-1);push!(ex.components,a);ex;end
-#-(a,ex::Expression)=begin;ex=deepcopy(ex);insert!(ex.components,1,:+);insert!(ex.components,1,-1);insert!(ex.components,1,a);ex;end
 *(ex1::Expression,ex2::Expression)=Expression([deepcopy(ex1),deepcopy(ex2)])
-#*(ex::Expression,a)=begin;ex=deepcopy(ex);push!(ex.components,a);ex;end
-#*(a,ex::Expression)=begin;ex=deepcopy(ex);insert!(ex.components,1,a);ex;end
 /(ex::Ex,n::Number)=*(1/n,ex)
 function *(a::X,ex::Expression)
 	ex=deepcopy(ex)
@@ -168,13 +164,9 @@ function *(ex::Expression,x::EX)
 	return expression(ap)
 end
 -(c1::Component,c2::Component)=+(c1,-1*c2)
-#-(c::Component,a)=+(c,-1*a)
-#-(a,c::Component)=+(-1*a,c)
 +(c1::Component,c2::Component)=Expression([c1,:+,c2])
 +(c::Component,ex::Expression)=Expression([c,:+,ex])
 +(ex::Expression,c::Component)=Expression([ex,:+,c])
-#+(c::Component,a)=Expression([c,:+,a])
-#+(a,c::Component)=Expression([a,:+,c])
 
 +(x1::X,x2::X)=Expression([x1,:+,x2])
 -(x1::X,x2::X)=Expression([x1,:+,-1,x2])
@@ -263,24 +255,6 @@ function has(ex::Expression,x::Symbol)
 end
 has(c::Component,x::Symbol)=has(getarg(c),x)
 has(n::N,x::Symbol)=n==x
-function componify_dep(ex::Expression,raw=false)
-	lex=length(ex.components)
-	stuff=Array(Any,0)	
-	for term in 1:lex
-		com=ex.components[term]
-		if typeof(com)==Expression
-			rex=componify(com,true)
-			stuff=[stuff,rex]
-		else
-			stuff=[stuff,com]
-		end
-	end	
-	if raw==true
-		return stuff
-	else
-		return Expression(stuff)
-	end		
-end
 function componify(ex::Expression,raw=false)
 	ap=addparse(ex)
 	for term in 1:length(ap)
@@ -332,76 +306,14 @@ function componify(ex::Expression,raw=false)
 			ap[term]=exs[1].components
 		end
 	end
-	if raw
-		return ap
+	if raw 
+		return ap #this was needed for previous componify, maybe remove?
 	else
 		return expression(ap)
 	end
 end
 componify(c::Component)=begin;c=deepcopy(c);c.x=componify(c.x);c;end
 componify(x::N)=x
-function simplify_dep2(ex::Expression)
-	componify(sumnum(ex))
-end
-function simplify_dep(ex::Expression)
-	ex=deepcopy(ex)
-	ex=componify(ex)
-#	lex=length(ex.components)
-	cs=Array(Components,0)
-#	adds=findin(ex.components,[:+])
-#	insert!(adds,1,0)
-#	push!(adds,lex+1)
-	adds=addparse(ex)
-	nadds=length(adds)
-	for add in 1:nadds
-		tcs=Array(Ex,0)
-		coef=1
-		for term in adds[add]
-			if typeof(term)<:Ex
-				push!(tcs,term)
-			elseif typeof(term)<:Number
-				coef*=term
-			else			
-				warn("Don't know how to handle $term")
-			end
-		end
-		com=Components(tcs,coef)
-		ind=indin(cs,com)
-		if ind==0
-			push!(cs,com)
-		else
-			cs[ind].coef+=com.coef
-		end
-	end
-	exa=Any[]
-	for c in cs
-		if c.coef!=0
-			if isempty(c.components)
-				push!(exa,c.coef)
-				push!(exa,:+)
-			else
-				if length(c.components)==1
-					if c.coef!=1
-						push!(exa,c.coef)
-					end
-					push!(exa,c.components[1])
-					push!(exa,:+)
-				else
-					push!(exa,c)
-					push!(exa,:+)
-				end
-			end
-		end	
-	end
-	if length(exa)>0
-		deleteat!(exa,length(exa))
-	end
-	if length(exa)==1
-		return exa[1]
-	else
-		return Expression(exa)
-	end
-end
 function extract(ex::Expression)
 	if length(ex.components)==1
 		return ex.components[1]
@@ -421,20 +333,18 @@ function simplify(ex::Expression)
 		for term in 1:length(ap)
 			ap[term]=divify(ap[term])
 			for fac in 1:length(ap[term])
-				#println(fac,simplify(fac))
 				ap[term][fac]=simplify(ap[term][fac])
-				#println(term)
 			end
 		end
 		ex=extract(expression(ap)) #better to check if res::N before calling expression instead of extracting?
 		nit+=1
-		if nit>10
-			warn("Stuck in simplify! Iteration #$nit: $res")
+		if nit>90
+			warn("Stuck in simplify! Iteration #$nit: $ex")
 		end
 	end
 	return ex 
 end
-simplify!(ex::Expression)=begin;ex.components=simplify(ex).components;ex;end
+simplify!(ex::Expression)=begin;warn("simplify! is incomplete.");ex=simplify(ex);end #this doesn't really save memory...
 simplify(c::Component)=begin;deepcopy(c).x=simplify(getarg(c));c;end
 simplify!(c::Component)=begin;c.x=simplify!(getarg(c));c;end
 simplify(x::N)=x
@@ -550,10 +460,10 @@ function findsyms(ex::Expression,symdic::Dict)
 	return syminds
 end
 findsyms(C::Component,symdic::Dict)=findsyms(getarg(c),symdic)
-function findsyms(c::N,symdic::Dict)
+function findsyms(c::N,symdic::Dict) #deprecated
 	syminds=Dict()
 	for k in keys(symdic)
-		inds=Integer[] #this double array is somehow redundant but other functions may rely on it
+		inds=Integer[] #this double array is somehow redundant but other functions may rely on it (
 		if c==k
 			push!(inds,1)
 		end
@@ -582,6 +492,11 @@ end
 import Base.replace
 function replace(ex::Expression,symdic::Dict)
 	ex=deepcopy(ex)
+	for c in 1:length(ex.components)
+		if isa(ex.components[c],Ex)
+			ex.components[c]=replace(ex.components[c],symdic)
+		end
+	end
 	syminds=findsyms(ex,symdic)
 	for tup in symdic
 		sym,val=tup
@@ -610,8 +525,7 @@ function evaluate(ex::Ex,symdic::Dict)
 	end
 	return ex
 end
-evaluate(x::Number,symdic::Dict)=x#evaluate(Expression([x],symdic))
-
+evaluate(x::Number,symdic::Dict)=x
 
 import Base.start, Base.next, Base.done
 start(ex::Expression)=(1,addparse(ex))

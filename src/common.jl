@@ -344,7 +344,7 @@ function simplify(ex::Expression)
 	end
 	return ex 
 end
-simplify!(ex::Expression)=begin;ex.components=simplify(ex).components;ex;end #this doesn't really save memory...
+#simplify!(ex::Expression)=begin;warn("simplify! is incomplete.");ex=simplify(ex);end #this doesn't really save memory...
 simplify(c::Component)=begin;deepcopy(c).x=simplify(getarg(c));c;end
 simplify!(c::Component)=begin;c.x=simplify!(getarg(c));c;end
 simplify(x::N)=x

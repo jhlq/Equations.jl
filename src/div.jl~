@@ -60,7 +60,7 @@ end
 divify(term::Array)=divify!(deepcopy(term))
 divify(x::X)=x
 function simplify!(d::Div)
-	x=simplify(getarg(d))
+	x=simplify!(getarg(d))
 	if isa(x,Number)
 		return 1/x
 	end

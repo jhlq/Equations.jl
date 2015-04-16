@@ -11,6 +11,14 @@ for tm in m
 	@test l==r
 end
 
+#matches
+ex=3*:x^2-5*:x+1.5
+m=matches(ex,quadratic)
+@test evaluate(ex,[:x=>m[1].rhs])<1e-9 && evaluate(ex,[:x=>m[2].rhs])<1e-9
+ex=:x*3*:x-5*:x*3+1.5
+m=matches(ex,quadratic)
+@test evaluate(ex,[:x=>m[1].rhs])<1e-9 && evaluate(ex,[:x=>m[2].rhs])<1e-9
+
 #solve
 eq=equation(:x+:z+:t)
 sol=solve(eq)

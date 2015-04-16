@@ -1,5 +1,5 @@
 include("common.jl")
-include("trigo.jl")
+#include("trigo.jl")
 
 type Equation
 	lhs::EX
@@ -20,17 +20,17 @@ function equivalent(eq1::Equation,eq2::Equation)
 	end
 	return false
 end
-simplify!(eq::Equation)=begin;simplify!(eq.lhs);simplify!(eq.rhs);eq;end
+simplify!(eq::Equation)=begin;eq.lhs=simplify!(eq.lhs);eq.rhs=simplify!(eq.rhs);eq;end #the ! functions are not complete
 simplify(eq::Equation)=Equation(simplify(eq.lhs),simplify(eq.rhs))
 function simplify!(eqa::Array{Equation})
 	for eq in 1:length(eqa)
-		eqa[eq]=simplify!(eqa[eq])
+		eqa[eq]=simplify(eqa[eq])
 	end
 	return eqa
 end
 simplify(eqa::Array{Equation})=simplify!(deepcopy(eqa))
 relations=Equation[]
-eq1=Equation(cos(:x)-sin(:x+pi/2),0)
+#eq1=Equation(cos(:x)-sin(:x+pi/2),0)
 function pushallunique!(a1::Array,a2::Array)
 	for d in a2
 		if !(d∈a1)
@@ -86,6 +86,13 @@ function matches(eq::Equation)
 	end
 	return m
 end
+matches(ex::EX)=matches(equation(ex))
+function matches(eq::Equation,fun::Function)
+	m=Equation[]
+	pushallunique!(m,fun(eq))
+	return m
+end
+matches(ex::EX,fun::Function)=matches(equation(ex),fun)
 function matches(eq::Equation,all::Bool)
 	if eq.lhs==0
 		return false #it only moves from left to right
@@ -100,6 +107,7 @@ function matches(eq::Equation,all::Bool)
 	pushallunique!(m,matches(eq))	
 	return m
 end
+matches(ex::EX,all::Bool)=matches(equation(ex),all)
 function matches(eq::Equation,op)
 	if op==Div
 		lhs=addparse(eq.lhs)
@@ -129,15 +137,17 @@ function matches(eq::Equation,op)
 		rhs=deepcopy(eq.rhs)
 		m=Equation[]
 		push!(m,Equation(Sqrt(lhs),Sqrt(rhs)))
+		push!(m,Equation(Sqrt(lhs),-Sqrt(rhs)))
 		return simplify(m)
 	elseif op==Function
 		m=Equation[]
 		for fun in matchfuns
-			pushallunique!(m,fun(eq))
+			pushallunique!(m,simplify(fun(eq)))
 		end
-		return simplify(m)
+		return m
 	end
 end
+matches(ex::EX,op)=matches(equation(ex),op)
 function matches(eqa::Array{Equation})
 	neqa=deepcopy(eqa)
 	for eq in eqa
@@ -167,7 +177,7 @@ function matches(eq::Equation,recursions::Integer)
 	end
 	return m
 end
-matches(ex::Expression)=matches(equation(ex))
+matches(ex::EX,rec::Integer)=matches(equation(ex),rec)
 function evaluate(eq::Equation,symdic::Dict)
 	for key in keys(symdic)
 		if symdic[key]==0&&key∈eq.divisions

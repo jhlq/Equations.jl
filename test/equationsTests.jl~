@@ -1,6 +1,6 @@
 ###Equations
 eq=equation(:x)
-@test eq=Equation(:x,0)
+@test eq==Equation(:x,0)
 
 #evaluate
 eq=equation(1/:x-sqrt(:x))
@@ -10,6 +10,14 @@ for tm in m
 	l,r=evaluate(tm,[:x=>1])
 	@test l==r
 end
+
+#matches
+ex=3*:x^2-5*:x+1.5
+m=matches(ex,quadratic)
+@test evaluate(ex,[:x=>m[1].rhs])==0 && evaluate(ex,[:x=>m[2].rhs])==0
+ex=:y*3*:x*-5*:x*3+1.5
+m=matches(ex,quadratic)
+@test evaluate(ex,[:x=>m[1].rhs])==0 && evaluate(ex,[:x=>m[2].rhs])==0
 
 #solve
 eq=equation(:x+:z+:t)
