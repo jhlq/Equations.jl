@@ -23,7 +23,7 @@ simplify(:x*:y/:x)
 simplify(sqrt(:x*:z*:y*:z*:y*:x))
 ```
 
-Equations have a left hand side and a left hand side that when omitted defaults to zero.
+Equations have a left hand side and a right hand side that when omitted defaults to zero.
 ```
 eq=equation(:x*:z+:y)
 eq.rhs
