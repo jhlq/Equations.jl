@@ -30,3 +30,11 @@ function simplify!(sq::Sqrt)
 	return sq
 end
 simplify(sq::Sqrt)=simplify!(deepcopy(sq))
+function matches(eq::Equation,t::Type{Sqrt})
+	lhs=deepcopy(eq.lhs)
+	rhs=deepcopy(eq.rhs)
+	m=Equation[]
+	push!(m,Equation(Sqrt(lhs),Sqrt(rhs)))
+	push!(m,Equation(Sqrt(lhs),-Sqrt(rhs)))
+	return simplify!(m)
+end

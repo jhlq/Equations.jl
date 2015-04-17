@@ -1,13 +1,14 @@
 include("common.jl")
-#include("trigo.jl")
 
 type Equation
 	lhs::EX
 	rhs::EX
 	divisions
-	#Equation(ex1::EX,ex2::EX)=new(ex1,ex2,Any[])
 end
-Equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[]) #or Set()? Cannot Set(:x) in 3.6
+Equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[]) #or set?
+#import Core.is
+# ===(a::EX,b::EX)=Equation(a,b)
+≖(a::EX,b::EX)=Equation(a,b)
 equation(ex::EX)=Equation(ex,0,Any[])
 equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[])
 ==(eq1::Equation,eq2::Equation)=eq1.lhs==eq2.lhs&&eq1.rhs==eq2.rhs
@@ -109,6 +110,7 @@ function matches(eq::Equation,all::Bool)
 end
 matches(ex::EX,all::Bool)=matches(equation(ex),all)
 function matches(eq::Equation,op)
+	warn("matches(eq::Equation,op) is deprecated.")
 	if op==Div
 		lhs=addparse(eq.lhs)
 		rhs=addparse(eq.rhs)
@@ -178,6 +180,8 @@ function matches(eq::Equation,recursions::Integer)
 	return m
 end
 matches(ex::EX,rec::Integer)=matches(equation(ex),rec)
+include("div.jl")
+include("sqrt.jl")
 function evaluate(eq::Equation,symdic::Dict)
 	for key in keys(symdic)
 		if symdic[key]==0&&key∈eq.divisions

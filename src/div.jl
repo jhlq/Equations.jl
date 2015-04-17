@@ -68,3 +68,27 @@ function simplify!(d::Div)
 	return d
 end
 simplify(d::Div)=simplify!(deepcopy(d))
+function matches(eq::Equation,t::Type{Div})
+	lhs=addparse(eq.lhs)
+	rhs=addparse(eq.rhs)
+	m=Equation[]
+	for term in lhs
+		for fac in term
+			nl=deepcopy(lhs)
+			nr=deepcopy(rhs)
+			for t in nl
+				push!(t,Div(deepcopy(fac)))
+			end
+			for t in nr
+				push!(t,Div(deepcopy(fac)))
+			end
+			nl=simplify(expression(nl))
+			nr=simplify(expression(nr))
+			teq=Equation(nl,nr,Any[fac])
+			if !(teq∈m)&&!(isa(nl,Number)&&isa(nr,Number)&&nl!=nr) #prevents 1=0 from x=0
+				push!(m,teq)
+			end
+		end
+	end
+	return m
+end
