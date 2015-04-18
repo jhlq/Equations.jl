@@ -1,4 +1,4 @@
-#module T
+#this is an old experiment and should be completely rewritten, much of the functionality has either been moved to common or implemented in equations
 
 include("common.jl")
 include("div.jl")
@@ -128,4 +128,3 @@ function ==(p1::Pattern,p2::Pattern)
 	return false
 end
 
-#end

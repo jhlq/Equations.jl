@@ -440,12 +440,17 @@ sumsym(x::N)=x
 function findsyms(ex::Expression)
 	syms=Set{Symbol}()
 	for c in ex.components
-		if isa(c,Symbol)
+		if isa(c,Symbol)&&c!=:+
 			push!(syms,c)
+		elseif isa(c,Expression)||isa(c,Component)
+			syms=union(syms,findsyms(c))
 		end
 	end
 	return syms
 end
+findsyms(c::Component)=findsyms(getarg(c))
+findsyms(s::Symbol)=Set([s])
+findsyms(n::Number)=Set()
 function findsyms(ex::Expression,symdic::Dict)
 	syminds=Dict()
 	for k in keys(symdic)

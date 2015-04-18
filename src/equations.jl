@@ -182,6 +182,8 @@ end
 matches(ex::EX,rec::Integer)=matches(equation(ex),rec)
 include("div.jl")
 include("sqrt.jl")
+include("pow.jl")
+include("der.jl")
 function evaluate(eq::Equation,symdic::Dict)
 	for key in keys(symdic)
 		if symdic[key]==0&&key∈eq.divisions
