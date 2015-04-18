@@ -262,6 +262,7 @@ function componify(ex::Expression,raw=false)
 		xs=X[]
 		for fac in ap[term]
 			if isa(fac,Array)
+				warn("How did the array $fac end up in $ex?")
 				push!(exs,componify(Expression(fac)))
 			elseif isa(fac,Expression)
 				push!(exs,componify(fac))
@@ -312,6 +313,7 @@ function componify(ex::Expression,raw=false)
 		return expression(ap)
 	end
 end
+componify(a::Array)=componify(Expression(a),true)
 componify(c::Component)=begin;c=deepcopy(c);c.x=componify(c.x);c;end
 componify(x::N)=x
 function extract(ex::Expression)
@@ -465,18 +467,6 @@ function findsyms(ex::Expression,symdic::Dict)
 	return syminds
 end
 findsyms(C::Component,symdic::Dict)=findsyms(getarg(c),symdic)
-function findsyms(c::N,symdic::Dict) #deprecated
-	syminds=Dict()
-	for k in keys(symdic)
-		inds=Integer[] #this double array is somehow redundant but other functions may rely on it (
-		if c==k
-			push!(inds,1)
-		end
-		syminds[k]=inds
-	end
-	warn("findsyms for Union(Symbol,Number) is deprecated, use has(sym1,sym2) instead.")
-	return syminds
-end
 function hasex(symdic::Dict)
 	for v in values(symdic)
 		if isa(v,Ex)
@@ -495,8 +485,7 @@ function delexs(symdic::Dict)
 	return sd
 end
 import Base.replace
-function replace(ex::Expression,symdic::Dict)
-	ex=deepcopy(ex)
+function replace!(ex::Expression,symdic::Dict)
 	for c in 1:length(ex.components)
 		if isa(ex.components[c],Ex)
 			ex.components[c]=replace(ex.components[c],symdic)
@@ -509,8 +498,11 @@ function replace(ex::Expression,symdic::Dict)
 			ex.components[i]=val
 		end
 	end
-	return componify(ex)
+	return ex
 end
+replace(ex::Expression,symdic::Dict)=replace!(deepcopy(ex),symdic)
+replace!(term::Array,symdic::Dict)=replace!(Expression(term),symdic).components
+replace(term::Array,symdic::Dict)=replace(Expression(term),symdic).components
 replace(c::Component,symdic::Dict)=setarg(c,replace(getarg(c),symdic))
 function replace(s::Symbol,symdic::Dict)
 	for tup in symdic
