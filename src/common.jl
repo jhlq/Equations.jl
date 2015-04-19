@@ -262,7 +262,7 @@ function componify(ex::Expression,raw=false)
 		xs=X[]
 		for fac in ap[term]
 			if isa(fac,Array)
-				warn("How did the array $fac end up in $ex?")
+				#warn("How did the array $fac end up in $ex?") #through replace!
 				push!(exs,componify(Expression(fac)))
 			elseif isa(fac,Expression)
 				push!(exs,componify(fac))
@@ -322,6 +322,14 @@ function extract(ex::Expression)
 	end
 	return ex
 end
+import Base.isless
+isless(ex::Expression,x::X)=false
+isless(x::X,ex::Expression)=true
+isless(c::Component,s::N)=false
+isless(s::N,c::Component)=true
+isless(s::Symbol,n::Number)=false
+isless(n::Number,s::Symbol)=true
+isless(c1::Component,c2::Component)=isless(string(c1),string(c2))
 function simplify(ex::Expression)
 	ex=deepcopy(ex)
 	tex=0
@@ -335,6 +343,7 @@ function simplify(ex::Expression)
 			for fac in 1:length(ap[term])
 				ap[term][fac]=simplify(ap[term][fac])
 			end
+			sort!(ap[term])
 		end
 		ex=extract(expression(ap)) #better to check if res::N before calling expression instead of extracting?
 		nit+=1
@@ -437,6 +446,19 @@ function sumsym(ex::Expression)
 end
 sumsym(c::Component)=setarg(c,sumsym(getarg(c)))
 sumsym(x::N)=x
+function findsyms(term::Array)
+	syms=Dict()
+	for fac in 1:length(term)
+		if isa(term[fac],Symbol)
+			if haskey(syms,term[fac])
+				push!(syms[term[fac]],fac)
+			else
+				syms[term[fac]]=Any[fac]
+			end
+		end
+	end
+	return syms
+end
 function findsyms(ex::Expression)
 	syms=Set{Symbol}()
 	for c in ex.components
@@ -465,6 +487,19 @@ function findsyms(ex::Expression,symdic::Dict)
 	return syminds
 end
 findsyms(C::Component,symdic::Dict)=findsyms(getarg(c),symdic)
+function findcoms(term::Array)
+	coms=Dict()
+	for fac in 1:length(term)
+		if isa(term[fac],Component)
+			if haskey(coms,term[fac])
+				push!(coms[term[fac]],fac)
+			else
+				coms[term[fac]]=Any[fac]
+			end
+		end
+	end
+	return coms
+end
 function hasex(symdic::Dict)
 	for v in values(symdic)
 		if isa(v,Ex)

@@ -1,4 +1,55 @@
-export quadratic
+function facalloc(termremains::Array,patremains::Array,psremains::Array,dic::Dict,dica::Array{Dict})
+	lps,lpat,lterm=length(psremains),length(patremains),length(termremains)
+	ldiff=lterm-lpat
+	if lps==2
+		for shift in 1:ldiff+1
+			tdic=deepcopy(dic)
+			tdic[patremains[psremains[1]]]=termremains[1:end-shift]
+			tdic[patremains[psremains[2]]]=termremains[end-shift+1:end]
+			push!(dica,tdic)
+		end
+	else
+		@assert lps>2
+		for shift in 0:ldiff
+			tdic=deepcopy(dic)
+			tdic[patremains[psremains[end]]]=termremains[end-shift:end]
+			npatremains=deleteat!(deepcopy(patremains),psremains[end])
+			pushallunique!(dica,facalloc(termremains[1:end-1-shift],npatremains,psremains[1:end-1],tdic,dica))
+		end
+		
+	end
+	return dica
+end
+function matches(term::Array,pat::Array)
+	md=Dict[]
+	ps=indsin(pat,Symbol)
+	lps,lpat,lterm=length(ps),length(pat),length(term)
+	if lterm==lpat==lps
+		tmd=Dict()
+		for l in 1:lps
+			tmd[pat[ps[l]]]=term[l]
+		end
+		push!(md,tmd)
+	elseif lterm>lpat==lps
+		facalloc(term,pat,ps,Dict(),md)
+	end
+	return md
+end
+function matches(ex::Expression,pattern::Expression)
+	md=Dict[]
+	apex=addparse(simplify(ex))
+	apat=addparse(simplify(pattern))
+	if length(apex)==length(apat)==1
+		pushallunique!(md,matches(apex[1],apat[1]))
+	else
+		for t in 1:length(apex)
+			if length(apex[t])!=length(apat[t])
+				break
+			end
+		end
+	end		
+	return md		
+end
 
 function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 	eq=simplify(eq)
