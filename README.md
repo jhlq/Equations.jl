@@ -1,5 +1,5 @@
 # Equations
-Calculate with symbols as numbers.
+Calculate with symbols as numbers, symbol names starting with 3 underscores are reserved for internal use.
 ```
 :x+:y
 :x*:y
@@ -40,5 +40,7 @@ If you try to evaluate an equation that has been constructed through division by
 meq=matches(:x^2+:a*:x,Div)[1]
 evaluate(meq,[:x=>0])
 ```
+
+Types currently implemented to various degrees include Div (÷), Sqrt, Pow, Der and soon Int (∫). To implement your own type make it descend from Component and define custom simplify and matches along with type specific functionality, the first field of your custom type should be named x.
 
 [![Build Status](https://travis-ci.org/jhlq/Equations.jl.svg?branch=master)](https://travis-ci.org/jhlq/Equations.jl)

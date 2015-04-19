@@ -19,3 +19,10 @@ function matches(d::Der)
 	end
 	return expression(nap)
 end
+function simplify(d::Der)
+	if isa(d.x,Number)
+		return 0
+	elseif d.x==d.dy
+		return 1
+	end
+end
