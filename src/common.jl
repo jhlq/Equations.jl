@@ -322,8 +322,6 @@ function extract(ex::Expression)
 	end
 	return ex
 end
-#include("div.jl")
-#include("sqrt.jl")
 function simplify(ex::Expression)
 	ex=deepcopy(ex)
 	tex=0
