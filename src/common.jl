@@ -1,6 +1,17 @@
 import Base.push!
 
 abstract Component
+function ==(c1::Component, c2::Component)
+	if isa(c1,typeof(c2))
+		for n in 1:names(c1)
+			if getfield(c1,n)!=getfield(c2,n)
+				return false
+			end
+		end
+		return true
+	end
+	return false
+end
 abstract SingleArg <: Component
 ==(sa1::SingleArg,sa2::SingleArg)=isa(sa1,typeof(sa2))&&sa1.x==sa2.x 
 function getarg(c::Component,n::Integer=1)
