@@ -3,4 +3,5 @@ using Base.Test
 
 include("commonTests.jl")
 include("equationsTests.jl")
-include("matchersTests.jl")
+#include("matchersTests.jl")
+include("powTests.jl")

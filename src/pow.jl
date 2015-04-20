@@ -37,14 +37,14 @@ function findpows(term::Array)
 				stop2=start2+powl-1
 				if p[start1:stop1]==p[start2:stop2]
 					pocketpow+=1
-					push!(pows,Pow(p[start1:stop1],pocketpow))
+					push!(pows,sort!(Pow(extract(Expression(p[start1:stop1])),pocketpow)))
 				else
 					pocketpow=1
 				end
 			end
 		end
 	end
-	return unique(pows)
+	return uniquefilter(pows)
 end
 function findpows(ex::Expression)
 	pows=Pow[]
@@ -54,4 +54,33 @@ function findpows(ex::Expression)
 		pushallunique!(pows,findpows(term))
 	end
 	return pows
+end
+simplify!(p::Pow)=begin;p.x=simplify(p.x);p.y=simplify(p.y);p;end
+simplify(p::Pow)=simplify!(deepcopy(p))
+function simplify!(term::Array,t::Type{Pow})
+	sort!(term)
+	mpow=findpows(term)[end]
+	xlen=1
+	if isa(mpow.x,X)
+		powloc=indin(term,mpow.x)
+	elseif isa(mpow.x,Expression)
+		powloc=indin(term,mpow.x)
+		if powloc==0 && length(addparse(mpow.x))==1
+			powloc=indin(term,mpow.x.components[1])
+			xlen=length(mpow.x.components)
+		else
+			error("Could not locate $mpow in $term")
+		end
+	end
+	deleteat!(term,[powloc:powloc+mpow.y*xlen-1])
+	insert!(term,powloc,mpow)
+	return term
+end
+simplify(term::Array,::Type{Pow})=simplify!(deepcopy(term),t)
+function simplify(ex::Expression,t::Type{Pow})
+	ap=addparse(ex)
+	for term in ap
+		simplify!(term,t)
+	end
+	return extract(expression(ap))	
 end

@@ -41,6 +41,7 @@ function pushallunique!(a1::Array,a2::Array)
 	return a1
 end
 pushallunique!(a1::Array,b::Bool)=Nothing
+uniquefilter{T}(a::Array{T})=pushallunique!(T[],a)
 include("matchers.jl")
 matchfuns=Function[]
 push!(matchfuns,quadratic)
