@@ -24,7 +24,7 @@ function facalloc!(termremains::Array,patremains::Array,psremains::Array,dic::Di
 	end
 	return dica
 end
-getcoef(term::Array)=sum(term[indsin(term,Number)])
+getcoef(term::Array)=begin;i=indsin(term,Number);isempty(i)?1:sum(term[i]);end
 function whenallequal(term,pat,ps)
 	tmd=Dict()
 	for l in 1:length(ps)
