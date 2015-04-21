@@ -261,6 +261,8 @@ function maketype(c::Component,fun)
 		tc=typeof(c)(fun(getarg(c)))
 	elseif l==2
 		tc=typeof(c)(fun(getarg(c)),componify(getarg(c,2)))
+	elseif l==3
+		tc=typeof(c)(fun(getarg(c)),componify(getarg(c,2)),componify(getarg(c,3)))
 	else
 		error("File an issue requesting the development of more general component creation.")
 	end
@@ -278,7 +280,6 @@ function componify(ex::Expression,raw=false)
 			elseif isa(fac,Expression)
 				push!(exs,componify(fac))
 			elseif isa(fac,Component)
-				#fac.x=componify(fac.x)
 				fac=maketype(fac,componify)
 				push!(xs,fac)
 			else
@@ -345,7 +346,7 @@ isless(n::Number,s::Symbol)=true
 isless(c1::Component,c2::Component)=isless(string(c1),string(c2))
 import Base.sort
 sort(n::N)=n
-#sort(c::Component)=setarg!(c,sort!(getarg(c)))
+sort(c::Component)=maketype(c,sort)
 function sort(ex::Expression)
 	ap=addparse(ex)
 	for term in ap
@@ -378,7 +379,7 @@ function simplify(ex::Expression)
 end
 #simplify!(ex::Expression)=begin;warn("simplify! is incomplete.");ex=simplify(ex);end #this doesn't really save memory...
 simplify(c::Component)=begin;deepcopy(c).x=simplify(getarg(c));c;end
-simplify!(c::Component)=begin;c.x=simplify!(getarg(c));c;end
+#simplify!(c::Component)=begin;c.x=simplify!(getarg(c));c;end
 simplify(x::N)=x
 simplify!(x::N)=x
 function simplify!(a::Array)
