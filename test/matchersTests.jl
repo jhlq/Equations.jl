@@ -42,3 +42,6 @@ pattern=:a*3*:a
 for md in mds
 	@test simplify(replace(pattern,md))==ex
 end
+@test {:a=>{:x,:x}}∈matches(3*:x*:x,3*:a)
+@test {:a=>{:x,:x,:x,:y,:z}}∈matches(3*:x*:x*:y*:z*:x,3*:a)
+

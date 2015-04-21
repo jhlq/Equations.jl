@@ -8,6 +8,10 @@ function facalloc!(termremains::Array,patremains::Array,psremains::Array,dic::Di
 			tdic[patremains[psremains[2]]]=termremains[end-shift+1:end]
 			push!(dica,tdic)
 		end
+	elseif lps==1
+		tdic=deepcopy(dic)
+		tdic[patremains[psremains[1]]]=termremains[1:end]
+		push!(dica,tdic)
 	else
 		@assert lps>2
 		for shift in 0:ldiff
@@ -33,16 +37,16 @@ function matches(term::Array,pat::Array)
 	ps=indsin(pat,Symbol)
 	lps,lpat,lterm=length(ps),length(pat),length(term)
 	if lterm==lpat==lps
-#		tmd=Dict()
-#		for l in 1:lps
-#			tmd[pat[ps[l]]]=term[l]
-#		end
 		push!(md,whenallequal(term,pat,ps))
 	elseif lterm>lpat==lps
 		facalloc!(term,pat,ps,Dict(),md)
 	elseif lterm==lpat>lps
 		if getcoef(term)==getcoef(pat)
 			push!(md,whenallequal(term[2:end],pat[2:end],ps-1))
+		end
+	elseif lterm>lpat>lps
+		if getcoef(term)==getcoef(pat)
+			facalloc!(term[2:end],pat[2:end],ps-1,Dict(),md)
 		end
 	end
 	return md
