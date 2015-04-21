@@ -255,6 +255,17 @@ function has(ex::Expression,x::Symbol)
 end
 has(c::Component,x::Symbol)=has(getarg(c),x)
 has(n::N,x::Symbol)=n==x
+function maketype(c::Component,fun)
+	l=length(names(c))
+	if l==1
+		tc=typeof(c)(fun(getarg(c)))
+	elseif l==2
+		tc=typeof(c)(fun(getarg(c)),componify(getarg(c,2)))
+	else
+		error("File an issue requesting the development of more general component creation.")
+	end
+	return tc
+end
 function componify(ex::Expression,raw=false)
 	ap=addparse(ex)
 	for term in 1:length(ap)
@@ -268,7 +279,7 @@ function componify(ex::Expression,raw=false)
 				push!(exs,componify(fac))
 			elseif isa(fac,Component)
 				#fac.x=componify(fac.x)
-				fac=typeof(fac)(componify(fac.x))
+				fac=maketype(fac,componify)
 				push!(xs,fac)
 			else
 				push!(xs,fac)
@@ -316,7 +327,7 @@ function componify(ex::Expression,raw=false)
 end
 componify(a::Array)=componify(Expression(a),true)
 componify(a::Array{Array})=componify(expression(a))
-componify(c::Component)=typeof(c)(componify(c.x))
+componify(c::Component)=maketype(c,componify)
 componify(x::N)=x
 function extract(ex::Expression)
 	if length(ex.components)==1
@@ -457,7 +468,7 @@ function sumsym(ex::Expression)
 		return ret
 	end
 end
-sumsym(c::Component)=typeof(c)(sumsym(getarg(c)))
+sumsym(c::Component)=maketype(c,sumsym)
 sumsym(x::N)=x
 sumsym(term::Array)=sumsym(Expression(term)) #reverse this...
 function findsyms(term::Array)
