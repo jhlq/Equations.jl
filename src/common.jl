@@ -330,16 +330,15 @@ isless(s::N,c::Component)=true
 isless(s::Symbol,n::Number)=false
 isless(n::Number,s::Symbol)=true
 isless(c1::Component,c2::Component)=isless(string(c1),string(c2))
-import Base.sort!
-sort!(n::N)=n
-sort!(c::Component)=setarg!(c,sort!(getarg(c)))
-function sort!(ex::Expression)
+import Base.sort
+sort(n::N)=n
+#sort(c::Component)=setarg!(c,sort!(getarg(c)))
+function sort(ex::Expression)
 	ap=addparse(ex)
 	for term in ap
 		sort!(term)
 	end
-	ex.components=expression(ap).components
-	return ex
+	return expression(ap)
 end
 function simplify(ex::Expression)
 	ex=deepcopy(ex)
