@@ -582,7 +582,7 @@ end
 replace(ex::Expression,symdic::Dict)=replace!(deepcopy(ex),symdic)
 #replace!(term::Array,symdic::Dict)=replace!(Expression(term),symdic).components
 replace(term::Array,symdic::Dict)=replace(Expression(term),symdic).components
-replace(c::Component,symdic::Dict)=maketype(c,x=>replace(x,symdic))
+replace(c::Component,symdic::Dict)=maketype(c,x->replace(x,symdic))
 function replace(s::Symbol,symdic::Dict)
 	for tup in symdic
 		sym,val=tup

@@ -1,8 +1,7 @@
 import Base.sqrt
-immutable Sqrt <: SingleArg #using \sqrt causes problems
+immutable Sqrt <: SingleArg #using \sqrt causes problems, maybe (√) works? 
 	x
 end
-#Sqrt=√
 sqrt(a)=Sqrt(a)
 
 function simplify(sq::Sqrt)
@@ -31,7 +30,6 @@ function simplify(sq::Sqrt)
 	end
 	return sq
 end
-#simplify(sq::Sqrt)=simplify!(deepcopy(sq))
 function matches(eq::Equation,t::Type{Sqrt})
 	lhs=deepcopy(eq.lhs)
 	rhs=deepcopy(eq.rhs)

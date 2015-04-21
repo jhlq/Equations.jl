@@ -39,3 +39,6 @@ end
 ex=:x*3*:x
 pattern=:a*3*:a
 @test !isempty(matches(ex,pattern))
+for md in mds
+	@test simplify(replace(pattern,md))==ex
+end

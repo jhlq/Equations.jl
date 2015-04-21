@@ -77,7 +77,7 @@ function simplify!(term::Array,t::Type{Pow})
 	insert!(term,powloc,mpow)
 	return term
 end
-simplify(term::Array,::Type{Pow})=simplify!(deepcopy(term),t)
+simplify(term::Array,t::Type{Pow})=simplify!(deepcopy(term),t)
 function simplify(ex::Expression,t::Type{Pow})
 	ex=componify(ex)
 	ap=addparse(ex)

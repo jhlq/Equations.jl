@@ -1,5 +1,4 @@
 import Base./
-#include("common.jl")
 
 immutable ÷ <: SingleArg #\div
 	x
@@ -33,8 +32,7 @@ function divify!(term::Array)
 					end
 				end
 				deleteat!(ap[1],aprem)
-				term[i].x=expression(ap)
-				#println(term)
+				term[i]=Div(expression(ap))
 			end
 		else
 			invinds=indsin(term,term[i].x)
@@ -61,10 +59,10 @@ divify(term::Array)=divify!(deepcopy(term))
 divify(x::X)=x
 function simplify(ex::Expression,t::Type{Div})
 	ap=addparse(ex)
-	for term in ap
-		divify!(term)
+	for term in 1:length(ap)
+		ap[term]=divify!(ap[term])
 	end
-	return expression(ap)
+	return simplify(expression(ap))
 end
 function simplify(d::Div)
 	x=simplify(d.x)
@@ -73,7 +71,6 @@ function simplify(d::Div)
 	end
 	return Div(x)
 end
-#simplify(d::Div)=simplify!(deepcopy(d))
 function matches(eq::Equation,t::Type{Div})
 	lhs=addparse(eq.lhs)
 	rhs=addparse(eq.rhs)
