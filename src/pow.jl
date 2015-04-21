@@ -3,10 +3,11 @@ type Pow <: Component
 	y
 end
 ==(p1::Pow,p2::Pow)=p1.x==p2.x&&p1.y==p2.y
-import Base: ^
+import Base: ^, hash
 ^(x::EX,y::Ex)=Pow(x,y)
 ^(x::Ex,y::FloatingPoint)=Pow(x,y)
 ^(x::Ex,y::Complex)=Pow(x,y)
+hash(p::Pow) = hash(p.x) + hash(p.y)
 replace!(p::Pow,dic::Dict)=begin;p.x=replace(p.x,dic);p.y=replace(p.y,dic);p;end
 replace(p::Pow,dic::Dict)=replace!(deepcopy(p),dic)
 function findpows(term::Array)
