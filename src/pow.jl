@@ -78,6 +78,7 @@ function simplify!(term::Array,t::Type{Pow})
 end
 simplify(term::Array,::Type{Pow})=simplify!(deepcopy(term),t)
 function simplify(ex::Expression,t::Type{Pow})
+	ex=componify(ex)
 	ap=addparse(ex)
 	for term in ap
 		simplify!(term,t)
