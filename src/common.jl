@@ -197,6 +197,14 @@ function indin(array,item)
 	end
 	return 0
 end
+function indin(array,typ::Type)
+	for it in 1:length(array)
+		if isa(array[it],typ)
+			return it
+		end
+	end
+	return 0
+end
 function indsin(array,item)
 	ind=Int64[]
 	for it in 1:length(array)

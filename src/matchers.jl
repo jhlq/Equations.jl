@@ -1,4 +1,4 @@
-function facalloc(termremains::Array,patremains::Array,psremains::Array,dic::Dict,dica::Array{Dict})
+function facalloc!(termremains::Array,patremains::Array,psremains::Array,dic::Dict,dica::Array{Dict})
 	lps,lpat,lterm=length(psremains),length(patremains),length(termremains)
 	ldiff=lterm-lpat
 	if lps==2
@@ -20,18 +20,30 @@ function facalloc(termremains::Array,patremains::Array,psremains::Array,dic::Dic
 	end
 	return dica
 end
+getcoef(term::Array)=sum(term[indsin(term,Number)])
+function whenallequal(term,pat,ps)
+	tmd=Dict()
+	for l in 1:length(ps)
+		tmd[pat[ps[l]]]=term[l]
+	end
+	return tmd
+end
 function matches(term::Array,pat::Array)
 	md=Dict[]
 	ps=indsin(pat,Symbol)
 	lps,lpat,lterm=length(ps),length(pat),length(term)
 	if lterm==lpat==lps
-		tmd=Dict()
-		for l in 1:lps
-			tmd[pat[ps[l]]]=term[l]
-		end
-		push!(md,tmd)
+#		tmd=Dict()
+#		for l in 1:lps
+#			tmd[pat[ps[l]]]=term[l]
+#		end
+		push!(md,whenallequal(term,pat,ps))
 	elseif lterm>lpat==lps
-		facalloc(term,pat,ps,Dict(),md)
+		facalloc!(term,pat,ps,Dict(),md)
+	elseif lterm==lpat>lps
+		if getcoef(term)==getcoef(pat)
+			push!(md,whenallequal(term[2:end],pat[2:end],ps-1))
+		end
 	end
 	return md
 end

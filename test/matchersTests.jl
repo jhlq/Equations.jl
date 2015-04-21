@@ -31,7 +31,11 @@ for md in mds
 end
 ex=:x*3*:y
 pattern=:a*3*:b
-@test !isempty(matches(ex,pattern))
+mds=matches(ex,pattern)
+@test !isempty(mds)
+for md in mds
+	@test simplify(replace(pattern,md))==ex
+end
 ex=:x*3*:x
 pattern=:a*3*:a
 @test !isempty(matches(ex,pattern))
