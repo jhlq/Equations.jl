@@ -59,6 +59,13 @@ function divify!(term::Array)
 end
 divify(term::Array)=divify!(deepcopy(term))
 divify(x::X)=x
+function simplify(ex::Expression,t::Type{Div})
+	ap=addparse(ex)
+	for term in ap
+		divify!(term)
+	end
+	return expression(ap)
+end
 function simplify(d::Div)
 	x=simplify(d.x)
 	if isa(x,Number)

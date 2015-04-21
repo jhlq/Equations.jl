@@ -355,6 +355,7 @@ isless(s::N,c::Component)=true
 isless(s::Symbol,n::Number)=false
 isless(n::Number,s::Symbol)=true
 isless(c1::Component,c2::Component)=isless(string(c1),string(c2))
+isless(ex1::Expression,ex2::Expression)=isless(string(ex1),string(ex2))
 import Base.sort
 sort(n::N)=n
 sort(c::Component)=maketype(c,sort)
@@ -374,7 +375,7 @@ function simplify(ex::Expression)
 		ex=sumsym(sumnum(componify(ex)))
 		ap=addparse(ex)
 		for term in 1:length(ap)
-			ap[term]=divify(ap[term])
+			divify!(ap[term])
 			for fac in 1:length(ap[term])
 				ap[term][fac]=simplify(ap[term][fac])
 			end
