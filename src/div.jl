@@ -1,7 +1,7 @@
 import Base./
 #include("common.jl")
 
-type ÷ <: SingleArg #\div
+immutable ÷ <: SingleArg #\div
 	x
 end
 Div=÷
@@ -59,15 +59,14 @@ function divify!(term::Array)
 end
 divify(term::Array)=divify!(deepcopy(term))
 divify(x::X)=x
-function simplify!(d::Div)
-	x=simplify(getarg(d))
+function simplify(d::Div)
+	x=simplify(d.x)
 	if isa(x,Number)
 		return 1/x
 	end
-	d.x=x
-	return d
+	return Div(x)
 end
-simplify(d::Div)=simplify!(deepcopy(d))
+#simplify(d::Div)=simplify!(deepcopy(d))
 function matches(eq::Equation,t::Type{Div})
 	lhs=addparse(eq.lhs)
 	rhs=addparse(eq.rhs)

@@ -267,7 +267,8 @@ function componify(ex::Expression,raw=false)
 			elseif isa(fac,Expression)
 				push!(exs,componify(fac))
 			elseif isa(fac,Component)
-				fac.x=componify(fac.x)
+				#fac.x=componify(fac.x)
+				fac=typeof(fac)(componify(fac.x))
 				push!(xs,fac)
 			else
 				push!(xs,fac)
@@ -314,7 +315,8 @@ function componify(ex::Expression,raw=false)
 	end
 end
 componify(a::Array)=componify(Expression(a),true)
-componify(c::Component)=begin;c=deepcopy(c);c.x=componify(c.x);c;end
+componify(a::Array{Array})=componify(expression(a))
+componify(c::Component)=typeof(c)(componify(c.x))
 componify(x::N)=x
 function extract(ex::Expression)
 	if length(ex.components)==1
@@ -421,7 +423,7 @@ function sumnum(ex::Expression)
 		return expression(nterms)
 	end
 end
-sumnum(c::Component)=setarg(c,sumnum(getarg(c)))
+sumnum(c::Component)=typeof(c)(sumnum(getarg(c)))
 sumnum(x::N)=x 
 function sumsym(ex::Expression)
 	ap=addparse(ex)
@@ -431,8 +433,9 @@ function sumsym(ex::Expression)
 		tcs=Array(Ex,0)
 		coef=1
 		for term in ap[add]
+			term=sumsym(term)
 			if isa(term,Ex)
-				push!(tcs,sumsym(term))
+				push!(tcs,term)
 			elseif isa(term,Number)
 				coef*=term
 			else			
@@ -454,8 +457,9 @@ function sumsym(ex::Expression)
 		return ret
 	end
 end
-sumsym(c::Component)=setarg(c,sumsym(getarg(c)))
+sumsym(c::Component)=typeof(c)(sumsym(getarg(c)))
 sumsym(x::N)=x
+sumsym(term::Array)=sumsym(Expression(term)) #reverse this...
 function findsyms(term::Array)
 	syms=Dict()
 	for fac in 1:length(term)
@@ -544,9 +548,9 @@ function replace!(ex::Expression,symdic::Dict)
 	return ex
 end
 replace(ex::Expression,symdic::Dict)=replace!(deepcopy(ex),symdic)
-replace!(term::Array,symdic::Dict)=replace!(Expression(term),symdic).components
+#replace!(term::Array,symdic::Dict)=replace!(Expression(term),symdic).components
 replace(term::Array,symdic::Dict)=replace(Expression(term),symdic).components
-replace(c::Component,symdic::Dict)=setarg(c,replace(getarg(c),symdic))
+replace(c::Component,symdic::Dict)=typeof(c)(replace(getarg(c),symdic))
 function replace(s::Symbol,symdic::Dict)
 	for tup in symdic
 		sym,val=tup
