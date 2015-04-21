@@ -266,6 +266,19 @@ function has(ex::Expression,x::Symbol)
 end
 has(c::Component,x::Symbol)=has(getarg(c),x)
 has(n::N,x::Symbol)=n==x
+function maketype(c::Component,fun)
+	l=length(names(c))
+	if l==1
+		tc=typeof(c)(fun(getarg(c)))
+	elseif l==2
+		tc=typeof(c)(fun(getarg(c)),componify(getarg(c,2)))
+	elseif l==3
+		tc=typeof(c)(fun(getarg(c)),componify(getarg(c,2)),componify(getarg(c,3)))
+	else
+		error("File an issue requesting the development of more general component creation.")
+	end
+	return tc
+end
 function componify(ex::Expression,raw=false)
 	ap=addparse(ex)
 	for term in 1:length(ap)
@@ -278,7 +291,7 @@ function componify(ex::Expression,raw=false)
 			elseif isa(fac,Expression)
 				push!(exs,componify(fac))
 			elseif isa(fac,Component)
-				fac.x=componify(fac.x)
+				fac=maketype(fac,componify)
 				push!(xs,fac)
 			else
 				push!(xs,fac)
@@ -325,7 +338,8 @@ function componify(ex::Expression,raw=false)
 	end
 end
 componify(a::Array)=componify(Expression(a),true)
-componify(c::Component)=begin;c=deepcopy(c);c.x=componify(c.x);c;end
+componify(a::Array{Array})=componify(expression(a))
+componify(c::Component)=maketype(c,componify)
 componify(x::N)=x
 function extract(ex::Expression)
 	if length(ex.components)==1
@@ -341,16 +355,15 @@ isless(s::N,c::Component)=true
 isless(s::Symbol,n::Number)=false
 isless(n::Number,s::Symbol)=true
 isless(c1::Component,c2::Component)=isless(string(c1),string(c2))
-import Base.sort!
-sort!(n::N)=n
-sort!(c::Component)=setarg!(c,sort!(getarg(c)))
-function sort!(ex::Expression)
+import Base.sort
+sort(n::N)=n
+sort(c::Component)=maketype(c,sort)
+function sort(ex::Expression)
 	ap=addparse(ex)
 	for term in ap
 		sort!(term)
 	end
-	ex.components=expression(ap).components
-	return ex
+	return expression(ap)
 end
 function simplify(ex::Expression)
 	ex=deepcopy(ex)
@@ -377,7 +390,7 @@ function simplify(ex::Expression)
 end
 #simplify!(ex::Expression)=begin;warn("simplify! is incomplete.");ex=simplify(ex);end #this doesn't really save memory...
 simplify(c::Component)=begin;deepcopy(c).x=simplify(getarg(c));c;end
-simplify!(c::Component)=begin;c.x=simplify!(getarg(c));c;end
+#simplify!(c::Component)=begin;c.x=simplify!(getarg(c));c;end
 simplify(x::N)=x
 simplify!(x::N)=x
 function simplify!(a::Array)
@@ -433,7 +446,7 @@ function sumnum(ex::Expression)
 		return expression(nterms)
 	end
 end
-sumnum(c::Component)=setarg(c,sumnum(getarg(c)))
+sumnum(c::Component)=typeof(c)(sumnum(getarg(c)))
 sumnum(x::N)=x 
 function sumsym(ex::Expression)
 	ap=addparse(ex)
@@ -443,8 +456,9 @@ function sumsym(ex::Expression)
 		tcs=Array(Ex,0)
 		coef=1
 		for term in ap[add]
+			term=sumsym(term)
 			if isa(term,Ex)
-				push!(tcs,sumsym(term))
+				push!(tcs,term)
 			elseif isa(term,Number)
 				coef*=term
 			else			
@@ -466,8 +480,9 @@ function sumsym(ex::Expression)
 		return ret
 	end
 end
-sumsym(c::Component)=setarg(c,sumsym(getarg(c)))
+sumsym(c::Component)=maketype(c,sumsym)
 sumsym(x::N)=x
+sumsym(term::Array)=sumsym(Expression(term)) #reverse this...
 function findsyms(term::Array)
 	syms=Dict()
 	for fac in 1:length(term)
@@ -556,9 +571,9 @@ function replace!(ex::Expression,symdic::Dict)
 	return ex
 end
 replace(ex::Expression,symdic::Dict)=replace!(deepcopy(ex),symdic)
-replace!(term::Array,symdic::Dict)=replace!(Expression(term),symdic).components
+#replace!(term::Array,symdic::Dict)=replace!(Expression(term),symdic).components
 replace(term::Array,symdic::Dict)=replace(Expression(term),symdic).components
-replace(c::Component,symdic::Dict)=setarg(c,replace(getarg(c),symdic))
+replace(c::Component,symdic::Dict)=typeof(c)(replace(getarg(c),symdic))
 function replace(s::Symbol,symdic::Dict)
 	for tup in symdic
 		sym,val=tup

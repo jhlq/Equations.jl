@@ -1,11 +1,12 @@
 import Base.sqrt
-type Sqrt <: SingleArg #using \sqrt causes problems
+immutable Sqrt <: SingleArg #using \sqrt causes problems
 	x
 end
 #Sqrt=√
 sqrt(a)=Sqrt(a)
 
-function simplify!(sq::Sqrt)
+function simplify(sq::Sqrt)
+	sq=Sqrt(simplify(sq.x))
 	if isa(sq.x,Number)
 		if isreal(sq.x)&&sq.x<0
 			return sqrt(complex(sq.x))
@@ -13,7 +14,6 @@ function simplify!(sq::Sqrt)
 			return sqrt(sq.x)
 		end
 	elseif isa(sq.x,Expression)
-		sq.x=simplify(sq.x)
 		ap=addparse(sq.x)
 		if length(ap)==1
 			facs=ap[1]
@@ -26,10 +26,12 @@ function simplify!(sq::Sqrt)
 				end
 			end
 		end
+	elseif isa(sq.x,Pow)
+		return Pow(sq.x.x,sq.x.y/2)
 	end
 	return sq
 end
-simplify(sq::Sqrt)=simplify!(deepcopy(sq))
+#simplify(sq::Sqrt)=simplify!(deepcopy(sq))
 function matches(eq::Equation,t::Type{Sqrt})
 	lhs=deepcopy(eq.lhs)
 	rhs=deepcopy(eq.rhs)

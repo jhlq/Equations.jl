@@ -1,4 +1,4 @@
-type Pow <: Component
+immutable Pow <: Component
 	x
 	y
 end
@@ -8,8 +8,8 @@ import Base: ^, hash
 ^(x::Ex,y::FloatingPoint)=Pow(x,y)
 ^(x::Ex,y::Complex)=Pow(x,y)
 hash(p::Pow) = hash(p.x) + hash(p.y)
-replace!(p::Pow,dic::Dict)=begin;p.x=replace(p.x,dic);p.y=replace(p.y,dic);p;end
-replace(p::Pow,dic::Dict)=replace!(deepcopy(p),dic)
+replace(p::Pow,dic::Dict)=Pow(replace(p.x,dic),replace(p.y,dic))
+sort(p::Pow)=Pow(sort(p.x),sort(p.y))
 function findpows(term::Array)
 	pows=Pow[]
 	exis=indsin(term,Expression)
@@ -19,7 +19,7 @@ function findpows(term::Array)
 		tpows=Pow[]
 		pushallunique!(tpows,findpows(Expression(tex[1])))
 		for tp in tpows
-			replace!(tp,[:___internal=>term[exi]])
+			tp=replace(tp,[:___internal=>term[exi]])
 		end
 		pushallunique!(pows,tpows)
 	end
@@ -38,7 +38,7 @@ function findpows(term::Array)
 				stop2=start2+powl-1
 				if p[start1:stop1]==p[start2:stop2]
 					pocketpow+=1
-					push!(pows,sort!(Pow(extract(Expression(p[start1:stop1])),pocketpow)))
+					push!(pows,sort(Pow(extract(Expression(p[start1:stop1])),pocketpow)))
 				else
 					pocketpow=1
 				end
@@ -56,8 +56,8 @@ function findpows(ex::Expression)
 	end
 	return pows
 end
-simplify!(p::Pow)=begin;p.x=simplify(p.x);p.y=simplify(p.y);p;end
-simplify(p::Pow)=simplify!(deepcopy(p))
+#simplify!(p::Pow)=begin;p.x=simplify(p.x);p.y=simplify(p.y);p;end
+simplify(p::Pow)=Pow(simplify(p.x),simplify(p.y))
 function simplify!(term::Array,t::Type{Pow})
 	sort!(term)
 	mpow=findpows(term)[end]
