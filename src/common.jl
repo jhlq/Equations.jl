@@ -61,7 +61,7 @@ Base.show(io::IO,x::Type{Factor})=print(io, "Factor")
 typealias Term Array{Factor,1}
 complexity(n::N)=1
 function complexity(c::Component)
-	tot=1
+	tot=0
 	for n in names(c)
 		tot+=complexity(getfield(c,n))
 	end
@@ -75,7 +75,7 @@ function complexity(term::Term)
 	return tot
 end
 function complexity(ex::Expression)
-	tot=1
+	tot=0
 	for term in ex
 		tot+=complexity(term)
 	end
@@ -352,7 +352,7 @@ function componify(ex::Expression,raw=false)
 		return expression(ap)
 	end
 end
-componify(a::Array)=componify(Expression(a),true)
+componify(a::Array)=length(a)==1?componify(extract(a)):componify(expression(a),true)
 componify(a::Array{Array})=componify(expression(a))
 componify(c::Component)=maketype(c,componify)
 componify(x::N)=x
@@ -361,6 +361,12 @@ function extract(ex::Expression)
 		return ex.components[1]
 	end
 	return ex
+end
+function extract(a::Array)
+	if length(a)==1
+		return a[1]
+	end
+	return a
 end
 import Base.isless
 isless(ex::Expression,x::X)=false
@@ -422,6 +428,7 @@ end
 simplify(c::Component)=begin;deepcopy(c).x=simplify(getarg(c));c;end
 #simplify!(c::Component)=begin;c.x=simplify!(getarg(c));c;end
 simplify(x::N)=x
+simplify(x::N,a)=x
 simplify!(x::N)=x
 function simplify!(a::Array)
 	if length(a)==1

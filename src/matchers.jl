@@ -28,13 +28,17 @@ getcoef(term::Array)=begin;i=indsin(term,Number);isempty(i)?1:sum(term[i]);end
 function whenallequal(term,pat,ps)
 	tmd=Dict()
 	for l in 1:length(ps)
-		tmd[pat[ps[l]]]=term[l]
+		if isa(term[l],Component)&&isa(pat[ps[l]],Component)&&isa(getarg(pat[ps[l]]),Symbol)
+			tmd[getarg(pat[ps[l]])]=getarg(term[l])
+		else
+			tmd[pat[ps[l]]]=term[l]
+		end
 	end
 	return tmd
 end
 function matches(term::Array,pat::Array)
 	md=Dict[]
-	ps=indsin(pat,Symbol)
+	ps=indsin(pat,Ex)
 	lps,lpat,lterm=length(ps),length(pat),length(term)
 	if lterm==lpat==lps
 		push!(md,whenallequal(term,pat,ps))

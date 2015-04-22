@@ -58,31 +58,41 @@ function findpows(ex::Expression)
 end
 #simplify!(p::Pow)=begin;p.x=simplify(p.x);p.y=simplify(p.y);p;end
 simplify(p::Pow)=Pow(simplify(p.x),simplify(p.y))
-function simplify!(term::Array,t::Type{Pow})
+function simplify(term::Array,t::Type{Pow})
 	sort!(term)
-	mpow=findpows(term)[end]
-	xlen=1
-	if isa(mpow.x,X)
-		powloc=indin(term,mpow.x)
-	elseif isa(mpow.x,Expression)
-		powloc=indin(term,mpow.x)
-		if powloc==0 && length(addparse(mpow.x))==1
-			powloc=indin(term,mpow.x.components[1])
-			xlen=length(mpow.x.components)
-		else
-			error("Could not locate $mpow in $term")
+	pows=findpows(term)
+	potpows=Term[]
+	for potpow in pows
+		nterm=deepcopy(term)
+		#xlen=1
+		if isa(potpow.x,X)
+			powloc=indin(term,potpow.x)
+			deleteat!(nterm,[powloc:powloc+potpow.y-1])
+			insert!(nterm,powloc,potpow)		
+		elseif isa(potpow.x,Expression)
+			powloc=indin(term,potpow.x)
+			if powloc==0 && length(addparse(potpow.x))==1
+				#powloc=indin(term,potpow.x.components[1])
+				factors=uniquefilter(potpow.x.components)
+				for fac in factors
+					deleteat!(nterm,[indin(nterm,fac):indin(nterm,fac)+potpow.y-1])
+				end
+				insert!(nterm,length(nterm)+1,potpow)
+				#xlen=length(potpow.x.components)
+			else
+				error("Could not locate $potpow in $term")
+			end
 		end
+		push!(potpows,nterm)
 	end
-	deleteat!(term,[powloc:powloc+mpow.y*xlen-1])
-	insert!(term,powloc,mpow)
-	return term
+	return sort(potpows)[1]
 end
-simplify(term::Array,t::Type{Pow})=simplify!(deepcopy(term),t)
+#simplify(term::Array,t::Type{Pow})=simplify!(deepcopy(term),t)
 function simplify(ex::Expression,t::Type{Pow})
 	ex=componify(ex)
 	ap=addparse(ex)
-	for term in ap
-		simplify!(term,t)
+	for term in 1:length(ap)
+		ap[term]=simplify(ap[term],t)
 	end
 	return extract(expression(ap))	
 end

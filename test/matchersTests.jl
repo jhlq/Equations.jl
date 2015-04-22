@@ -48,3 +48,4 @@ end
 @test {:a=>:x}∈matches(:x+:x,:a+:a)
 @test isempty(matches(:x+:y,:a+:a))
 @test isempty(matches(:x+:x*:y,:a+:a)) #x can be 1 but a can't generically be x
+@test {:a=>:x,:b=>:y}∈matches(:x+:x/:y,:a+:a/:b)
