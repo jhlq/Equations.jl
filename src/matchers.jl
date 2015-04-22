@@ -51,18 +51,53 @@ function matches(term::Array,pat::Array)
 	end
 	return md
 end
+function clash(dic1::Dict,dic2::Dict)
+	for key in keys(dic1)
+		if haskey(dic2,key)&&dic1[key]!=dic2[key]
+			return true
+		end
+	end
+	return false
+end
+function combine(dic1::Dict,dic2::Dict)
+	ndic=Dict()
+	for key in keys(dic1)
+		ndic[key]=dic1[key]
+	end
+	for key in keys(dic2)
+		ndic[key]=dic2[key]
+	end
+	return ndic
+end
 function matches(ex::Expression,pattern::Expression)
 	md=Dict[]
-	apex=addparse(simplify(ex))
-	apat=addparse(simplify(pattern))
+	apex=addparse(sort(componify(ex)))
+	apat=addparse(sort(componify(pattern)))
 	if length(apex)==length(apat)==1
 		pushallunique!(md,matches(apex[1],apat[1]))
 	else
+		tmd=Dict[]
+		validated=Dict[]
 		for t in 1:length(apex)
-			if length(apex[t])!=length(apat[t])
-				break
+			ttmd=Dict[]
+			pushallunique!(ttmd,matches(apex[t],apat[t]))
+			if isempty(tmd)
+				for ttd in ttmd
+					push!(validated,ttd)
+				end
+			else
+				for td in tmd
+					for ttd in ttmd
+						if !clash(td,ttd)
+							push!(validated,combine(td,ttd))
+						end
+					end
+				end
 			end
+			tmd=validated
+			validated=Dict[]
 		end
+		pushallunique!(md,tmd)
 	end		
 	return md		
 end
