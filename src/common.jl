@@ -57,11 +57,11 @@ X=Union(Number,Symbol,Component)
 Ex=Union(Symbol,Component,Expression)
 EX=Union(Number,Symbol,Component,Expression)
 typealias Factor EX
-Base.show(io::IO,x::Type{EX})=print(io, "Factor")
+Base.show(io::IO,x::Type{Factor})=print(io, "Factor")
 typealias Term Array{Factor,1}
 complexity(n::N)=1
 function complexity(c::Component)
-	tot=1
+	tot=0
 	for n in names(c)
 		tot+=complexity(getfield(c,n))
 	end
@@ -75,7 +75,7 @@ function complexity(term::Term)
 	return tot
 end
 function complexity(ex::Expression)
-	tot=1
+	tot=0
 	for term in ex
 		tot+=complexity(term)
 	end
@@ -216,6 +216,7 @@ function indsin(array,typ::Type)
 end
 function addparse(ex::Expression)
 	#ex=componify(ex)
+	ex=unnest(ex)
 	adds=findin(ex.components,[:+])
 	nadd=length(adds)+1
 	parsed=Array(Term,0)
@@ -224,12 +225,13 @@ function addparse(ex::Expression)
 		push!(parsed,ex.components[s:add-1])
 		s=add+1
 	end
-	println(ex.components,ex.components[s:end])
+	#println(ex.components,ex.components[s:end])
 	push!(parsed,ex.components[s:end])
 	return parsed
 end
 addparse(x::X)=Term[Factor[x]]
 function addparse(ex::Expression,term::Bool)
+	ex=unnest(ex)
 	adds=findin(ex.components,[:+])
 	nadd=length(adds)+1
 	parsed=Array(Term,0)
@@ -275,9 +277,22 @@ function maketype(c::Component,fun)
 	elseif l==3
 		tc=typeof(c)(fun(getarg(c)),componify(getarg(c,2)),componify(getarg(c,3)))
 	else
-		error("File an issue requesting the development of more general component creation.")
+		error("File an issue requesting the development of more general component creation or create a custom maketype(t::TheType,function).")
 	end
 	return tc
+end
+function unnest(ex::Expression)
+	nc=Any[]
+	for c in ex.components
+		if isa(c,Array)
+			for fac in c
+				push!(nc,fac)
+			end
+		else
+			push!(nc,c)
+		end
+	end
+	return Expression(nc)
 end
 function componify(ex::Expression,raw=false)
 	ap=addparse(ex)
@@ -337,7 +352,7 @@ function componify(ex::Expression,raw=false)
 		return expression(ap)
 	end
 end
-componify(a::Array)=componify(Expression(a),true)
+componify(a::Array)=length(a)==1?componify(extract(a)):componify(expression(a),true)
 componify(a::Array{Array})=componify(expression(a))
 componify(c::Component)=maketype(c,componify)
 componify(x::N)=x
@@ -346,6 +361,12 @@ function extract(ex::Expression)
 		return ex.components[1]
 	end
 	return ex
+end
+function extract(a::Array)
+	if length(a)==1
+		return a[1]
+	end
+	return a
 end
 import Base.isless
 isless(ex::Expression,x::X)=false
@@ -385,6 +406,7 @@ function simplify(ex::Expression)
 	nit=0
 	while tex!=ex
 		tex=ex
+		#print(ex,"   =>   ")
 		ex=sumsym(sumnum(componify(ex)))
 		ap=addparse(ex)
 		for term in 1:length(ap)
@@ -406,6 +428,7 @@ end
 simplify(c::Component)=begin;deepcopy(c).x=simplify(getarg(c));c;end
 #simplify!(c::Component)=begin;c.x=simplify!(getarg(c));c;end
 simplify(x::N)=x
+simplify(x::N,a)=x
 simplify!(x::N)=x
 function simplify!(a::Array)
 	if length(a)==1

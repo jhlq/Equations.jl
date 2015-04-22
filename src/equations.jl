@@ -150,7 +150,7 @@ function matches(eq::Equation,op)
 		return m
 	end
 end
-matches(ex::EX,op)=matches(equation(ex),op)
+#matches(ex::EX,op)=matches(equation(ex),op)
 function matches(eqa::Array{Equation})
 	neqa=deepcopy(eqa)
 	for eq in eqa

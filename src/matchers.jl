@@ -18,7 +18,7 @@ function facalloc!(termremains::Array,patremains::Array,psremains::Array,dic::Di
 			tdic=deepcopy(dic)
 			tdic[patremains[psremains[end]]]=termremains[end-shift:end]
 			npatremains=deleteat!(deepcopy(patremains),psremains[end])
-			pushallunique!(dica,facalloc(termremains[1:end-1-shift],npatremains,psremains[1:end-1],tdic,dica))
+			pushallunique!(dica,facalloc!(termremains[1:end-1-shift],npatremains,psremains[1:end-1],tdic,dica))
 		end
 		
 	end
@@ -28,13 +28,17 @@ getcoef(term::Array)=begin;i=indsin(term,Number);isempty(i)?1:sum(term[i]);end
 function whenallequal(term,pat,ps)
 	tmd=Dict()
 	for l in 1:length(ps)
-		tmd[pat[ps[l]]]=term[l]
+		if isa(term[l],Component)&&isa(pat[ps[l]],Component)&&isa(getarg(pat[ps[l]]),Symbol)
+			tmd[getarg(pat[ps[l]])]=getarg(term[l])
+		else
+			tmd[pat[ps[l]]]=term[l]
+		end
 	end
 	return tmd
 end
 function matches(term::Array,pat::Array)
 	md=Dict[]
-	ps=indsin(pat,Symbol)
+	ps=indsin(pat,Ex)
 	lps,lpat,lterm=length(ps),length(pat),length(term)
 	if lterm==lpat==lps
 		push!(md,whenallequal(term,pat,ps))
@@ -51,18 +55,53 @@ function matches(term::Array,pat::Array)
 	end
 	return md
 end
+function clash(dic1::Dict,dic2::Dict)
+	for key in keys(dic1)
+		if haskey(dic2,key)&&dic1[key]!=dic2[key]
+			return true
+		end
+	end
+	return false
+end
+function combine(dic1::Dict,dic2::Dict)
+	ndic=Dict()
+	for key in keys(dic1)
+		ndic[key]=dic1[key]
+	end
+	for key in keys(dic2)
+		ndic[key]=dic2[key]
+	end
+	return ndic
+end
 function matches(ex::Expression,pattern::Expression)
 	md=Dict[]
-	apex=addparse(simplify(ex))
-	apat=addparse(simplify(pattern))
+	apex=addparse(sort(componify(ex)))
+	apat=addparse(sort(componify(pattern)))
 	if length(apex)==length(apat)==1
 		pushallunique!(md,matches(apex[1],apat[1]))
 	else
+		tmd=Dict[]
+		validated=Dict[]
 		for t in 1:length(apex)
-			if length(apex[t])!=length(apat[t])
-				break
+			ttmd=Dict[]
+			pushallunique!(ttmd,matches(apex[t],apat[t]))
+			if isempty(tmd)
+				for ttd in ttmd
+					push!(validated,ttd)
+				end
+			else
+				for td in tmd
+					for ttd in ttmd
+						if !clash(td,ttd)
+							push!(validated,combine(td,ttd))
+						end
+					end
+				end
 			end
+			tmd=validated
+			validated=Dict[]
 		end
+		pushallunique!(md,tmd)
 	end		
 	return md		
 end
@@ -135,7 +174,7 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 										a=Factor[]
 										for tl in 1:length(mp)
 											if !in(tl,[1+shif:2l+shif])
-												println(mp,mp[tl])
+												#println(mp,mp[tl])
 												push!(a,mp[tl])
 											end
 										end
