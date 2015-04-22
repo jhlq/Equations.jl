@@ -57,7 +57,7 @@ X=Union(Number,Symbol,Component)
 Ex=Union(Symbol,Component,Expression)
 EX=Union(Number,Symbol,Component,Expression)
 typealias Factor EX
-Base.show(io::IO,x::Type{EX})=print(io, "Factor")
+Base.show(io::IO,x::Type{Factor})=print(io, "Factor")
 typealias Term Array{Factor,1}
 complexity(n::N)=1
 function complexity(c::Component)
@@ -216,6 +216,7 @@ function indsin(array,typ::Type)
 end
 function addparse(ex::Expression)
 	#ex=componify(ex)
+	ex=unnest(ex)
 	adds=findin(ex.components,[:+])
 	nadd=length(adds)+1
 	parsed=Array(Term,0)
@@ -224,12 +225,13 @@ function addparse(ex::Expression)
 		push!(parsed,ex.components[s:add-1])
 		s=add+1
 	end
-	println(ex.components,ex.components[s:end])
+	#println(ex.components,ex.components[s:end])
 	push!(parsed,ex.components[s:end])
 	return parsed
 end
 addparse(x::X)=Term[Factor[x]]
 function addparse(ex::Expression,term::Bool)
+	ex=unnest(ex)
 	adds=findin(ex.components,[:+])
 	nadd=length(adds)+1
 	parsed=Array(Term,0)
@@ -275,9 +277,22 @@ function maketype(c::Component,fun)
 	elseif l==3
 		tc=typeof(c)(fun(getarg(c)),componify(getarg(c,2)),componify(getarg(c,3)))
 	else
-		error("File an issue requesting the development of more general component creation.")
+		error("File an issue requesting the development of more general component creation or create a custom maketype(t::TheType,function).")
 	end
 	return tc
+end
+function unnest(ex::Expression)
+	nc=Any[]
+	for c in ex.components
+		if isa(c,Array)
+			for fac in c
+				push!(nc,fac)
+			end
+		else
+			push!(nc,c)
+		end
+	end
+	return Expression(nc)
 end
 function componify(ex::Expression,raw=false)
 	ap=addparse(ex)
@@ -385,6 +400,7 @@ function simplify(ex::Expression)
 	nit=0
 	while tex!=ex
 		tex=ex
+		#print(ex,"   =>   ")
 		ex=sumsym(sumnum(componify(ex)))
 		ap=addparse(ex)
 		for term in 1:length(ap)

@@ -18,7 +18,7 @@ function facalloc!(termremains::Array,patremains::Array,psremains::Array,dic::Di
 			tdic=deepcopy(dic)
 			tdic[patremains[psremains[end]]]=termremains[end-shift:end]
 			npatremains=deleteat!(deepcopy(patremains),psremains[end])
-			pushallunique!(dica,facalloc(termremains[1:end-1-shift],npatremains,psremains[1:end-1],tdic,dica))
+			pushallunique!(dica,facalloc!(termremains[1:end-1-shift],npatremains,psremains[1:end-1],tdic,dica))
 		end
 		
 	end
@@ -135,7 +135,7 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 										a=Factor[]
 										for tl in 1:length(mp)
 											if !in(tl,[1+shif:2l+shif])
-												println(mp,mp[tl])
+												#println(mp,mp[tl])
 												push!(a,mp[tl])
 											end
 										end
