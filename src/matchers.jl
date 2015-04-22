@@ -132,24 +132,25 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 										end
 									end
 									if !nomatch
-										a=Any[]
+										a=Factor[]
 										for tl in 1:length(mp)
 											if !in(tl,[1+shif:2l+shif])
+												println(mp,mp[tl])
 												push!(a,mp[tl])
 											end
 										end
-										b=Any[]
+										b=Factor[]
 										for tl in l+1:length(p)
 											push!(b,p[tl])
 										end
 										x=p[1:l]
 										c=deleteat!(deepcopy(terms),sort([ti,matchi]))
 										#println("$terms is of the form ax^2+bx+c with a=$a, x^2=$xsq, b=$b, x=$x, c=$c")
-										eq1=Equation(Expression(x),(-Expression(b)/(2Expression(a))+Sqrt(Expression(b)^2/(4*Expression(a)^2)-Expression(c)/Expression(a))))
+										eq1=Equation(expression(x),(-expression(b)/(2expression(a))+Sqrt(expression(b)^2/(4*expression(a)^2)-expression(c)/expression(a))))
 										if !in(eq1,matches)
 											push!(matches,eq1)
 										end
-										eq2=Equation(Expression(x),(-Expression(b)-Sqrt(Expression(b)^2-4*Expression(a)*Expression(c)))/2Expression(a))
+										eq2=Equation(expression(x),(-expression(b)-Sqrt(expression(b)^2-4*expression(a)*expression(c)))/2expression(a))
 										if !in(eq2,matches)
 											push!(matches,eq2)
 										end

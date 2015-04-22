@@ -58,17 +58,37 @@ Ex=Union(Symbol,Component,Expression)
 EX=Union(Number,Symbol,Component,Expression)
 typealias Factor EX
 Base.show(io::IO,x::Type{EX})=print(io, "Factor")
-#type Term
-#	factors
-#end #this is not really used except in a experimental expression (ApExpression below) type that stores its addparse
-#how about...
-typealias Term Array{EX,1}
-
-type ApExpression 
-	components::Array{Any}
-	ap::Array{Term}
+typealias Term Array{Factor,1}
+complexity(n::N)=1
+function complexity(c::Component)
+	tot=1
+	for n in names(c)
+		tot+=complexity(getfield(c,n))
+	end
+	return tot
 end
-function expression(a::Array{Array})
+function complexity(term::Term)
+	tot=0
+	for factor in term
+		tot+=complexity(factor)
+	end
+	return tot
+end
+function complexity(ex::Expression)
+	tot=1
+	for term in ex
+		tot+=complexity(term)
+	end
+	return tot
+end
+function expression(a::Term)
+	ex=Expression(Any[])
+	for c in a
+		push!(ex.components,c)
+	end
+	return ex
+end
+function expression(a::Array{Term})
 	if isempty(a)
 		return 0
 	end
@@ -82,21 +102,6 @@ function expression(a::Array{Array})
 	deleteat!(ex.components,length(ex.components))
 	return ex
 end
-function expression(a::Array{Term})
-	if isempty(a)
-		return 0
-	end
-	ex=Expression(Any[])
-	for cc in a
-		push!(ex.components,cc.factors)
-		push!(ex.components,:+)
-	end
-	deleteat!(ex.components,length(ex.components))
-	return ex
-end
-expression(t::Term)=Expression(t.factors)
-ctranspose(t::Term)=Expression(t.factors)
-#ctranspose(a::Array{Term})=expression(a)
 function expression(cs::Array{Components})
 	if isempty(cs)
 		return Expression([0])
@@ -124,25 +129,6 @@ end
 ==(ex1::Expression,ex2::Expression)=ex1.components==ex2.components
 ==(ex::Expression,zero::Integer)=length(ex.components)==1&&ex.components[1]==zero
 push!(ex::Expression,a)=push!(ex.components,a)
-function ==(ex1::ApExpression,ex2::ApExpression)
-	if length(ex1.ap)!=length(ex2.ap)
-		return false
-	end
-	for p1 in permutations(ex1.ap)
-		cont=false
-		for l in 1:length(p1)
-			if p1[l]!=ex2.ap[l]
-				cont=true
-				break
-			end
-		end
-		if cont
-			continue
-		end
-		return true
-	end
-	return false
-end
 
 expression(x::X)=Expression([x])
 
@@ -238,10 +224,11 @@ function addparse(ex::Expression)
 		push!(parsed,ex.components[s:add-1])
 		s=add+1
 	end
+	println(ex.components,ex.components[s:end])
 	push!(parsed,ex.components[s:end])
 	return parsed
 end
-addparse(x::X)=Array[Any[x]]
+addparse(x::X)=Term[Factor[x]]
 function addparse(ex::Expression,term::Bool)
 	adds=findin(ex.components,[:+])
 	nadd=length(adds)+1
@@ -324,9 +311,9 @@ function componify(ex::Expression,raw=false)
 				ap1=addparse(exs[1])
 				ap2=addparse(exs[2])
 				lap1,lap2=length(ap1),length(ap2)
-				multed=Array[]
+				multed=Term[]
 				for l in 1:lap1*lap2
-					push!(multed,Any[])
+					push!(multed,Factor[])
 				end
 				for l1 in 0:lap1-1
 					for l2 in 1:lap2
@@ -367,8 +354,21 @@ isless(c::Component,s::N)=false
 isless(s::N,c::Component)=true
 isless(s::Symbol,n::Number)=false
 isless(n::Number,s::Symbol)=true
-isless(c1::Component,c2::Component)=isless(string(c1),string(c2))
-isless(ex1::Expression,ex2::Expression)=isless(string(ex1),string(ex2))
+function isless(c1::Component,c2::Component)
+	xi1=complexity(c1)
+	xi2=complexity(c2)
+	xi1==xi2?isless(string(c1),string(c2)):xi1<xi2
+end
+function isless(t1::Term,t2::Term)
+	xi1=complexity(t1)
+	xi2=complexity(t2)
+	xi1==xi2?isless(string(t1),string(t2)):xi1<xi2
+end
+function isless(ex1::Expression,ex2::Expression)
+	xi1=complexity(ex1)
+	xi2=complexity(ex2)
+	xi1==xi2?isless(string(ex1),string(ex2)):xi1<xi2
+end
 import Base.sort
 sort(n::N)=n
 sort(c::Component)=maketype(c,sort)
@@ -377,10 +377,10 @@ function sort(ex::Expression)
 	for term in ap
 		sort!(term)
 	end
-	return expression(ap)
+	return expression(sort!(ap))
 end
 function simplify(ex::Expression)
-	ex=deepcopy(ex)
+	#ex=deepcopy(ex)
 	tex=0
 	nit=0
 	while tex!=ex
@@ -388,7 +388,7 @@ function simplify(ex::Expression)
 		ex=sumsym(sumnum(componify(ex)))
 		ap=addparse(ex)
 		for term in 1:length(ap)
-			divify!(ap[term])
+			ap[term]=divify!(ap[term])
 			for fac in 1:length(ap[term])
 				ap[term][fac]=simplify(ap[term][fac])
 			end
@@ -423,12 +423,12 @@ function sumnum(ex::Expression)
 		return 0
 	end
 	terms=addparse(ex)
-	nterms=Array[]
+	nterms=Term[]
 	numsum=0
 	for term in terms
 		prod=1
 		allnum=true
-		nterm=Any[]
+		nterm=Factor[]
 		for t in term
 			if typeof(t)<:Number
 				prod*=t
