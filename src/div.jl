@@ -1,9 +1,9 @@
 import Base./
 
-immutable ÷ <: SingleArg #\div
+immutable ╱ <: SingleArg #\diagup
 	x
 end
-Div=÷
+Div=╱
 /(x::X,ex::Ex)=Expression([x,Div(ex)])
 function /(ex::Expression,x::Ex)
 	ap=addparse(ex)

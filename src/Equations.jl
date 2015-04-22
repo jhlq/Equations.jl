@@ -1,5 +1,8 @@
 module Equations
-export Equation, equation, solve, Expression, expression, evaluate, simplify, simplify!, componify, componify!, Div, Sqrt, addparse, has, sumnum, sumsym, Components, Component, matches, ≖, getarg, findpows, indin, indsin, Pow, replace, findsyms, Der, quadratic
+#types
+export Equation, Expression, Component, Term, Factor, Div, Sqrt, Pow, Der
+#functions
+export equation, solve, expression, ≖, evaluate, simplify, simplify!, componify, componify!, addparse, has, sumnum, sumsym, matches, getarg, findpows, indin, indsin, replace, findsyms, quadratic
 
 include("equations.jl")
 

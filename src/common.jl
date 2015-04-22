@@ -39,9 +39,7 @@ function ==(cs1::Components,cs2::Components)
 	end
 	return true
 end
-type Term
-	factors
-end #this is not really used except in a experimental expression type that stores its addparse
+#=
 function ==(t1::Term,t2::Term)
 	for p in permutations(t2.factors)
 		if t1.factors==p
@@ -49,11 +47,23 @@ function ==(t1::Term,t2::Term)
 		end
 	end
 	return false
-end
+end=#
 
 type Expression #<: Component? Nope then there is no distinction between X and EX
 	components::Array{Any}
 end
+N=Union(Number,Symbol)
+X=Union(Number,Symbol,Component)
+Ex=Union(Symbol,Component,Expression)
+EX=Union(Number,Symbol,Component,Expression)
+typealias Factor EX
+Base.show(io::IO,x::Type{EX})=print(io, "Factor")
+#type Term
+#	factors
+#end #this is not really used except in a experimental expression (ApExpression below) type that stores its addparse
+#how about...
+typealias Term Array{EX,1}
+
 type ApExpression 
 	components::Array{Any}
 	ap::Array{Term}
@@ -133,11 +143,6 @@ function ==(ex1::ApExpression,ex2::ApExpression)
 	end
 	return false
 end
-
-N=Union(Number,Symbol)
-X=Union(Number,Symbol,Component)
-Ex=Union(Symbol,Component,Expression)
-EX=Union(Number,Symbol,Component,Expression)
 
 expression(x::X)=Expression([x])
 
@@ -227,7 +232,7 @@ function addparse(ex::Expression)
 	#ex=componify(ex)
 	adds=findin(ex.components,[:+])
 	nadd=length(adds)+1
-	parsed=Array(Array,0)
+	parsed=Array(Term,0)
 	s=1
 	for add in adds
 		push!(parsed,ex.components[s:add-1])
