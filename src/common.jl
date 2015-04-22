@@ -49,8 +49,8 @@ function ==(t1::Term,t2::Term)
 	return false
 end=#
 
-type Expression #<: Component? Nope then there is no distinction between X and EX
-	components::Array{Any}
+type Expression 
+	terms::Array{Term}
 end
 N=Union(Number,Symbol)
 X=Union(Number,Symbol,Component)
