@@ -39,18 +39,9 @@ function ==(cs1::Components,cs2::Components)
 	end
 	return true
 end
-#=
-function ==(t1::Term,t2::Term)
-	for p in permutations(t2.factors)
-		if t1.factors==p
-			return true
-		end
-	end
-	return false
-end=#
 
 type Expression 
-	terms::Array{Term}
+	terms::Array{Array{Union(Number,Symbol,Component,Expression)}}
 end
 N=Union(Number,Symbol)
 X=Union(Number,Symbol,Component)
