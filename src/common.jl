@@ -1,4 +1,4 @@
-import Base.push!
+import Base: convert, show, push!, length, getindex, sort!, sort
 
 abstract Component
 function ==(c1::Component, c2::Component)
@@ -41,15 +41,46 @@ function ==(cs1::Components,cs2::Components)
 end
 
 type Expression 
-	terms::Array{Array{Union(Number,Symbol,Component,Expression)}}
+	terms::Array{Array{Union(Number,Symbol,Component,Expression),1},1}
 end
+length(ex::Expression)=length(ex.terms)
+getindex(ex::Expression,i::Integer)=getindex(ex.terms,i)
+function _show(io,c)
+	if isa(c,Number)&&(isa(c,Complex)||c<0)
+		print(io,'(')
+		show(io,c)
+		print(io,')')
+	else
+		show(io,c)
+	end
+end
+function show(io::IO,ex::Expression)
+	print(io, "𝐸(")
+	for term in 1:length(ex.terms)-1
+		for fac in 1:length(ex.terms[term])-1
+			_show(io,ex.terms[term][fac])			
+#			print(io,' ')
+		end
+		_show(io,ex.terms[term][end])
+		print(io,'+')
+	end
+	for fac in 1:length(ex.terms[end])-1
+		_show(io,ex.terms[end][fac])
+#		print(io,' ')
+	end
+	_show(io,ex.terms[end][end])
+	print(io, ')')
+end
+#show(io::IO,s::Symbol)=print(io,s)
 N=Union(Number,Symbol)
 X=Union(Number,Symbol,Component)
 Ex=Union(Symbol,Component,Expression)
 EX=Union(Number,Symbol,Component,Expression)
 typealias Factor EX
-Base.show(io::IO,x::Type{Factor})=print(io, "Factor")
+show(io::IO,x::Type{Factor})=print(io, "Factor")
 typealias Term Array{Factor,1}
+#convert(::Type{Term},ex::EX)=Factor[ex]
+convert(::Type{Array{Array{Factor,1},1}},a::Array{Any,1})=Term[a]
 complexity(n::N)=1
 function complexity(c::Component)
 	tot=0
@@ -72,97 +103,68 @@ function complexity(ex::Expression)
 	end
 	return tot
 end
-function expression(a::Term)
-	ex=Expression(Any[])
-	for c in a
-		push!(ex.components,c)
-	end
-	return ex
-end
-function expression(a::Array{Term})
-	if isempty(a)
-		return 0
-	end
-	ex=Expression(Any[])
-	for cc in a
-		for c in cc
-			push!(ex.components,c)
-		end
-		push!(ex.components,:+)
-	end
-	deleteat!(ex.components,length(ex.components))
-	return ex
-end
+expression(a::Term)=Expression(Term[a])
+expression(a::Array{Term})=Expression(a)
 function expression(cs::Array{Components})
 	if isempty(cs)
-		return Expression([0])
+		return 0#Expression([0])
 	end
-	ex=Expression(Any[])
+	ex=Expression(Term[])
 	for cc in cs
 		if cc.coef!=0
+			nterm=Factor[]
 			if cc.coef!=1||isempty(cc.components) 
-				push!(ex.components,cc.coef)
+				push!(nterm,cc.coef)
 			end
 			for c in cc.components
-				push!(ex.components,c)
+				push!(nterm,c)
 			end
-			push!(ex.components,:+)
+			push!(ex.terms,nterm)
 		end
 	end
-	if length(ex.components)==0
-		return Expression([0])
+	if length(ex)==0
+		return 0#Expression([0])
 	else
-		deleteat!(ex.components,length(ex.components))
 		return ex
 	end
 end
-
-==(ex1::Expression,ex2::Expression)=ex1.components==ex2.components
-==(ex::Expression,zero::Integer)=length(ex.components)==1&&ex.components[1]==zero
-push!(ex::Expression,a)=push!(ex.components,a)
-
-expression(x::X)=Expression([x])
-
-push!(x::X,a)=Expression([x,a])
-+(ex1::Expression,ex2::Expression)=begin;ex=deepcopy(ex1);push!(ex.components,:+);push!(ex.components,ex2);ex;end
-+(ex::Expression,a::X)=begin;ex=deepcopy(ex);push!(ex.components,:+);push!(ex.components,a);ex;end
--(ex::Expression,a::X)=begin;ex=deepcopy(ex);push!(ex.components,:+);push!(ex.components,-1);push!(ex.components,a);ex;end
--(a::X,ex::Expression)=a+(-1*ex)#begin;ex=deepcopy(ex);unshift!(ex.components,:+);unshift!(ex.components,-a);unshift!(ex.components,-1);ex;end
--(ex1::Expression,ex2::Expression)=begin;ex=deepcopy(ex1);push!(ex.components,:+);push!(ex.components,-1);push!(ex.components,ex2);ex;end
-+(a::X,ex::Expression)=begin;ex=deepcopy(ex);insert!(ex.components,1,:+);insert!(ex.components,1,a);ex;end
-*(ex1::Expression,ex2::Expression)=Expression([deepcopy(ex1),deepcopy(ex2)])
+expression(x::X)=expression(Factor[x])
+==(ex1::Expression,ex2::Expression)=ex1.terms==ex2.terms
+# ==(ex::Expression,n::Number)=simplify(ex)==n
+push!(ex::Expression,a)=push!(ex.terms,a)
+push!(x::X,a)=expression(Factor[x,a])
++(ex1::Expression,ex2::Expression)=begin;ex=deepcopy(ex1);push!(ex.terms,[ex2]);ex;end
++(ex::Expression,a::X)=begin;ex=deepcopy(ex);push!(ex.terms,[a]);ex;end
+-(ex::Expression,a::X)=begin;ex=deepcopy(ex);push!(ex.terms,[-1,a]);ex;end
+-(a::X,ex::Expression)=a+(-1*ex)
+-(ex1::Expression,ex2::Expression)=begin;ex=deepcopy(ex1);push!(ex,Factor[-1,ex2]);ex;end
++(a::X,ex::Expression)=begin;ex=deepcopy(ex);insert!(ex.terms,1,Factor[a]);ex;end
+*(ex1::Expression,ex2::Expression)=expression(Factor[deepcopy(ex1),deepcopy(ex2)])
 /(ex::Ex,n::Number)=*(1/n,ex)
 function *(a::X,ex::Expression)
 	ex=deepcopy(ex)
-	insert!(ex.components,1,a)
-	ps=findin(ex.components,[:+])
-	nps=length(ps)
-	if nps==0
-		return ex
-	else
-		for p in ps
-			insert!(ex.components,p+1,a)
-		end
-		return ex
+	for ti in 1:length(ex)
+		insert!(ex[ti],1,a)
 	end
+	return ex
 end
 
 *(a::Number,c::Component)=Expression([a,c])
-*(c1::Union(Component,Symbol),c2::Union(Component,Symbol))=Expression([c1,c2])
+*(c1::Union(Component,Symbol),c2::Union(Component,Symbol))=Expression(Term[Factor[c1,c2]])
 function *(ex::Expression,x::EX)
-	ap=addparse(ex)
+	ap=terms(deepcopy(ex))
 	for t in ap
 		push!(t,x)
 	end
 	return expression(ap)
 end
 -(c1::Component,c2::Component)=+(c1,-1*c2)
-+(c1::Component,c2::Component)=Expression([c1,:+,c2])
-+(c::Component,ex::Expression)=Expression([c,:+,ex])
-+(ex::Expression,c::Component)=Expression([ex,:+,c])
++(c1::Component,c2::Component)=Expression(Term[Factor[c1],Factor[c2]])
++(c::Component,ex::Expression)=Expression(Term[Factor[c],Factor[ex]])
++(ex::Expression,c::Component)=Expression(Term[Factor[ex],Factor[c]])
 
-+(x1::X,x2::X)=Expression([x1,:+,x2])
--(x1::X,x2::X)=Expression([x1,:+,-1,x2])
++(x1::X,x2::X)=Expression(Term[[x1],[x2]])
+-(x1::X,x2::X)=Expression(Term[[x1],[-1,x2]])
 -(x::X)=Expression([-1,x])
 -(ex::Expression)=-1*ex
 *(x1::X,x2::X)=Expression([x1,x2])
@@ -205,36 +207,10 @@ function indsin(array,typ::Type)
 	end
 	return ind
 end
-function addparse(ex::Expression)
-	#ex=componify(ex)
-	ex=unnest(ex)
-	adds=findin(ex.components,[:+])
-	nadd=length(adds)+1
-	parsed=Array(Term,0)
-	s=1
-	for add in adds
-		push!(parsed,ex.components[s:add-1])
-		s=add+1
-	end
-	#println(ex.components,ex.components[s:end])
-	push!(parsed,ex.components[s:end])
-	return parsed
-end
-addparse(x::X)=Term[Factor[x]]
-function addparse(ex::Expression,term::Bool)
-	ex=unnest(ex)
-	adds=findin(ex.components,[:+])
-	nadd=length(adds)+1
-	parsed=Array(Term,0)
-	s=1
-	for add in adds
-		push!(parsed,Term(ex.components[s:add-1]))
-		s=add+1
-	end
-	push!(parsed,Term(ex.components[s:end]))
-	return parsed
-end
-addparse(x::X,term::Bool)=Array[Term([x])]
+terms(ex::Expression)=ex.terms
+terms(x::X)=x#Term[Factor[x]]
+dcterms(ex::Expression)=terms(deepcopy(ex))
+dcterms(x::X)=x
 function has(term1,term2)
 	if length(term1)<length(term2)
 		return false
@@ -251,15 +227,18 @@ function has(term1,term2)
 	return false
 end
 function has(ex::Expression,x::Symbol)
-	for c in ex.components
-		if c==x || (isa(c,Expression)&&has(c,x)) || (isa(c,Component)&&has(c,x))
-			return true
+	for term in ex
+		for c in term
+			if c==x || (isa(c,Expression)&&has(c,x)) || (isa(c,Component)&&has(c,x))
+				return true
+			end
 		end
 	end
+	return false
 end
 has(c::Component,x::Symbol)=has(getarg(c),x)
 has(n::N,x::Symbol)=n==x
-function maketype(c::Component,fun)
+function maketype(c::Component,fun) #rewrite with vararg
 	l=length(names(c))
 	if l==1
 		tc=typeof(c)(fun(getarg(c)))
@@ -273,26 +252,31 @@ function maketype(c::Component,fun)
 	return tc
 end
 function unnest(ex::Expression)
-	nc=Any[]
-	for c in ex.components
-		if isa(c,Array)
-			for fac in c
-				push!(nc,fac)
+	nt=Term[]
+	for term in ex.terms
+		nf=Factor[]
+		for fac in term
+			if isa(term,Array)
+				for nested in term
+					push!(nf,nested)
+				end
+			else
+				push!(nf,fac)
 			end
-		else
-			push!(nc,c)
 		end
+		push!(nt,nf)
 	end
-	return Expression(nc)
+	return Expression(nt)
 end
 function componify(ex::Expression,raw=false)
-	ap=addparse(ex)
-	for term in 1:length(ap)
+	ap=dcterms(ex)
+	lap=length(ap)
+	for term in 1:lap
 		exs=Expression[]
 		xs=X[]
 		for fac in ap[term]
 			if isa(fac,Array)
-				#warn("How did the array $fac end up in $ex?") #through replace!
+				warn("How did the array $fac end up in $ex?") #through replace!
 				push!(exs,componify(Expression(fac)))
 			elseif isa(fac,Expression)
 				push!(exs,componify(fac))
@@ -306,7 +290,7 @@ function componify(ex::Expression,raw=false)
 		if isempty(exs)
 			continue
 		else
-			tap=addparse(exs[1])
+			tap=exs[1].terms
 			for x in xs
 				for tterm in tap
 					unshift!(tterm,x)
@@ -314,8 +298,8 @@ function componify(ex::Expression,raw=false)
 			end
 			exs[1]=expression(tap)
 			while length(exs)>1
-				ap1=addparse(exs[1])
-				ap2=addparse(exs[2])
+				ap1=terms(exs[1])
+				ap2=terms(exs[2])
 				lap1,lap2=length(ap1),length(ap2)
 				multed=Term[]
 				for l in 1:lap1*lap2
@@ -334,7 +318,12 @@ function componify(ex::Expression,raw=false)
 				exs[2]=expression(multed)
 				deleteat!(exs,1)
 			end
-			ap[term]=exs[1].components
+#			print(exs[1])
+#			@assert length(exs[1])==1
+			ap[term]=terms(exs[1])[1]
+			for tterm in 2:length(exs[1])
+				push!(ap,exs[1][tterm])
+			end
 		end
 	end
 	if raw 
@@ -348,8 +337,8 @@ componify(a::Array{Array})=componify(expression(a))
 componify(c::Component)=maketype(c,componify)
 componify(x::N)=x
 function extract(ex::Expression)
-	if length(ex.components)==1
-		return ex.components[1]
+	if length(ex.terms)==1&&length(ex.terms[1])==1
+		return ex[1][1]
 	end
 	return ex
 end
@@ -381,25 +370,29 @@ function isless(ex1::Expression,ex2::Expression)
 	xi2=complexity(ex2)
 	xi1==xi2?isless(string(ex1),string(ex2)):xi1<xi2
 end
-import Base.sort
 sort(n::N)=n
 sort(c::Component)=maketype(c,sort)
-function sort(ex::Expression)
-	ap=addparse(ex)
+function sort!(ex::Expression)
+	ap=terms(ex)
 	for term in ap
 		sort!(term)
 	end
 	return expression(sort!(ap))
 end
+sort(ex::Expression)=sort!(deepcopy(ex))
 function simplify(ex::Expression)
 	#ex=deepcopy(ex)
 	tex=0
 	nit=0
 	while tex!=ex
 		tex=ex
-		#print(ex,"   =>   ")
+#		print(terms(ex),"   =>   ")
 		ex=sumsym(sumnum(componify(ex)))
-		ap=addparse(ex)
+#		print(terms(ex),"!!!\t")
+		ap=terms(ex)
+		if isa(ap,X)
+			return ap
+		end
 		for term in 1:length(ap)
 			ap[term]=divify!(ap[term])
 			for fac in 1:length(ap[term])
@@ -433,10 +426,11 @@ function simplify!(a::Array)
 end
 simplify(a::Array)=simplify!(deepcopy(a))
 function sumnum(ex::Expression)
-	if ex==0
-		return 0
-	end
-	terms=addparse(ex)
+	#if ex==0
+	#	print(0)
+	#	return 0
+	#end
+	terms=dcterms(ex)
 	nterms=Term[]
 	numsum=0
 	for term in terms
@@ -477,7 +471,7 @@ end
 sumnum(c::Component)=typeof(c)(sumnum(getarg(c)))
 sumnum(x::N)=x 
 function sumsym(ex::Expression)
-	ap=addparse(ex)
+	ap=terms(deepcopy(ex))
 	nap=length(ap)
 	cs=Array(Components,0)
 	for add in 1:nap
@@ -502,8 +496,8 @@ function sumsym(ex::Expression)
 		end
 	end
 	ret=expression(cs)
-	if length(ret.components)==1
-		return ret.components[1]
+	if isa(ret,Expression)&&length(ret.terms)==1&&length(ret.terms[1])==1
+		return ret[1][1]
 	else
 		return ret
 	end
@@ -526,11 +520,13 @@ function findsyms(term::Array)
 end
 function findsyms(ex::Expression)
 	syms=Set{Symbol}()
-	for c in ex.components
-		if isa(c,Symbol)&&c!=:+
-			push!(syms,c)
-		elseif isa(c,Expression)||isa(c,Component)
-			syms=union(syms,findsyms(c))
+	for term in ex
+		for fac in term
+			if isa(c,Symbol)#&&c!=:+
+				push!(syms,c)
+			elseif isa(c,Expression)||isa(c,Component)
+				syms=union(syms,findsyms(c))
+			end
 		end
 	end
 	return syms
@@ -541,10 +537,12 @@ findsyms(n::Number)=Set()
 function findsyms(ex::Expression,symdic::Dict)
 	syminds=Dict()
 	for k in keys(symdic)
-		inds=Integer[]
-		for ci in 1:length(ex.components)
-			if ex.components[ci]==k
-				push!(inds,ci)
+		inds=Tuple[]
+		for ti in 1:length(ex)
+			for ci in 1:length(ex[ti])
+				if ex[ti][ci]==k
+					push!(inds,(ti,ci))
+				end
 			end
 		end
 		syminds[k]=inds
@@ -584,16 +582,33 @@ function delexs(symdic::Dict)
 end
 import Base.replace
 function replace!(ex::Expression,symdic::Dict)
-	for c in 1:length(ex.components)
-		if isa(ex.components[c],Ex)
-			ex.components[c]=replace(ex.components[c],symdic)
+	for ti in 1:length(ex)
+		for c in 1:length(ex[ti])
+			if isa(ex[ti][c],Ex)
+				rep=replace(ex[ti][c],symdic)
+				deleteat!(ex[ti],c)
+				if isa(rep,Array)
+					for r in rep
+						insert!(ex[ti],c,r)
+					end
+				else
+					insert!(ex[ti],c,rep)
+				end
+			end
 		end
 	end
 	syminds=findsyms(ex,symdic)
 	for tup in symdic
 		sym,val=tup
 		for i in syminds[sym]
-			ex.components[i]=val
+			if isa(val,Array)
+				deleteat!(ex[i[1]],i[2])
+				for r in val
+					insert!(ex[i[1]],i[2],r)
+				end
+			else
+				ex[i[1]][i[2]]=val
+			end
 		end
 	end
 	return ex
@@ -618,12 +633,12 @@ function evaluate(ex::Ex,symdic::Dict)
 		symdic=delexs(symdic)
 		ex=evaluate(ex,symdic)
 	end
-	return ex
+	return simplify(ex)
 end
 evaluate(x::Number,symdic::Dict)=x
 
 import Base.start, Base.next, Base.done
-start(ex::Expression)=(1,addparse(ex))
+start(ex::Expression)=(1,terms(ex))
 function next(ex::Expression,state)
 	return (state[2][state[1]],(state[1]+1,state[2]))
 end

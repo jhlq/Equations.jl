@@ -51,28 +51,32 @@ function matches(eq::Equation)
 		return m #it only moves from left to right
 	end
 	eq=simplify(eq)
-	terms=addparse(eq.lhs)
+	terms=dcterms(eq.lhs)
 	for term in 1:length(terms)
 		teq=deepcopy(eq)
 		tt=deepcopy(terms)
 		if typeof(teq.rhs)==Expression
-			push!(teq.rhs,:+)
-			push!(teq.rhs,-1)
+			nterm=Factor[]
+			push!(nterm,-1)
 			for fac in terms[term]
-				push!(teq.rhs,fac)
+				push!(nterm,fac)
 			end
+			push!(teq.rhs,nterm)
 		else
-			teq.rhs=Expression([teq.rhs,:+,-1,terms[term]])
+			teq.rhs=Expression(Term[[teq.rhs],[-1,terms[term]]])
 		end
-		deleteat!(tt,term)
+		if !isa(tt,X)
+			deleteat!(tt,term)
+		end
 		teq.lhs=expression(tt)
 		push!(m,teq)
-		if teq.lhs!=0
+		if tt!=0
 			dmt=matches(teq,Div)
 			for d in dmt
 				push!(m,d)
 			end
 		end
+#=
 		tm=matches(teq)
 		if tm!=false
 			for tteq in tm
@@ -81,6 +85,7 @@ function matches(eq::Equation)
 				end
 			end
 		end
+=#
 	end
 	for teq in m
 		teq.rhs=sumnum(componify(teq.rhs))
@@ -110,47 +115,6 @@ function matches(eq::Equation,all::Bool)
 	return m
 end
 matches(ex::EX,all::Bool)=matches(equation(ex),all)
-function matches(eq::Equation,op)
-	warn("matches(eq::Equation,op) is deprecated.")
-	if op==Div
-		lhs=addparse(eq.lhs)
-		rhs=addparse(eq.rhs)
-		m=Equation[]
-		for term in lhs
-			for fac in term
-				nl=deepcopy(lhs)
-				nr=deepcopy(rhs)
-				for t in nl
-					push!(t,Div(deepcopy(fac)))
-				end
-				for t in nr
-					push!(t,Div(deepcopy(fac)))
-				end
-				nl=simplify(expression(nl))
-				nr=simplify(expression(nr))
-				teq=Equation(nl,nr,Any[fac])
-				if !(teq∈m)&&!(isa(nl,Number)&&isa(nr,Number)&&nl!=nr) #prevents 1=0 from x=0
-					push!(m,teq)
-				end
-			end
-		end
-		return m
-	elseif op==Sqrt
-		lhs=deepcopy(eq.lhs)
-		rhs=deepcopy(eq.rhs)
-		m=Equation[]
-		push!(m,Equation(Sqrt(lhs),Sqrt(rhs)))
-		push!(m,Equation(Sqrt(lhs),-Sqrt(rhs)))
-		return simplify(m)
-	elseif op==Function
-		m=Equation[]
-		for fun in matchfuns
-			pushallunique!(m,simplify(fun(eq)))
-		end
-		return m
-	end
-end
-#matches(ex::EX,op)=matches(equation(ex),op)
 function matches(eqa::Array{Equation})
 	neqa=deepcopy(eqa)
 	for eq in eqa
@@ -209,7 +173,7 @@ function solve(eq::Equation,op)
 	mat=matches(seq,op)
 	sol=Equation[]
 	for m in mat
-		if length(addparse(m.lhs))==1
+		if length(m.lhs)==1
 			push!(sol,m)
 		end
 	end

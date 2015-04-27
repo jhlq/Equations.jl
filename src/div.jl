@@ -6,7 +6,7 @@ end
 Div=╱
 /(x::X,ex::Ex)=Expression([x,Div(ex)])
 function /(ex::Expression,x::Ex)
-	ap=addparse(ex)
+	ap=dcterms(ex)
 	for t in ap
 		push!(t,Div(x))
 	end
@@ -22,7 +22,7 @@ function divify!(term::Array)
 		elseif isa(term[i].x,Div)
 			term[i]=term[i].x.x
 		elseif isa(term[i].x,Expression)
-			ap=addparse(term[i].x)
+			ap=dcterms(term[i].x)
 			if length(ap)==1
 				aprem=Integer[]
 				for fac in 1:length(ap[1])
@@ -58,7 +58,7 @@ end
 divify(term::Array)=divify!(deepcopy(term))
 divify(x::X)=x
 function simplify(ex::Expression,t::Type{Div})
-	ap=addparse(ex)
+	ap=dcterms(ex)
 	for term in 1:length(ap)
 		ap[term]=divify!(ap[term])
 	end
@@ -72,8 +72,8 @@ function simplify(d::Div)
 	return Div(x)
 end
 function matches(eq::Equation,t::Type{Div})
-	lhs=addparse(eq.lhs)
-	rhs=addparse(eq.rhs)
+	lhs=terms(eq.lhs)
+	rhs=terms(eq.rhs)
 	m=Equation[]
 	for term in lhs
 		for fac in term

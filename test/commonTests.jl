@@ -7,7 +7,7 @@ ex*=ex
 
 #addparse
 ex=:x+:y
-ap=addparse(ex)
+ap=terms(ex)
 @test length(ap)==2
 @test expression(ap)==ex #maybe have isequivalent instead to give addparse some room, maybe have == = isequivalent, equivalent=isequivalent?
 i=1
@@ -30,9 +30,6 @@ ex=(:x+:x)/2
 
 
 #original unsorted tests
-ex=:x+:y-3
-@test expression(addparse(ex))==ex
-
 ex1=simplify(1+:x*2-1)
 ex2=push!(2,:x)
 @test ex1==ex2

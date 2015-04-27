@@ -75,8 +75,8 @@ function combine(dic1::Dict,dic2::Dict)
 end
 function matches(ex::Expression,pattern::Expression)
 	md=Dict[]
-	apex=addparse(sort(componify(ex)))
-	apat=addparse(sort(componify(pattern)))
+	apex=terms(sort(componify(ex)))
+	apat=terms(sort(componify(pattern)))
 	if length(apex)==length(apat)==1
 		pushallunique!(md,matches(apex[1],apat[1]))
 	else
@@ -111,17 +111,17 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 	if (eq.rhs!=0&&eq.lhs!=0)||(eq.rhs==0&&eq.lhs==0)
 		return false
 	elseif eq.rhs==0
-		terms=addparse(eq.lhs)
+		termses=terms(eq.lhs)
 	else
-		terms=addparse(eq.rhs)
+		termses=terms(eq.rhs)
 	end
 	connections=Any[]
 	matches=Equation[]
-	for ti in 1:length(terms)
+	for ti in 1:length(termses)
 		#print(ti)
 		matchesfound=Any[]
-		for p in permutations(terms[ti])
-			for l in 1:length(terms[ti])
+		for p in permutations(termses[ti])
+			for l in 1:length(termses[ti])
 				#print(" l:",l)
 				foundmatch=false
 				cantbematch=false
@@ -131,16 +131,17 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 				if cantbematch
 					continue
 				end
-				for matchi in 1:length(terms)
-					if 2l>length(terms[matchi]) || matchi==ti
+				for matchi in 1:length(termses)
+					if 2l>length(termses[matchi]) || matchi==ti
 						continue
 					else
-						xsq=componify(Expression(p[1:l])^2)
+						xsq=componify(Expression(Term[p[1:l]])^2)
 						#println(xsq)
 						if isa(xsq,Expression)
-							xsq=xsq.components
+							@assert length(xsq)==1
+							xsq=xsq[1]
 						end
-						for mp in permutations(terms[matchi])
+						for mp in permutations(termses[matchi])
 							notx=false
 							for notthis in notinx	
 								if notthis∈mp[1:2l]
@@ -154,18 +155,18 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 							end
 							@assert 2l==length(xsq)
 							xsqlen=2l#length(xsq)
-							matchlen=length(terms[matchi])
+							matchlen=length(termses[matchi])
 							numshift=matchlen-xsqlen
 							for shif in 0:numshift
 								if xsq==mp[1+shif:2l+shif]
-	#								push!(connections,(ti,p,l,matchi,terms[matchi]))
+	#								push!(connections,(ti,p,l,matchi,termses[matchi]))
 									found=Integer[]
 									nomatch=false
-									for termi in 1:length(terms)
+									for termi in 1:length(termses)
 										#print("termi:",termi)
 										if termi∈[ti,matchi]#||termi∈found
 											continue
-										elseif has(terms[termi],p[1:l])
+										elseif has(termses[termi],p[1:l])
 											nomatch=true
 											break
 										end
@@ -183,9 +184,10 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 											push!(b,p[tl])
 										end
 										x=p[1:l]
-										c=deleteat!(deepcopy(terms),sort([ti,matchi]))
-										#println("$terms is of the form ax^2+bx+c with a=$a, x^2=$xsq, b=$b, x=$x, c=$c")
-										eq1=Equation(expression(x),(-expression(b)/(2expression(a))+Sqrt(expression(b)^2/(4*expression(a)^2)-expression(c)/expression(a))))
+										c=deleteat!(deepcopy(termses),sort([ti,matchi]))
+										#println("$termses is of the form ax^2+bx+c with a=$a, x^2=$xsq, b=$b, x=$x, c=$c")
+										eq1=Equation(expression(x),(-expression(b)+Sqrt(expression(b)^2-4*expression(a)*expression(c)))/2expression(a))
+#Equation(expression(x),(-expression(b)/(2expression(a))+Sqrt(expression(b)^2/(4*expression(a)^2)-expression(c)/expression(a))))
 										if !in(eq1,matches)
 											push!(matches,eq1)
 										end

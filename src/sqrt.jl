@@ -13,7 +13,7 @@ function simplify(sq::Sqrt)
 			return sqrt(sq.x)
 		end
 	elseif isa(sq.x,Expression)
-		ap=addparse(sq.x)
+		ap=terms(sq.x)
 		if length(ap)==1
 			facs=ap[1]
 			nfacs=length(facs)

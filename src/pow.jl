@@ -38,7 +38,8 @@ function findpows(term::Array)
 				stop2=start2+powl-1
 				if p[start1:stop1]==p[start2:stop2]
 					pocketpow+=1
-					push!(pows,sort(Pow(extract(Expression(p[start1:stop1])),pocketpow)))
+					#println(sort(Pow(extract(expression(p[start1:stop1])),pocketpow)))
+					push!(pows,sort(Pow(extract(expression(p[start1:stop1])),pocketpow)))
 				else
 					pocketpow=1
 				end
@@ -50,7 +51,6 @@ end
 function findpows(ex::Expression)
 	pows=Pow[]
 	powsa=Array[]
-	#ap=addparse(ex)
 	for term in ex
 		pushallunique!(pows,findpows(term))
 	end
@@ -71,9 +71,9 @@ function simplify(term::Array,t::Type{Pow})
 			insert!(nterm,powloc,potpow)		
 		elseif isa(potpow.x,Expression)
 			powloc=indin(term,potpow.x)
-			if powloc==0 && length(addparse(potpow.x))==1
+			if powloc==0 && length(potpow.x)==1
 				#powloc=indin(term,potpow.x.components[1])
-				factors=uniquefilter(potpow.x.components)
+				factors=uniquefilter(potpow.x.terms[1])
 				for fac in factors
 					deleteat!(nterm,[indin(nterm,fac):indin(nterm,fac)+potpow.y-1])
 				end
@@ -90,7 +90,7 @@ end
 #simplify(term::Array,t::Type{Pow})=simplify!(deepcopy(term),t)
 function simplify(ex::Expression,t::Type{Pow})
 	ex=componify(ex)
-	ap=addparse(ex)
+	ap=terms(ex)
 	for term in 1:length(ap)
 		ap[term]=simplify(ap[term],t)
 	end
