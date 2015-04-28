@@ -3,7 +3,7 @@ import Base: convert, show, push!, length, getindex, sort!, sort
 abstract Component
 function ==(c1::Component, c2::Component)
 	if isa(c1,typeof(c2))
-		for n in 1:names(c1)
+		for n in names(c1)
 			if getfield(c1,n)!=getfield(c2,n)
 				return false
 			end
@@ -56,19 +56,23 @@ function _show(io,c)
 end
 function show(io::IO,ex::Expression)
 	print(io, "𝐸(")
-	for term in 1:length(ex.terms)-1
-		for fac in 1:length(ex.terms[term])-1
-			_show(io,ex.terms[term][fac])			
-#			print(io,' ')
+	if isempty(ex.terms)
+		show(io,ex.terms)
+	else
+		for term in 1:length(ex.terms)-1
+			for fac in 1:length(ex.terms[term])-1
+				_show(io,ex.terms[term][fac])			
+	#			print(io,' ')
+			end
+			_show(io,ex.terms[term][end])
+			print(io,'+')
 		end
-		_show(io,ex.terms[term][end])
-		print(io,'+')
+		for fac in 1:length(ex.terms[end])-1
+			_show(io,ex.terms[end][fac])
+	#		print(io,' ')
+		end
+		_show(io,ex.terms[end][end])
 	end
-	for fac in 1:length(ex.terms[end])-1
-		_show(io,ex.terms[end][fac])
-#		print(io,' ')
-	end
-	_show(io,ex.terms[end][end])
 	print(io, ')')
 end
 #show(io::IO,s::Symbol)=print(io,s)
@@ -464,6 +468,8 @@ function sumnum(ex::Expression)
 	end
 	if length(nterms)==1&&length(nterms[1])==1
 		return nterms[1][1]
+	elseif isempty(nterms)
+		return 0
 	else
 		return expression(nterms)
 	end
@@ -597,7 +603,7 @@ function replace!(ex::Expression,symdic::Dict)
 			end
 		end
 	end
-	syminds=findsyms(ex,symdic)
+#=	syminds=findsyms(ex,symdic)
 	for tup in symdic
 		sym,val=tup
 		for i in syminds[sym]
@@ -610,7 +616,7 @@ function replace!(ex::Expression,symdic::Dict)
 				ex[i[1]][i[2]]=val
 			end
 		end
-	end
+	end =#
 	return ex
 end
 replace(ex::Expression,symdic::Dict)=replace!(deepcopy(ex),symdic)

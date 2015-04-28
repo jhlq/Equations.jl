@@ -8,7 +8,14 @@ Calculate with symbols as numbers, symbol names starting with 3 underscores are 
 sqrt(:x^2)
 ```
 
-The resulting Expression is moderately human readable, multiplication is implied in adjacent components, in the case of several nested expressions readability can be improved with componify:
+Write equations (the ≖ is written as \eqcirc+tab) and derive results by checking for matches:
+```
+rule=Der(:a*:x,:x)≖:a
+ex=Der(3*:x,:x)
+m=matches(ex,rule)
+```
+
+The Expression and Equation types have had their show functions modified to become more readable by humen, multiplication is implied in adjacent components, in the case of several nested expressions readability can be improved with componify:
 ```
 ex=:x^2-:x*:y+:y*:x-:y^2
 componify(ex)
@@ -41,6 +48,6 @@ meq=matches(:x^2+:a*:x,Div)[1]
 evaluate(meq,[:x=>0])
 ```
 
-Types currently implemented to various degrees include Div (÷), Sqrt, Pow, Der and soon Int (∫). To implement your own type make it descend from Component and define custom simplify and matches along with type specific functionality, the first field of your custom type should be named x.
+Types currently implemented to various degrees include Div, Sqrt, Pow, Der and soon Integral (∫). To implement your own type make it descend from Component and define custom simplify and matches along with type specific functionality, the first field of your custom type should be named x although that convention is being phased out in favor of getarg(c,argn).
 
 [![Build Status](https://travis-ci.org/jhlq/Equations.jl.svg?branch=master)](https://travis-ci.org/jhlq/Equations.jl)

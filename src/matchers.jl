@@ -1,3 +1,23 @@
+function validfilter(c1,c2,mda::Array{Dict})
+	filtered=Dict[]
+	for md in mda
+		if replace(c2,md)==c1
+			push!(filtered,md)
+		end
+	end
+	return filtered
+end
+function matches(c1::Component,c2::Component) #implement new for custom types
+	mda=Dict[]
+	if isa(getarg(c2),Symbol)
+		tmd=Dict()
+		tmd[getarg(c2)]=getarg(c1)
+		push!(mda,tmd)
+	elseif isa(getarg(c2),Expression)
+		pushallunique!(mda,matches(getarg(c1),getarg(c2)))
+	end
+	return validfilter(c1,c2,mda)
+end
 function facalloc!(termremains::Array,patremains::Array,psremains::Array,dic::Dict,dica::Array{Dict})
 	lps,lpat,lterm=length(psremains),length(patremains),length(termremains)
 	ldiff=lterm-lpat
@@ -26,27 +46,30 @@ function facalloc!(termremains::Array,patremains::Array,psremains::Array,dic::Di
 end
 getcoef(term::Array)=begin;i=indsin(term,Number);isempty(i)?1:sum(term[i]);end
 function whenallequal(term,pat,ps)
-	tmd=Dict()
+	mda=Dict[]
+	#print(term,pat,ps)
 	for l in 1:length(ps)
-		if isa(term[l],Component)&&isa(pat[ps[l]],Component)&&isa(getarg(pat[ps[l]]),Symbol)
-			tmd[getarg(pat[ps[l]])]=getarg(term[l])
+		if isa(term[l],Component)&&isa(pat[ps[l]],Component)
+			pushallunique!(mda,matches(term[l],pat[ps[l]]))
 		else
+			tmd=Dict()
 			tmd[pat[ps[l]]]=term[l]
+			push!(mda,tmd)
 		end
 	end
-	return tmd
+	return mda
 end
-function matches(term::Array,pat::Array)
+function matches(term::Array{Factor},pat::Array{Factor})
 	md=Dict[]
 	ps=indsin(pat,Ex)
 	lps,lpat,lterm=length(ps),length(pat),length(term)
 	if lterm==lpat==lps
-		push!(md,whenallequal(term,pat,ps))
+		pushallunique!(md,whenallequal(term,pat,ps))
 	elseif lterm>lpat==lps
 		facalloc!(term,pat,ps,Dict(),md)
 	elseif lterm==lpat>lps
 		if getcoef(term)==getcoef(pat)
-			push!(md,whenallequal(term[2:end],pat[2:end],ps-1))
+			pushallunique!(md,whenallequal(term[2:end],pat[2:end],ps-1))
 		end
 	elseif lterm>lpat>lps
 		if getcoef(term)==getcoef(pat)
@@ -105,7 +128,16 @@ function matches(ex::Expression,pattern::Expression)
 	end		
 	return md		
 end
-
+function matches(ex::Ex,eq::Equation)
+	m=Equation[]
+	mda=matches(ex,eq.lhs)
+	for md in mda
+		tlh=deepcopy(ex)
+		trh=replace(eq.rhs,md)
+		push!(m,Equation(tlh,trh))
+	end
+	return m
+end
 function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 	eq=simplify(eq)
 	if (eq.rhs!=0&&eq.lhs!=0)||(eq.rhs==0&&eq.lhs==0)

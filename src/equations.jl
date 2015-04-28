@@ -6,6 +6,13 @@ type Equation
 	divisions
 end
 Equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[]) #or set?
+function show(io::IO,eq::Equation)
+	print(io, "Equation(")
+	show(io,eq.lhs)
+	print(io,'=')
+	show(io,eq.rhs)
+	print(io,')')
+end
 #import Core.is
 # ===(a::EX,b::EX)=Equation(a,b)
 ≖(a::EX,b::EX)=Equation(a,b)
@@ -67,16 +74,19 @@ function matches(eq::Equation)
 		end
 		if !isa(tt,X)
 			deleteat!(tt,term)
+			#if isempty(tt)
+			#	push!(tt,Factor[0])
+			#end
 		end
 		teq.lhs=expression(tt)
 		push!(m,teq)
-		if tt!=0
+#=		if tt!=0
 			dmt=matches(teq,Div)
 			for d in dmt
 				push!(m,d)
 			end
 		end
-#=
+
 		tm=matches(teq)
 		if tm!=false
 			for tteq in tm
