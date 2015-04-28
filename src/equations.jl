@@ -47,6 +47,12 @@ function pushallunique!(a1::Array,a2::Array)
 	end
 	return a1
 end
+function pushallunique!(a1::Array,d)
+	if !(d∈a1)
+		push!(a1,d)
+	end
+	return a1
+end
 pushallunique!(a1::Array,b::Bool)=Nothing
 uniquefilter{T}(a::Array{T})=pushallunique!(T[],a)
 include("matchers.jl")

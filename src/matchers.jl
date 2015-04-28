@@ -57,7 +57,15 @@ function whenallequal(term,pat,ps)
 			push!(mda,tmd)
 		end
 	end
-	return mda
+	if length(mda)>1
+		md=combine(mda[1],mda[2])
+		for i in 3:length(mda)
+			md=combine(md,mda[i])
+		end
+	else
+		md=mda[1]
+	end
+	return md
 end
 function matches(term::Array{Factor},pat::Array{Factor})
 	md=Dict[]

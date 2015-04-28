@@ -603,7 +603,7 @@ function replace!(ex::Expression,symdic::Dict)
 			end
 		end
 	end
-#=	syminds=findsyms(ex,symdic)
+	syminds=findsyms(ex,symdic)
 	for tup in symdic
 		sym,val=tup
 		for i in syminds[sym]
@@ -616,7 +616,7 @@ function replace!(ex::Expression,symdic::Dict)
 				ex[i[1]][i[2]]=val
 			end
 		end
-	end =#
+	end 
 	return ex
 end
 replace(ex::Expression,symdic::Dict)=replace!(deepcopy(ex),symdic)
