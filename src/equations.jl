@@ -6,11 +6,11 @@ type Equation
 	divisions
 end
 Equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[]) #or set?
-function show(io::IO,eq::Equation)
+function print(io::IO,eq::Equation)
 	print(io, "Equation(")
-	show(io,eq.lhs)
+	print(io,eq.lhs)
 	print(io,'=')
-	show(io,eq.rhs)
+	print(io,eq.rhs)
 	print(io,')')
 end
 #import Core.is

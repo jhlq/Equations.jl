@@ -1,4 +1,4 @@
-import Base: convert, show, push!, length, getindex, sort!, sort
+import Base: convert, print, show, push!, length, getindex, sort!, sort
 
 abstract Component
 function ==(c1::Component, c2::Component)
@@ -45,33 +45,33 @@ type Expression
 end
 length(ex::Expression)=length(ex.terms)
 getindex(ex::Expression,i::Integer)=getindex(ex.terms,i)
-function _show(io,c)
+function _print(io,c)
 	if isa(c,Number)&&(isa(c,Complex)||c<0)
 		print(io,'(')
-		show(io,c)
+		print(io,c)
 		print(io,')')
 	else
-		show(io,c)
+		print(io,c)
 	end
 end
-function show(io::IO,ex::Expression)
+function print(io::IO,ex::Expression)
 	print(io, "𝐸(")
 	if isempty(ex.terms)
-		show(io,ex.terms)
+		print(io,ex.terms)
 	else
 		for term in 1:length(ex.terms)-1
 			for fac in 1:length(ex.terms[term])-1
-				_show(io,ex.terms[term][fac])			
+				_print(io,ex.terms[term][fac])			
 	#			print(io,' ')
 			end
-			_show(io,ex.terms[term][end])
+			_print(io,ex.terms[term][end])
 			print(io,'+')
 		end
 		for fac in 1:length(ex.terms[end])-1
-			_show(io,ex.terms[end][fac])
+			_print(io,ex.terms[end][fac])
 	#		print(io,' ')
 		end
-		_show(io,ex.terms[end][end])
+		_print(io,ex.terms[end][end])
 	end
 	print(io, ')')
 end
@@ -84,6 +84,7 @@ typealias Factor EX
 show(io::IO,x::Type{Factor})=print(io, "Factor")
 typealias Term Array{Factor,1}
 #convert(::Type{Term},ex::EX)=Factor[ex]
+#convert(::Type{Array{Factor,1}}, ex::EX)=Factor[ex]
 convert(::Type{Array{Array{Factor,1},1}},a::Array{Any,1})=Term[a]
 complexity(n::N)=1
 function complexity(c::Component)

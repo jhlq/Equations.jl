@@ -15,7 +15,7 @@ ex=Der(3*:x,:x)
 m=matches(ex,rule)
 ```
 
-The Expression and Equation types have had their show functions modified to become more readable by humen, multiplication is implied in adjacent components, in the case of several nested expressions readability can be improved with componify:
+The Expression and Equation types can be sent to print for generating an output more in line with mathematical treatments, multiplication is implied in adjacent components, in the case of several nested expressions readability can be improved with componify:
 ```
 ex=:x^2-:x*:y+:y*:x-:y^2
 componify(ex)
