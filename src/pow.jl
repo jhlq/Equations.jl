@@ -14,12 +14,20 @@ function findpows(term::Array)
 	pows=Pow[]
 	exis=indsin(term,Expression)
 	for exi in exis
-		tex=componify(replace(term,[term[exi]=>:___internal]))
+		if VERSION>v"0.4-"
+			tex=componify(replace(term,Dict(term[exi]=>:___internal)))
+		else
+			tex=componify(replace(term,[term[exi]=>:___internal]))
+		end
 		@assert length(tex)==1
 		tpows=Pow[]
 		pushallunique!(tpows,findpows(Expression(tex[1])))
 		for tp in tpows
-			tp=replace(tp,[:___internal=>term[exi]])
+			if VERSION>v"0.4-"
+				tp=replace(tp,Dict(:___internal=>term[exi]))
+			else
+				tp=replace(tp,[:___internal=>term[exi]])
+			end
 		end
 		pushallunique!(pows,tpows)
 	end
