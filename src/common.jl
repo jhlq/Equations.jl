@@ -3,7 +3,7 @@ import Base: convert, print, show, push!, length, getindex, sort!, sort
 abstract Component
 function ==(c1::Component, c2::Component)
 	if isa(c1,typeof(c2))
-		for n in names(c1)
+		for n in fieldnames(c1)
 			if getfield(c1,n)!=getfield(c2,n)
 				return false
 			end
@@ -15,10 +15,10 @@ end
 abstract SingleArg <: Component
 ==(sa1::SingleArg,sa2::SingleArg)=isa(sa1,typeof(sa2))&&sa1.x==sa2.x 
 function getarg(c::Component,n::Integer=1)
-	getfield(c,names(c)[n])
+	getfield(c,fieldnames(c)[n])
 end
 function setarg!(c::Component,newarg,argn::Integer=1)
-	setfield!(c,names(c)[argn],newarg)
+	setfield!(c,fieldnames(c)[argn],newarg)
 	return c
 end
 setarg(c::Component,newarg,argn::Integer=1)=setarg!(deepcopy(c),newarg,argn)
@@ -89,7 +89,7 @@ convert(::Type{Array{Array{Factor,1},1}},a::Array{Any,1})=Term[a]
 complexity(n::N)=1
 function complexity(c::Component)
 	tot=0
-	for n in names(c)
+	for n in fieldnames(c)
 		tot+=complexity(getfield(c,n))
 	end
 	return tot
@@ -244,7 +244,7 @@ end
 has(c::Component,x::Symbol)=has(getarg(c),x)
 has(n::N,x::Symbol)=n==x
 function maketype(c::Component,fun) #rewrite with vararg
-	l=length(names(c))
+	l=length(fieldnames(c))
 	if l==1
 		tc=typeof(c)(fun(getarg(c)))
 	elseif l==2
