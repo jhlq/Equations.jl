@@ -2,6 +2,22 @@ type Der <: Component
 	x
 	dy
 end
+#Der(Pow(:a,:x),:x)≖log(:a)*Pow(:a,:x),
+getargs(d::Der)=[d.x,d.dy]
+derrelations=Equation[Der(:a,:x)≖0,Der(:a*:x,:x)≖:a,Der(Pow(:x,:n),:x)≖:n*Pow(:x,:n-1),Der(Sqrt(:x),:x)≖0.5*Pow(:x,-0.5)]
+function matches(d::Der,pat::Der)
+	mdx=matches(d.x,pat.x)
+	mddy=matches(d.dy,pat.dy)
+	validated=Dict[]
+	for md in mdx
+		for mdy in mddy
+			if !clash(md,mdy)
+				push!(validated,combine(md,mdy))
+			end
+		end
+	end
+	return validated
+end
 #=import Base.ctranspose
 function ctranspose(ex::Ex)
 	syms=findsyms(ex)
@@ -20,9 +36,10 @@ function matches(d::Der)
 	return expression(nap)
 end
 function simplify(d::Der)
-	if isa(d.x,Number)
+	return Der(simplify(d.x),simplify(d.dy))
+#=	if isa(d.x,Number)
 		return 0
 	elseif d.x==d.dy
 		return 1
-	end
+	end =#
 end

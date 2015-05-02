@@ -90,6 +90,12 @@ function clash(dic1::Dict,dic2::Dict)
 	for key in keys(dic1)
 		if haskey(dic2,key)&&dic1[key]!=dic2[key]
 			return true
+		elseif !haskey(dic2,key)
+			for key2 in keys(dic2)
+				if dic2[key2]==dic1[key]
+					return true
+				end
+			end
 		end
 	end
 	return false
@@ -135,6 +141,11 @@ function matches(ex::Expression,pattern::Expression)
 		pushallunique!(md,tmd)
 	end		
 	return md		
+end
+function matches(n::N,pat::Symbol)
+	md=Dict[]
+	push!(md,[pat=>n])
+	return md
 end
 function matches(ex::Ex,eq::Equation)
 	m=Equation[]

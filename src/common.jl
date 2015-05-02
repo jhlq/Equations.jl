@@ -55,7 +55,17 @@ function _print(io,c)
 		print(io,')')
 	elseif isa(c,SingleArg)
 		print(io,typeof(c),'(')
-		print(io,getarg(c),')')
+		print(io,getarg(c))
+		print(io,')')
+	elseif isa(c,Component)
+		print(io,typeof(c),'(')
+		ca=getargs(c)
+		for a in 1:length(ca)-1
+			print(io,ca[a])
+			print(',')
+		end
+		print(io,ca[end])
+		print(io,')')
 	else
 		print(io,c)
 	end
@@ -68,19 +78,20 @@ function print(io::IO,ex::Expression)
 		for term in 1:length(ex.terms)-1
 			for fac in 1:length(ex.terms[term])-1
 				_print(io,ex.terms[term][fac])			
-	#			print(io,' ')
+				print(io,' ')
 			end
 			_print(io,ex.terms[term][end])
-			print(io,'+')
+			print(io,"+ ")
 		end
 		for fac in 1:length(ex.terms[end])-1
 			_print(io,ex.terms[end][fac])
-	#		print(io,' ')
+			print(io,' ')
 		end
 		_print(io,ex.terms[end][end])
 	end
 	#print(io, ')')
 end
+print(io::IO,c::Component)=_print(io,c)
 #show(io::IO,s::Symbol)=print(io,s)
 N=Union(Number,Symbol)
 X=Union(Number,Symbol,Component)
