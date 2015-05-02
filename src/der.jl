@@ -11,12 +11,35 @@ function matches(d::Der,pat::Der)
 	validated=Dict[]
 	for md in mdx
 		for mdy in mddy
+			md,mdy=simplify(md),simplify(mdy)
 			if !clash(md,mdy)
 				push!(validated,combine(md,mdy))
 			end
 		end
 	end
 	return validated
+end
+function matches(ex::Expression,pat::Der)
+	termmds=Dict[]
+	for term in ex
+		push!(termmds,matches(term,pat))
+	end		
+#	mdx=matches(d.x,pat.x)
+#=	mddy=matches(d.dy,pat.dy)
+
+	validated=Dict[]
+	for ti in 1:length(termmds)
+		for md1 in term 
+	end
+	for md in mdx
+		for mdy in mddy
+			md,mdy=simplify(md),simplify(mdy)
+			if !clash(md,mdy)
+				push!(validated,combine(md,mdy))
+			end
+		end
+	end
+	return validated =#
 end
 #=import Base.ctranspose
 function ctranspose(ex::Ex)

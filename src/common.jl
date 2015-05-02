@@ -457,6 +457,15 @@ function simplify!(a::Array)
 	return a
 end
 simplify(a::Array)=simplify!(deepcopy(a))
+function simplify(d::Dict)
+	nd=Dict()
+	for k in keys(d)
+		nk=simplify(k)
+		nval=simplify(d[k])
+		nd[nk]=nval
+	end
+	return nd
+end
 function sumnum(ex::Expression)
 	#if ex==0
 	#	print(0)
@@ -645,17 +654,17 @@ function replace!(ex::Expression,symdic::Dict)
 			end
 		end
 	end 
-	return ex
+	return componify(ex)
 end
 replace(ex::Expression,symdic::Dict)=replace!(deepcopy(ex),symdic)
 #replace!(term::Array,symdic::Dict)=replace!(Expression(term),symdic).components
-replace(term::Array,symdic::Dict)=replace(Expression(term),symdic).components
+#replace(term::Array,symdic::Dict)=replace(Expression(term),symdic).components
 replace(c::Component,symdic::Dict)=maketype(c,x->replace(x,symdic))
 function replace(s::Symbol,symdic::Dict)
 	for tup in symdic
 		sym,val=tup
 		if s==sym
-			return val
+			return simplify(expression(val))
 		end
 	end
 	return s

@@ -155,7 +155,7 @@ function matches(ex::Ex,eq::Equation)
 		trh=replace(eq.rhs,md)
 		push!(m,Equation(tlh,trh))
 	end
-	return m
+	return sort!(m)
 end
 function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 	eq=simplify(eq)

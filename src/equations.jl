@@ -23,6 +23,20 @@ function (&)(eq::Equation,eqa::Array{Equation})
 	end
 	return eq
 end
+function (&)(ex::Ex,eq::Equation)
+	m=matches(ex,eq)
+	if !isempty(m)
+		return m[1]
+	else 
+		return ex
+	end
+end
+function (&)(ex::Ex,eqa::Array{Equation})
+	for teq in eqa
+		ex=ex&teq
+	end
+	return ex
+end
 function equivalent(eq1::Equation,eq2::Equation)
 	m=matches(eq2)
 	for eq in m
