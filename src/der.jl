@@ -2,7 +2,7 @@ type Der <: Component
 	x
 	dy
 end
-import Base.ctranspose
+#=import Base.ctranspose
 function ctranspose(ex::Ex)
 	syms=findsyms(ex)
 	dy=:t
@@ -10,7 +10,7 @@ function ctranspose(ex::Ex)
 		dy=pop!(syms)
 	end
 	return Der(ex,dy)
-end
+end =#
 function matches(d::Der)
 	ap=addparse(d.x)
 	nap=Array[]

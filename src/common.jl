@@ -14,6 +14,9 @@ function ==(c1::Component, c2::Component)
 end
 abstract SingleArg <: Component
 ==(sa1::SingleArg,sa2::SingleArg)=isa(sa1,typeof(sa2))&&sa1.x==sa2.x 
+function getargs(c::Component)
+	getfield(c,names(c)[n])
+end
 function getarg(c::Component,n::Integer=1)
 	getfield(c,names(c)[n])
 end
@@ -55,7 +58,7 @@ function _print(io,c)
 	end
 end
 function print(io::IO,ex::Expression)
-	print(io, "𝐸(")
+	#print(io, "𝐸(")
 	if isempty(ex.terms)
 		print(io,ex.terms)
 	else
@@ -73,7 +76,7 @@ function print(io::IO,ex::Expression)
 		end
 		_print(io,ex.terms[end][end])
 	end
-	print(io, ')')
+	#print(io, ')')
 end
 #show(io::IO,s::Symbol)=print(io,s)
 N=Union(Number,Symbol)
@@ -194,7 +197,7 @@ function indin(array,typ::Type)
 	end
 	return 0
 end
-function indsin(array,item)
+function indsin(array::Array,item)
 	ind=Int64[]
 	for it in 1:length(array)
 		if array[it]==item
@@ -203,7 +206,17 @@ function indsin(array,item)
 	end
 	return ind
 end
-function indsin(array,typ::Type)
+function indsin(ex::Expression,item)
+	inds=Tuple[]
+	for ti in 1:length(ex)
+		ind=indsin(ex[ti],item)
+		if !isempty(ind)
+			push!(inds,(ti,ind))
+		end
+	end
+	return inds
+end
+function indsin(array::Array,typ::Type)
 	ind=Int64[]
 	for it in 1:length(array)
 		if isa(array[it],typ)

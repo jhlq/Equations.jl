@@ -2,6 +2,10 @@
 eq=equation(:x)
 @test eq==Equation(:x,0)
 
+eq1=:a≖:b*:c;eq2=:c≖:d*:e;
+eq3=eq1&eq2
+@test eq3==(:a≖:b*:d*:e)
+
 #evaluate
 eq=equation(1/:x-sqrt(:x))
 @test evaluate(eq,[:x=>1])==(0,0)
