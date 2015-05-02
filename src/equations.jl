@@ -16,46 +16,12 @@ end
 equation(ex::EX)=Equation(ex,0,Any[])
 equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[])
 ==(eq1::Equation,eq2::Equation)=eq1.lhs==eq2.lhs&&eq1.rhs==eq2.rhs
-function (&)(eq1::Equation,eq2::Equation)
-	if isa(eq2.lhs,Symbol)
-		sym=eq2.lhs
-		inlhs=has(eq1.lhs,sym)
-		inrhs=has(eq1.rhs,sym)
-		if inlhs||inrhs
-			neq=deepcopy(eq1)
-			if inlhs
-				if isa(eq1.lhs,Symbol)
-					neq.lhs=eq2.rhs
-				elseif isa(eq1.lhs,Component)
-					warn("& for Component not implemented yet")
-				elseif isa(eq1.lhs,Expression)
-					inds=indsin(eq1.lhs,sym)
-					for tup in inds
-						i1,i2=tup
-						for i in i2
-							neq.lhs[i1][i]=eq2.rhs
-						end
-					end
-				end
-			end
-			if inrhs
-				if isa(eq1.rhs,Symbol)
-					neq.rhs=eq2.rhs
-				elseif isa(eq1.rhs,Component)
-					warn("& for Component not implemented yet")
-				elseif isa(eq1.rhs,Expression)
-					inds=indsin(eq1.rhs,sym)
-					for tup in inds
-						i1,i2=tup
-						for i in i2
-							neq.rhs[i1][i]=eq2.rhs
-						end
-					end
-				end
-			end
-			return simplify(neq)
-		end	
+(&)(eq1::Equation,eq2::Equation)=simplify(Equation(replace(eq1.lhs,[eq2.lhs=>eq2.rhs]),replace(eq1.rhs,[eq2.lhs=>eq2.rhs])))
+function (&)(eq::Equation,eqa::Array{Equation})
+	for teq in eqa
+		eq=eq&teq
 	end
+	return eq
 end
 function equivalent(eq1::Equation,eq2::Equation)
 	m=matches(eq2)

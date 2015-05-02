@@ -53,6 +53,9 @@ function _print(io,c)
 		print(io,'(')
 		print(io,c)
 		print(io,')')
+	elseif isa(c,SingleArg)
+		print(io,typeof(c),'(')
+		print(io,getarg(c),')')
 	else
 		print(io,c)
 	end
