@@ -19,11 +19,16 @@ function matches(d::Der,pat::Der)
 	end
 	return validated
 end
-function matches(ex::Expression,pat::Der)
-	termmds=Dict[]
+#=function matches(ex::Expression,pat::Der)
+	termmds=Array{Dict}[]
 	for term in ex
 		push!(termmds,matches(term,pat))
-	end		
+	end
+	#for md in term1,for md2 in term2... combine validate	
+	nterms=length(termmds)
+	ndics=Integer[]
+	for n in 1:nterms
+			
 #	mdx=matches(d.x,pat.x)
 #=	mddy=matches(d.dy,pat.dy)
 
@@ -40,7 +45,7 @@ function matches(ex::Expression,pat::Der)
 		end
 	end
 	return validated =#
-end
+end=#
 #=import Base.ctranspose
 function ctranspose(ex::Ex)
 	syms=findsyms(ex)

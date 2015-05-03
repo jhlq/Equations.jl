@@ -14,8 +14,14 @@ function ==(c1::Component, c2::Component)
 end
 abstract SingleArg <: Component
 ==(sa1::SingleArg,sa2::SingleArg)=isa(sa1,typeof(sa2))&&sa1.x==sa2.x 
+abstract NonAbelian <: Component
 function getargs(c::Component)
-	getfield(c,names(c)[n])
+	n=names(c)
+	ret=Any[]
+	for nam in n
+		push!(ret,getfield(c,nam))
+	end
+	return ret
 end
 function getarg(c::Component,n::Integer=1)
 	getfield(c,names(c)[n])
@@ -387,6 +393,9 @@ isless(c::Component,s::N)=false
 isless(s::N,c::Component)=true
 isless(s::Symbol,n::Number)=false
 isless(n::Number,s::Symbol)=true
+#isless(x::N,na::NonAbelian)=true
+#isless(na::NonAbelian,x::N)=false
+isless(na::NonAbelian,na2::NonAbelian)=false
 function isless(c1::Component,c2::Component)
 	xi1=complexity(c1)
 	xi2=complexity(c2)
@@ -686,3 +695,25 @@ function next(ex::Expression,state)
 	return (state[2][state[1]],(state[1]+1,state[2]))
 end
 done(ex::Expression,state)=state[1]>length(state[2])
+#=
+function matches(ex::Expression,pat::Component)
+	termmds=Array{Dict}[]
+	for term in ex
+		push!(termmds,matches(simplify(term),pat))
+	end
+	#for md in term1,for md2 in term2... combine validate	
+	nterms=length(termmds)
+	ndics=Integer[]
+	for n in 1:nterms
+		push!(ndics,length(termmds[n])
+	end
+	ninc=sum(ndics)-nterms
+	validated=Dict[]
+	for inc in 0:ninc
+		indices=ones(Integer,nterms)
+		tinc=inc
+		for ti in 1:nterms
+			indices[ti]+=tinc
+			
+			
+	=#
