@@ -695,25 +695,53 @@ function next(ex::Expression,state)
 	return (state[2][state[1]],(state[1]+1,state[2]))
 end
 done(ex::Expression,state)=state[1]>length(state[2])
-#=
 function matches(ex::Expression,pat::Component)
+	if length(ex)==1
+		return matches(ex[1],pat)
+	end
 	termmds=Array{Dict}[]
+	#println(ex,pat)
 	for term in ex
-		push!(termmds,matches(simplify(term),pat))
+		push!(termmds,matches(extract(term),pat))
 	end
 	#for md in term1,for md2 in term2... combine validate	
 	nterms=length(termmds)
 	ndics=Integer[]
 	for n in 1:nterms
-		push!(ndics,length(termmds[n])
+		push!(ndics,length(termmds[n]))
 	end
-	ninc=sum(ndics)-nterms
+	ninc=reduce(*,ndics)-1
 	validated=Dict[]
+	#println(termmds[1],' ',termmds[2],' ',termmds[3],' ',ndics,' ',ninc)
 	for inc in 0:ninc
 		indices=ones(Integer,nterms)
-		tinc=inc
+		#tinc=inc
+		tl=0
 		for ti in 1:nterms
+			#if tl>inc
+			#	break
+			#end
+			tinc=floor(inc/reduce(*,ndics[1:ti-1]))%ndics[ti]
+			tl+=ndics[ti]-1
 			indices[ti]+=tinc
-			
-			
-	=#
+		end
+		#println(indices)
+		if clash(termmds[1][indices[1]],termmds[2][indices[2]])
+			continue
+		end
+		comb=combine(termmds[1][indices[1]],termmds[2][indices[2]])
+		clashed=false
+		for tm in 3:length(termmds)
+			if clash(comb,termmds[tm][indices[tm]])
+				clashed=true
+				break
+			end
+			comb=combine(comb,termmds[tm][indices[tm]])
+		end
+		if clashed
+			continue
+		end
+		push!(validated,comb)
+	end
+	return validated
+end

@@ -24,19 +24,19 @@ function facalloc!(termremains::Array,patremains::Array,psremains::Array,dic::Di
 	if lps==2
 		for shift in 1:ldiff+1
 			tdic=deepcopy(dic)
-			tdic[patremains[psremains[1]]]=termremains[1:end-shift]
-			tdic[patremains[psremains[2]]]=termremains[end-shift+1:end]
+			tdic[patremains[psremains[1]]]=extract(termremains[1:end-shift])
+			tdic[patremains[psremains[2]]]=extract(termremains[end-shift+1:end])
 			push!(dica,tdic)
 		end
 	elseif lps==1
 		tdic=deepcopy(dic)
-		tdic[patremains[psremains[1]]]=termremains[1:end]
+		tdic[patremains[psremains[1]]]=extract(termremains[1:end])
 		push!(dica,tdic)
 	else
 		@assert lps>2
 		for shift in 0:ldiff
 			tdic=deepcopy(dic)
-			tdic[patremains[psremains[end]]]=termremains[end-shift:end]
+			tdic[patremains[psremains[end]]]=extract(termremains[end-shift:end])
 			npatremains=deleteat!(deepcopy(patremains),psremains[end])
 			pushallunique!(dica,facalloc!(termremains[1:end-1-shift],npatremains,psremains[1:end-1],tdic,dica))
 		end
