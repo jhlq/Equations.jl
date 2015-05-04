@@ -4,7 +4,7 @@ immutable ╱ <: SingleArg #\diagup
 	x
 end
 Div=╱
-/(x::X,ex::Ex)=Expression([x,Div(ex)])
+/(x::X,ex::Ex)=expression(Factor[x,Div(ex)])
 function /(ex::Expression,x::Ex)
 	ap=dcterms(ex)
 	for t in ap

@@ -13,6 +13,7 @@ function print(io::IO,eq::Equation)
 	print(io,eq.rhs)
 end
 ≖(a::EX,b::EX)=Equation(a,b)
++(eq::Equation,ex::EX)=eq.lhs+ex≖eq.rhs+ex #make macro
 equation(ex::EX)=Equation(ex,0,Any[])
 equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[])
 ==(eq1::Equation,eq2::Equation)=eq1.lhs==eq2.lhs&&eq1.rhs==eq2.rhs

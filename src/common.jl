@@ -54,10 +54,10 @@ type Expression
 end
 length(ex::Expression)=length(ex.terms)
 getindex(ex::Expression,i::Integer)=getindex(ex.terms,i)
-function _print(io,c)
+function print(io::IO,c::Union(Number,Component))
 	if isa(c,Number)&&(isa(c,Complex)||c<0)
 		print(io,'(')
-		print(io,c)
+		show(io,c)
 		print(io,')')
 	elseif isa(c,SingleArg)
 		print(io,typeof(c),'(')
@@ -73,7 +73,7 @@ function _print(io,c)
 		print(io,ca[end])
 		print(io,')')
 	else
-		print(io,c)
+		show(io,c)
 	end
 end
 function print(io::IO,ex::Expression)
@@ -83,21 +83,21 @@ function print(io::IO,ex::Expression)
 	else
 		for term in 1:length(ex.terms)-1
 			for fac in 1:length(ex.terms[term])-1
-				_print(io,ex.terms[term][fac])			
+				print(io,ex.terms[term][fac])			
 				print(io,' ')
 			end
-			_print(io,ex.terms[term][end])
+			print(io,ex.terms[term][end])
 			print(io,"+ ")
 		end
 		for fac in 1:length(ex.terms[end])-1
-			_print(io,ex.terms[end][fac])
+			print(io,ex.terms[end][fac])
 			print(io,' ')
 		end
-		_print(io,ex.terms[end][end])
+		print(io,ex.terms[end][end])
 	end
 	#print(io, ')')
 end
-print(io::IO,c::Component)=_print(io,c)
+#print(io::IO,c::Component)=print(io,c)
 #show(io::IO,s::Symbol)=print(io,s)
 N=Union(Number,Symbol)
 X=Union(Number,Symbol,Component)
@@ -370,7 +370,16 @@ function componify(ex::Expression,raw=false)
 		return expression(ap)
 	end
 end
-componify(a::Array)=length(a)==1?componify(extract(a)):componify(expression(a),true)
+function componify(a::Array)
+	if length(a)==1
+		return componify(extract(a))
+	end
+	a=deepcopy(a)
+	for i in 1:length(a)
+		a[i]=componify(a[i])
+	end
+	return a
+end
 componify(a::Array{Array})=componify(expression(a))
 componify(c::Component)=maketype(c,componify)
 componify(x::N)=x
@@ -450,7 +459,13 @@ function simplify(ex::Expression)
 	return ex 
 end
 #simplify!(ex::Expression)=begin;warn("simplify! is incomplete.");ex=simplify(ex);end #this doesn't really save memory...
-simplify(c::Component)=begin;deepcopy(c).x=simplify(getarg(c));c;end
+function simplify(c::Component)
+	args=deepcopy(getargs(c))
+	for arg in 1:length(args)
+		args[arg]=simplify(args[arg])
+	end
+	return typeof(c)(args...)
+end
 #simplify!(c::Component)=begin;c.x=simplify!(getarg(c));c;end
 simplify(x::N)=x
 simplify(x::N,a)=x
@@ -673,7 +688,7 @@ function replace(s::Symbol,symdic::Dict)
 	for tup in symdic
 		sym,val=tup
 		if s==sym
-			return simplify(expression(val))
+			return simplify(val)
 		end
 	end
 	return s
