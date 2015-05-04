@@ -131,6 +131,13 @@ function complexity(ex::Expression)
 	end
 	return tot
 end
+function complexity(a::Array)
+	tot=0
+	for item in a
+		tot+=complexity(item)
+	end
+	return tot
+end
 expression(a::Term)=Expression(Term[a])
 expression(a::Array{Term})=Expression(a)
 function expression(cs::Array{Components})
@@ -168,6 +175,13 @@ push!(x::X,a)=expression(Factor[x,a])
 -(ex1::Expression,ex2::Expression)=begin;ex=deepcopy(ex1);push!(ex,Factor[-1,ex2]);ex;end
 +(a::X,ex::Expression)=begin;ex=deepcopy(ex);insert!(ex.terms,1,Factor[a]);ex;end
 *(ex1::Expression,ex2::Expression)=expression(Factor[deepcopy(ex1),deepcopy(ex2)])
+function .*(ex::Ex,a::Array)
+	na=EX[]
+	for i in 1:length(a)
+		push!(na,ex*a[i])
+	end
+	return na
+end
 /(ex::Ex,n::Number)=*(1/n,ex)
 function *(a::X,ex::Expression)
 	ex=deepcopy(ex)
@@ -249,6 +263,14 @@ terms(ex::Expression)=ex.terms
 terms(x::X)=x#Term[Factor[x]]
 dcterms(ex::Expression)=terms(deepcopy(ex))
 dcterms(x::X)=x
+function has(a::Array,t::Type)
+	for it in a
+		if isa(it,t)
+			return true
+		end
+	end
+	return false
+end
 function has(term1,term2)
 	if length(term1)<length(term2)
 		return false
@@ -443,6 +465,7 @@ function simplify(ex::Expression)
 		if isa(ap,X)
 			return ap
 		end
+		#println(ap)
 		for term in 1:length(ap)
 			ap[term]=divify!(ap[term])
 			for fac in 1:length(ap[term])
@@ -545,7 +568,7 @@ function sumsym(ex::Expression)
 		tcs=Array(Ex,0)
 		coef=1
 		for term in ap[add]
-			term=sumsym(term)
+			#term=sumsym(term)
 			if isa(term,Ex)
 				push!(tcs,term)
 			elseif isa(term,Number)
@@ -571,7 +594,7 @@ function sumsym(ex::Expression)
 end
 sumsym(c::Component)=maketype(c,sumsym)
 sumsym(x::N)=x
-sumsym(term::Array)=sumsym(Expression(term)) #reverse this...
+#sumsym(term::Term)=sumsym(Expression(term)) #there are no sums in a term...
 function findsyms(term::Array)
 	syms=Dict()
 	for fac in 1:length(term)
@@ -683,7 +706,21 @@ end
 replace(ex::Expression,symdic::Dict)=replace!(deepcopy(ex),symdic)
 #replace!(term::Array,symdic::Dict)=replace!(Expression(term),symdic).components
 #replace(term::Array,symdic::Dict)=replace(Expression(term),symdic).components
-replace(c::Component,symdic::Dict)=maketype(c,x->replace(x,symdic))
+#replace(c::Component,symdic::Dict)=maketype(c,x->replace(x,symdic))
+function replace(c::Component,symdic::Dict)
+	args=getargs(c)
+	for arg in 1:length(args)
+		args[arg]=replace(args[arg],symdic)
+	end
+	return typeof(c)(args...)
+end
+function replace(a::Array,symdic::Dict)
+	a=deepcopy(a)
+	for i in 1:length(a)
+		a[i]=replace(a[i],symdic)
+	end
+	return a
+end
 function replace(s::Symbol,symdic::Dict)
 	for tup in symdic
 		sym,val=tup
