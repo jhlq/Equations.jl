@@ -250,6 +250,23 @@ function indsin(ex::Expression,item)
 	end
 	return inds
 end
+function indsin(c::Component,item)
+	inds=Any[]
+	args=getargs(c)
+	for ai in 1:length(args)
+		if args[ai]==item||isa(args[ai],item)
+			push!(inds,ai)
+			continue
+		elseif isa(args[ai],N)
+			continue
+		end
+		ind=indsin(args[ai],item)
+		if !isempty(ind)
+			push!(inds,(ai,ind))
+		end
+	end
+	return inds
+end
 function indsin(array::Array,typ::Type)
 	ind=Int64[]
 	for it in 1:length(array)
@@ -271,7 +288,15 @@ function has(a::Array,t::Type)
 	end
 	return false
 end
-function has(term1,term2)
+function has(a::Array,t::EX)
+	for it in a
+		if it==t
+			return true
+		end
+	end
+	return false
+end
+function has(term1::Term,term2::Term)
 	if length(term1)<length(term2)
 		return false
 	end
@@ -469,6 +494,7 @@ function simplify(ex::Expression)
 		for term in 1:length(ap)
 			ap[term]=divify!(ap[term])
 			for fac in 1:length(ap[term])
+				#println(ap[term][fac])
 				ap[term][fac]=simplify(ap[term][fac])
 			end
 			sort!(ap[term])

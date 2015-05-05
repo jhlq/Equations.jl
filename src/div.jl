@@ -15,6 +15,7 @@ end
 
 function divify!(term::Array)
 	dis=indsin(term,Div)
+	term=deepcopy(term)
 	remove=Int64[]
 	for i in dis
 		if term[i].x==1
@@ -25,14 +26,30 @@ function divify!(term::Array)
 			ap=dcterms(term[i].x)
 			if length(ap)==1
 				aprem=Integer[]
+				termrem=Integer[]
 				for fac in 1:length(ap[1])
 					if isa(ap[1][fac],Div)
 						push!(term,ap[1][fac].x)
 						push!(aprem,fac)
+					elseif has(term,ap[1][fac])
+						ti=indsin(term,ap[1][fac])
+						#println(ti,term,ap[1][fac])
+						fi=0
+						for tfi in ti
+							if !in(tfi,termrem)
+								fi=tfi
+								break
+							end
+						end
+						if fi!=0
+							push!(termrem,fi)
+							push!(aprem,fac)
+						end
 					end
 				end
 				deleteat!(ap[1],aprem)
 				term[i]=Div(expression(ap))
+				deleteat!(term,sort!(termrem))
 			end
 		else
 			invinds=indsin(term,term[i].x)
