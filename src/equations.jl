@@ -13,7 +13,8 @@ function print(io::IO,eq::Equation)
 	print(io,eq.rhs)
 end
 ≖(a::EX,b::EX)=Equation(a,b)
-+(eq::Equation,ex::EX)=eq.lhs+ex≖eq.rhs+ex #make macro
++(eq::Equation,ex::EX)=simplify(eq.lhs+ex≖eq.rhs+ex) #make macro
+/(eq::Equation,ex::EX)=simplify(eq.lhs/ex≖eq.rhs/ex)
 equation(ex::EX)=Equation(ex,0,Any[])
 equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[])
 ==(eq1::Equation,eq2::Equation)=eq1.lhs==eq2.lhs&&eq1.rhs==eq2.rhs
@@ -48,7 +49,14 @@ function equivalent(eq1::Equation,eq2::Equation)
 	return false
 end
 simplify!(eq::Equation)=begin;eq.lhs=simplify!(eq.lhs);eq.rhs=simplify!(eq.rhs);eq;end #the ! functions are not complete
-simplify(eq::Equation)=Equation(simplify(eq.lhs),simplify(eq.rhs))
+function simplify(eq::Equation)
+	lhs,rhs=simplify(eq.lhs),simplify(eq.rhs)
+	if isa(rhs,Symbol)&&!isa(lhs,Symbol)
+		return Equation(rhs,lhs)
+	else
+		return Equation(lhs,rhs)
+	end
+end
 function simplify!(eqa::Array{Equation})
 	for eq in 1:length(eqa)
 		eqa[eq]=simplify(eqa[eq])
@@ -184,6 +192,7 @@ include("div.jl")
 include("sqrt.jl")
 include("pow.jl")
 include("der.jl")
+include("vec.jl")
 function evaluate(eq::Equation,symdic::Dict)
 	for key in keys(symdic)
 		if symdic[key]==0&&key∈eq.divisions
