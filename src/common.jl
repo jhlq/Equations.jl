@@ -311,10 +311,20 @@ function has(term1::Term,term2::Term)
 	end
 	return false
 end
-function has(ex::Expression,x::Symbol)
+function has(ex::Expression,x::EX)
 	for term in ex
 		for c in term
 			if c==x || (isa(c,Expression)&&has(c,x)) || (isa(c,Component)&&has(c,x))
+				return true
+			end
+		end
+	end
+	return false
+end
+function has(ex::Expression,t::Type)
+	for term in ex
+		for c in term
+			if isa(c,t) || (isa(c,Expression)&&has(c,t)) || (isa(c,Component)&&has(c,t))
 				return true
 			end
 		end
