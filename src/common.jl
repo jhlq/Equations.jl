@@ -76,6 +76,15 @@ function print(io::IO,c::Union(Number,Component))
 		show(io,c)
 	end
 end
+function preprint(io::IO,fac)
+	if isa(fac,Expression)
+		print(io,'(')
+		print(io,fac)
+		print(io,')')
+	else
+		print(io,fac)
+	end
+end
 function print(io::IO,ex::Expression)
 	#print(io, "𝐸(")
 	if isempty(ex.terms)
@@ -83,17 +92,17 @@ function print(io::IO,ex::Expression)
 	else
 		for term in 1:length(ex.terms)-1
 			for fac in 1:length(ex.terms[term])-1
-				print(io,ex.terms[term][fac])			
+				preprint(io,ex.terms[term][fac])			
 				print(io,' ')
 			end
-			print(io,ex.terms[term][end])
-			print(io,"+ ")
+			preprint(io,ex.terms[term][end])
+			print(io," + ")
 		end
 		for fac in 1:length(ex.terms[end])-1
-			print(io,ex.terms[end][fac])
+			preprint(io,ex.terms[end][fac])
 			print(io,' ')
 		end
-		print(io,ex.terms[end][end])
+		preprint(io,ex.terms[end][end])
 	end
 	#print(io, ')')
 end

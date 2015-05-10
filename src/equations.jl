@@ -26,9 +26,12 @@ function (&)(eq::Equation,eqa::Array{Equation})
 	return eq
 end
 function (&)(ex::Ex,eq::Equation)
+	if isa(eq.lhs,Symbol)
+		return replace(ex,[eq.lhs=>eq.rhs])
+	end
 	m=matches(ex,eq)
 	if !isempty(m)
-		return m[1]
+		return m[1].rhs
 	else 
 		return ex
 	end
