@@ -14,6 +14,7 @@ function print(io::IO,eq::Equation)
 end
 ≖(a::EX,b::EX)=Equation(a,b)
 +(eq::Equation,ex::EX)=simplify(eq.lhs+ex≖eq.rhs+ex) #make macro
+*(eq::Equation,ex::EX)=simplify(eq.lhs*ex≖eq.rhs*ex)
 /(eq::Equation,ex::EX)=simplify(eq.lhs/ex≖eq.rhs/ex)
 equation(ex::EX)=Equation(ex,0,Any[])
 equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[])
@@ -54,7 +55,7 @@ end
 simplify!(eq::Equation)=begin;eq.lhs=simplify!(eq.lhs);eq.rhs=simplify!(eq.rhs);eq;end #the ! functions are not complete
 function simplify(eq::Equation)
 	lhs,rhs=simplify(eq.lhs),simplify(eq.rhs)
-	if isa(rhs,Symbol)&&!isa(lhs,Symbol)
+	if (isa(rhs,Symbol)&&!isa(lhs,Symbol))||(isa(lhs,Number)&&!isa(rhs,Number))
 		return Equation(rhs,lhs)
 	else
 		return Equation(lhs,rhs)
