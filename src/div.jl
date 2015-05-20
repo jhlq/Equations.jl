@@ -49,7 +49,8 @@ function divify!(term::Array)
 				end
 				deleteat!(ap[1],aprem)
 				term[i]=Div(expression(ap))
-				deleteat!(term,sort!(termrem))
+				#deleteat!(term,sort!(termrem))
+				pushallunique!(remove,termrem)
 			end
 		else
 			invinds=indsin(term,term[i].x)
