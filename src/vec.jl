@@ -79,7 +79,7 @@ end
 print(io::IO,c::Dot)=print(io,c.x,'⋅',c.y)
 function dot(v1::Vec,v2::Vec)
 	if isa(v1.v,Array)&&isa(v2.v,Array)&&length(v1.v)==length(v2.v)
-		ex=v1.v[1]*v2.v[1]
+		ex=Expression(Term[Factor[v1.v[1]*v2.v[1]]])
 		for t in 2:length(v1.v)
 			push!(ex,Factor[v1.v[t],v2.v[t]])
 		end
@@ -88,7 +88,7 @@ function dot(v1::Vec,v2::Vec)
 	return Dot(v1,v2)
 end
 function simplify(d::Dot)
-	if !isempty(methods(dot,typeof(d.x),typeof(d.y)))
+	if !isempty(methods(dot,(typeof(d.x),typeof(d.y))))
 		return dot(d.x,d.y)
 	end
 	return d

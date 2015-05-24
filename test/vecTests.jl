@@ -5,3 +5,6 @@ B=:B≖0.5*Vec(e3)
 c=:c≖299792458
 vs=v&[A,B,c]
 @test vs.rhs==4.49688687e8*Vec(e1)
+
+v1=Vec([1,2,3]);v2=Vec([3,2,1]);
+@test dot(v1,v2)==10
