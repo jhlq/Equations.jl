@@ -13,6 +13,29 @@ function print(io::IO,eq::Equation)
 	print(io,eq.rhs)
 end
 ≖(a::EX,b::EX)=Equation(a,b)
+type EquationChain
+	expressions::Vector
+end
+EquationChain(a...)=EquationChain([a...])
+start(eqc::EquationChain)=(1,eqc.expressions)
+function next(eqc::EquationChain,state)
+	return (state[2][state[1]],(state[1]+1,state[2]))
+end
+done(eqc::EquationChain,state)=state[1]>length(state[2])
+getindex(eqc::EquationChain,i::Integer)=getindex(eqc.expressions,i)
+setindex!(eqc::EquationChain,a)=setindex!(eqc.expressions,a)
+length(eqc::EquationChain)=length(eqc.expressions)
+push!(eqc::EquationChain,a)=push!(eqc.expressions,a)
+function print(io::IO,eqc::EquationChain)
+	for exi in 1:length(eqc)-1
+		print(io,eqc[exi])
+		print(io," ≖ ")
+	end
+	print(io,eqc[length(eqc)])
+end
+≖(a::EX,b::Equation)=EquationChain(a,b.lhs,b.rhs)
+≖(b::Equation,a::EX)=EquationChain(b.lhs,b.rhs,a)
+≖(eqc::EquationChain,a)=push!(eqc,a)
 +(eq::Equation,ex::EX)=simplify(eq.lhs+ex≖eq.rhs+ex) #make macro
 *(eq::Equation,ex::EX)=simplify(eq.lhs*ex≖eq.rhs*ex)
 /(eq::Equation,ex::EX)=simplify(eq.lhs/ex≖eq.rhs/ex)
