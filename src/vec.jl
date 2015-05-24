@@ -1,5 +1,15 @@
+import Base: norm, dot
+
 immutable Vec <: NonAbelian
 	v
+end
+Vec(a...)=Vec([a...])
+function .*(v::Vec,a::Factor)
+	nv=Any[]
+	for val in v.v
+		push!(nv,val*a)
+	end
+	return Vec(nv)
 end
 immutable Cross <: Component
 	x
@@ -17,7 +27,7 @@ function getvec(ex::Expression)
 	@assert length(ex)==1
 	ind=indsin(ex,Vec)
 	ex=deepcopy(ex)
-				#implement support for multiple vectors
+				#implement support for multiple vectors/terms
 	vec=ex[1][ind[1][2][1]]
 	deleteat!(ex[1],ind[1][2][1])
 	return (extract(ex),vec)
@@ -43,7 +53,6 @@ print(io::IO,c::Cross)=print(io,c.x,'×',c.y)
 type Norm <: Component
 	x
 end
-import Base: norm
 norm(ex::Ex)=Norm(ex)
 function norm(vec::Vec)
 	if isa(vec.v,Vector)
@@ -62,4 +71,25 @@ function simplify(n::Norm)
 		return ex*norm(v)
 	end
 	norm(n.x)
+end
+type Dot <: Component
+	x
+	y
+end
+print(io::IO,c::Dot)=print(io,c.x,'⋅',c.y)
+function dot(v1::Vec,v2::Vec)
+	if isa(v1.v,Array)&&isa(v2.v,Array)&&length(v1.v)==length(v2.v)
+		ex=v1.v[1]*v2.v[1]
+		for t in 2:length(v1.v)
+			push!(ex,Factor[v1.v[t],v2.v[t]])
+		end
+		return simplify(ex)
+	end
+	return Dot(v1,v2)
+end
+function simplify(d::Dot)
+	if !isempty(methods(dot,typeof(d.x),typeof(d.y)))
+		return dot(d.x,d.y)
+	end
+	return d
 end

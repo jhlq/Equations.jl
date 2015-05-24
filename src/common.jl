@@ -15,6 +15,7 @@ end
 abstract SingleArg <: Component
 ==(sa1::SingleArg,sa2::SingleArg)=isa(sa1,typeof(sa2))&&sa1.x==sa2.x 
 abstract NonAbelian <: Component
+abstract Operator <: Component
 function getargs(c::Component)
 	n=names(c)
 	ret=Any[]
@@ -475,7 +476,12 @@ isless(s::Complex,n::Real)=false
 #isless(x::N,na::NonAbelian)=true
 #isless(na::NonAbelian,x::N)=false
 isless(na::NonAbelian,na2::NonAbelian)=false
+isless(a::Symbol,op::Operator)=false
+isless(op::Operator,a::Symbol)=false
 function isless(c1::Component,c2::Component)
+	if isa(c1,Operator)||isa(c2,Operator)
+		return false
+	end
 	xi1=complexity(c1)
 	xi2=complexity(c2)
 	xi1==xi2?isless(string(c1),string(c2)):xi1<xi2
