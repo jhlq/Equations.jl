@@ -1,9 +1,11 @@
-import Base: norm, dot
+import Base: norm, dot, cross
 
 immutable Vec <: NonAbelian
 	v
 end
 Vec(a...)=Vec([a...])
+@delegate Vec.v [getindex, setindex!, start, next, done, length]
+#getindex(v::Vec,i::Integer)=getindex(v.v,i)
 function .*(v::Vec,a::Factor)
 	nv=Any[]
 	for val in v.v
@@ -31,6 +33,12 @@ function getvec(ex::Expression)
 	vec=ex[1][ind[1][2][1]]
 	deleteat!(ex[1],ind[1][2][1])
 	return (extract(ex),vec)
+end
+function cross(v1::Vec,v2::Vec)
+	if isa(v1.v,Vector)&&isa(v2.v,Vector)
+		return Vec(cross(v1.v,v2.v))
+	end
+	return Cross(v1,v2)
 end
 function simplify(c::Cross)
 	if (isa(c.x,Vec)&&isa(c.y,Vec)&&isa(c.x.v,Vector)&&isa(c.y.v,Vector))

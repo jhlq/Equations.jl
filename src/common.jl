@@ -119,6 +119,23 @@ typealias Term Array{Factor,1}
 #convert(::Type{Term},ex::EX)=Factor[ex]
 #convert(::Type{Array{Factor,1}}, ex::EX)=Factor[ex]
 convert(::Type{Array{Array{Factor,1},1}},a::Array{Any,1})=Term[a]
+
+macro delegate(source, targets) # by JMW
+    typename = esc(source.args[1])
+    fieldname = esc(Expr(:quote, source.args[2].args[1]))
+    funcnames = targets.args
+    n = length(funcnames)
+    fdefs = Array(Any, n)
+    for i in 1:n
+        funcname = esc(funcnames[i])
+        fdefs[i] = quote
+                     ($funcname)(a::($typename), args...) =
+                       ($funcname)(a.($fieldname), args...)
+                   end
+    end
+    return Expr(:block, fdefs...)
+end
+
 complexity(n::N)=1
 function complexity(c::Component)
 	tot=0
