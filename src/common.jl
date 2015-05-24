@@ -666,6 +666,13 @@ function sumsym(ex::Expression)
 end
 sumsym(c::Component)=maketype(c,sumsym)
 sumsym(x::N)=x
+function sumsym!(a::Array)
+	for i in 1:length(a)
+		a[i]=sumsym(a[i])
+	end
+	return a
+end
+sumsym(a::Array)=sumsym!(deepcopy(a))
 #sumsym(term::Term)=sumsym(Expression(term)) #there are no sums in a term...
 function findsyms(term::Array)
 	syms=Dict()

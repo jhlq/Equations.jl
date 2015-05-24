@@ -7,6 +7,21 @@ type Equation
 	divisions
 end
 Equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[]) #or set?
+function tosym(expr)
+	if isa(expr,Symbol)
+		return QuoteNode(:($expr))
+	elseif isa(expr,Expr)
+		for s in 2:length(expr.args)
+			expr.args[s]=tosym(expr.args[s])
+		end
+	end
+	return expr
+end
+macro equ(eq)
+	neq=Expr(:comparison)
+	push!(neq.args,tosym(eq.args[1]),≖,tosym(eq.args[2]))
+	neq
+end
 function print(io::IO,eq::Equation)
 	print(io,eq.lhs)
 	print(io," ≖ ")

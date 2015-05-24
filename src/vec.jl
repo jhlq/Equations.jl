@@ -1,11 +1,10 @@
 import Base: norm, dot, cross
 
-immutable Vec <: NonAbelian
+type Vec <: NonAbelian
 	v
 end
 Vec(a...)=Vec([a...])
 @delegate Vec.v [getindex, setindex!, start, next, done, length]
-#getindex(v::Vec,i::Integer)=getindex(v.v,i)
 function .*(v::Vec,a::Factor)
 	nv=Any[]
 	for val in v.v
