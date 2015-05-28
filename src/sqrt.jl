@@ -3,7 +3,7 @@ immutable Sqrt <: SingleArg #using \sqrt causes problems, maybe (√) works?
 	x
 end
 sqrt(a)=Sqrt(a)
-
+sqrt(eq::Equation)=Equation(simplify(sqrt(eq.lhs)),simplify(sqrt(eq.rhs)))
 function simplify(sq::Sqrt)
 	sq=Sqrt(simplify(sq.x))
 	if isa(sq.x,Number)
@@ -20,7 +20,7 @@ function simplify(sq::Sqrt)
 			if iseven(nfacs)
 				for p in permutations(facs)
 					if p[1:nfacs/2]==p[nfacs/2+1:nfacs]
-						return simplify(Expression(p[1:nfacs/2]))
+						return simplify(expression(p[1:nfacs/2]))
 					end
 				end
 			end
