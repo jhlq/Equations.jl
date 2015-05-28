@@ -4,7 +4,7 @@ type Der <: Component
 end
 #Der(Pow(:a,:x),:x)≖log(:a)*Pow(:a,:x),
 getargs(d::Der)=[d.x,d.dy]
-derrelations=Equation[Der(:a,:x)≖0,Der(:a*:x,:x)≖:a,Der(Pow(:x,:n),:x)≖:n*Pow(:x,:n-1),Der(Sqrt(:x),:x)≖0.5*Pow(:x,-0.5)]
+relations["Der"]=Equation[Der(:a,:x)≖0,Der(:a*:x,:x)≖:a,Der(Pow(:x,:n),:x)≖:n*Pow(:x,:n-1),Der(Sqrt(:x),:x)≖0.5*Pow(:x,-0.5)]
 function matches(d::Der,pat::Der)
 	mdx=matches(d.x,pat.x)
 	mddy=matches(d.dy,pat.dy)
@@ -12,6 +12,13 @@ function matches(d::Der,pat::Der)
 	for md in mdx
 		for mdy in mddy
 			md,mdy=simplify(md),simplify(mdy)
+			con=false
+			for key in keys(md)
+				if key!=d.dy&&has(md[key],d.dy)
+					con=true
+				end
+			end
+			if con;continue;end
 			if !clash(md,mdy)
 				push!(validated,combine(md,mdy))
 			end

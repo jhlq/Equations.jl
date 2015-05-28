@@ -1,3 +1,33 @@
+type Named <: Component
+	sym::Symbol
+end
+
+relations=Dict{String,Vector{Equation}}()
+
+function validated(related::Array,pat::Array)
+	tmd=Dict[]
+	valid=Dict[]
+	for t in 1:length(related)
+		ttmd=Dict[]
+		pushallunique!(ttmd,matches(related[t],pat[t]))
+		if isempty(tmd)
+			for ttd in ttmd
+				push!(valid,ttd)
+			end
+		else
+			for td in tmd
+				for ttd in ttmd
+					if !clash(td,ttd)
+						push!(valid,combine(td,ttd))
+					end
+				end
+			end
+		end
+		tmd=valid
+		valid=Dict[]
+	end
+	return tmd
+end
 function validfilter(c1,c2,mda::Array{Dict})
 	filtered=Dict[]
 	for md in mda
@@ -8,6 +38,7 @@ function validfilter(c1,c2,mda::Array{Dict})
 	return filtered
 end
 function matches(c1::Component,c2::Component) #implement new for custom types
+	#=
 	mda=Dict[]
 	if isa(getarg(c2),Symbol)
 		tmd=Dict()
@@ -16,7 +47,9 @@ function matches(c1::Component,c2::Component) #implement new for custom types
 	elseif isa(getarg(c2),Expression)
 		pushallunique!(mda,matches(getarg(c1),getarg(c2)))
 	end
-	return validfilter(c1,c2,mda)
+	=#
+	args1,args2=getargs(c1),getargs(c2)
+	return validfilter(c1,c2,validated(args1,args2))
 end
 function facalloc!(termremains::Array,patremains::Array,psremains::Array,dic::Dict,dica::Array{Dict})
 	lps,lpat,lterm=length(psremains),length(patremains),length(termremains)
@@ -117,32 +150,12 @@ function matches(ex::Expression,pattern::Expression)
 	if length(apex)==length(apat)==1
 		pushallunique!(md,matches(apex[1],apat[1]))
 	else
-		tmd=Dict[]
-		validated=Dict[]
-		for t in 1:length(apex)
-			ttmd=Dict[]
-			pushallunique!(ttmd,matches(apex[t],apat[t]))
-			if isempty(tmd)
-				for ttd in ttmd
-					push!(validated,ttd)
-				end
-			else
-				for td in tmd
-					for ttd in ttmd
-						if !clash(td,ttd)
-							push!(validated,combine(td,ttd))
-						end
-					end
-				end
-			end
-			tmd=validated
-			validated=Dict[]
-		end
+		tmd=validated(apex,apat)
 		pushallunique!(md,tmd)
 	end		
 	return md		
 end
-function matches(n::N,pat::Symbol)
+function matches(n::EX,pat::Symbol)
 	md=Dict[]
 	push!(md,[pat=>n])
 	return md

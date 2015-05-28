@@ -8,3 +8,8 @@ m=matches(ex,eq)
 ex=Der(3*:x,:y)
 md=matches(ex,eq.lhs)
 @test isempty(md)
+
+c1=Der(3,:x);pat1=Equation(Der(:a,:x),0)
+@test c1&pat1==0
+c2=Der(3*:x,:x);pat2=Der(:a*:x,:x)≖:a
+@test c2&pat2==3

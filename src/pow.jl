@@ -56,10 +56,8 @@ function findpows(ex::Expression)
 	end
 	return pows
 end
-#simplify!(p::Pow)=begin;p.x=simplify(p.x);p.y=simplify(p.y);p;end
-simplify(p::Pow)=Pow(simplify(p.x),simplify(p.y))
-function simplify(term::Array,t::Type{Pow})
-	sort!(term)
+function matches(term::Term,t::Type{Pow})
+	term=sort(term)
 	pows=findpows(term)
 	potpows=Term[]
 	for potpow in pows
@@ -85,9 +83,40 @@ function simplify(term::Array,t::Type{Pow})
 		end
 		push!(potpows,nterm)
 	end
-	return sort(potpows)[1]
+	return sort(potpows)
+end
+function matches(ex::Expression,t::Type{Pow})
+	#major todo: contract several terms
+	terms=Array{Term}[]
+	for term in ex
+		push!(terms,matches(term,t))
+	end
+	#m=Any[] #combine these here or let user decide?
+	return terms
+end
+function matches(term::Term,p::Pow)
+	m=matches(term,Pow)
+	if !isempty(m)
+		m=m[1]
+	end
+	if length(m)==1
+		dics=matches(m[1],p)
+		return dics
+#		if !isempty(dic)
+#			return replace(p,dic[1])
+#		end
+	end
+	return Dict[]
+end
+	
+#simplify!(p::Pow)=begin;p.x=simplify(p.x);p.y=simplify(p.y);p;end
+simplify(p::Pow)=Pow(simplify(p.x),simplify(p.y))
+function simplify(term::Array,t::Type{Pow})
+	potpows=matches(term,t)
+	return potpows[1]
 end
 #simplify(term::Array,t::Type{Pow})=simplify!(deepcopy(term),t)
+
 function simplify(ex::Expression,t::Type{Pow})
 	ex=componify(ex)
 	ap=terms(ex)
