@@ -55,6 +55,34 @@ type Expression
 end
 length(ex::Expression)=length(ex.terms)
 getindex(ex::Expression,i::Integer)=getindex(ex.terms,i)
+function getindex(ex::Expression,t::Array)
+	p=ex[t[1]]
+	for i in 2:length(t)-1
+		p=p[t[i]]
+	end
+	return p[t[end]]
+end
+function setindex!(ex::Expression,a,t::Array)
+	p=ex[t[1]]
+	for i in 2:length(t)-1
+		p=p[t[i]]
+	end
+	p[t[end]]=a
+end
+function getindex(c::Component,t::Array)
+	p=getarg(c,t[1])
+	for i in 2:length(t)-1
+		p=p[t[i]]
+	end
+	return p[t[end]]
+end
+function setindex!(c::Component,a,t::Array)
+	p=getarg(c,t[1])
+	for i in 2:length(t)-1
+		p=p[t[i]]
+	end
+	p[t[end]]=a
+end
 function print(io::IO,c::Union(Number,Component))
 	if isa(c,Number)&&(isa(c,Complex)||c<0)
 		print(io,'(')
@@ -259,6 +287,47 @@ function indin(array,typ::Type)
 	end
 	return 0
 end
+#=function indin(ex::Expression,typ::Type)
+	for ti in 1:length(ex)
+		ind=indin(ex[ti],item)
+		if ind!=0
+			return ind #needs to return recursive tuple
+		end
+	end
+	return 0
+end=#
+function expandindices(inds::Tuple,ninds::Array{Array{Integer}}=Array{Integer}[],nind::Array{Integer}=Integer[])
+	for l in 1:length(inds)
+		if isa(inds[l],Integer)
+			push!(nind,inds[l])
+		elseif isa(inds[l],Array)
+			for a in inds[l]
+				if isa(a,Tuple)
+					tia=expandindices(a)#,ninds,nind)
+					for ti in deepcopy(tia) 
+						nnind=deepcopy(nind)
+						pushall!(nnind,ti)
+						push!(ninds,nnind)
+					end
+				else
+					nnind=deepcopy(nind)
+					push!(nnind,a)
+					push!(ninds,nnind)
+				end				
+			end
+		else
+			println(inds)
+		end		
+	end
+	return ninds
+end
+function expandindices(a::Array)
+	na=Array{Integer}[]
+	for i in 1:length(a)
+		pushall!(na,expandindices(a[i]))
+	end
+	return na
+end		
 function indsin(array::Array,item)
 	ind=Int64[]
 	for it in 1:length(array)
@@ -269,6 +338,9 @@ function indsin(array::Array,item)
 	return ind
 end
 function indsin(ex::Expression,item)
+	if simplify(ex)<ex
+		warn("Please call simplify on $ex")
+	end
 	inds=Tuple[]
 	for ti in 1:length(ex)
 		ind=indsin(ex[ti],item)
@@ -359,8 +431,24 @@ function has(ex::Expression,t::Type)
 	end
 	return false
 end
-has(c::Component,x::Symbol)=has(getarg(c),x)
+function has(c::Component,x::Symbol)
+	for a in getargs(c)
+		if has(a,x)
+			return true
+		end
+	end
+	return false
+end
+function has(c::Component,x::Type)
+	for a in getargs(c)
+		if has(a,x)
+			return true
+		end
+	end
+	return false
+end
 has(n::N,x::Symbol)=n==x
+has(::Symbol, ::Type)=false
 function maketype(c::Component,fun) #rewrite with vararg
 	l=length(names(c))
 	if l==1
@@ -780,6 +868,9 @@ function replace!(ex::Expression,symdic::Dict)
 			end
 		end
 	end 
+	if isa(ex,Array)
+		ex=extract(expression(ex))
+	end
 	return componify(ex)
 end
 replace(ex::Expression,symdic::Dict)=replace!(deepcopy(ex),symdic)
@@ -826,6 +917,12 @@ function next(ex::Expression,state)
 	return (state[2][state[1]],(state[1]+1,state[2]))
 end
 done(ex::Expression,state)=state[1]>length(state[2])
+#=function matches(t::Term,pat::Component)
+	if length(t)==1&&isa(t[1],typeof(pat))
+		return matches(t[1],pat)
+	end
+	return Dict[]
+end=#
 function matches(ex::Expression,pat::Component)
 	if length(ex)==1
 		return matches(ex[1],pat)
@@ -876,3 +973,9 @@ function matches(ex::Expression,pat::Component)
 	end
 	return validated
 end
+function pushall!(a::Array,b::Array)
+	for c in b
+		push!(a,c)
+	end
+end
+pushall!(a::Array,b)=push!(a,b)

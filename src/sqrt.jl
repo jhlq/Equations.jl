@@ -38,3 +38,4 @@ function matches(eq::Equation,t::Type{Sqrt})
 	push!(m,Equation(Sqrt(lhs),-Sqrt(rhs)))
 	return simplify!(m)
 end
+matches(::Term,::Sqrt)=[]

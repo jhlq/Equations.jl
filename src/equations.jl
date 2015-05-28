@@ -28,6 +28,8 @@ function print(io::IO,eq::Equation)
 	print(io,eq.rhs)
 end
 ≖(a::EX,b::EX)=Equation(a,b)
+complexity(eq::Equation)=complexity(eq.lhs)+complexity(eq.rhs)
+isless(eq1::Equation,eq2::Equation)=complexity(eq1)<complexity(eq2)
 type EquationChain
 	expressions::Vector
 end
@@ -70,7 +72,7 @@ function (&)(ex::Ex,eq::Equation)
 	end
 	m=matches(ex,eq)
 	if !isempty(m)
-		return simplify(m[1].rhs)
+		return simplify(m[1])
 	else 
 		return ex
 	end
@@ -93,11 +95,11 @@ end
 simplify!(eq::Equation)=begin;eq.lhs=simplify!(eq.lhs);eq.rhs=simplify!(eq.rhs);eq;end #the ! functions are not complete
 function simplify(eq::Equation)
 	lhs,rhs=simplify(eq.lhs),simplify(eq.rhs)
-	if (isa(rhs,Symbol)&&!isa(lhs,Symbol))||(isa(lhs,Number)&&!isa(rhs,Number))
-		return Equation(rhs,lhs)
-	else
+#	if (isa(rhs,Symbol)&&!isa(lhs,Symbol))||(isa(lhs,Number)&&!isa(rhs,Number))
+#		return Equation(rhs,lhs)
+#	else
 		return Equation(lhs,rhs)
-	end
+#	end
 end
 function simplify!(eqa::Array{Equation})
 	for eq in 1:length(eqa)

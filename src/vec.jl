@@ -4,7 +4,7 @@ type Vec <: NonAbelian
 	v
 end
 Vec(a...)=Vec([a...])
-@delegate Vec.v [getindex, setindex!, start, next, done, length]
+@delegate Vec.v [#=getindex, setindex!,=# start, next, done, length]
 function .*(v::Vec,a::Factor)
 	nv=Any[]
 	for val in v.v

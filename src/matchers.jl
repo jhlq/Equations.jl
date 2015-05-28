@@ -1,3 +1,6 @@
+type Oneable <: Component
+	x
+end
 type Named <: Component
 	sym::Symbol
 end
@@ -57,19 +60,19 @@ function facalloc!(termremains::Array,patremains::Array,psremains::Array,dic::Di
 	if lps==2
 		for shift in 1:ldiff+1
 			tdic=deepcopy(dic)
-			tdic[patremains[psremains[1]]]=extract(termremains[1:end-shift])
-			tdic[patremains[psremains[2]]]=extract(termremains[end-shift+1:end])
+			tdic[patremains[psremains[1]]]=extract(expression(termremains[1:end-shift]))
+			tdic[patremains[psremains[2]]]=extract(expression(termremains[end-shift+1:end]))
 			push!(dica,tdic)
 		end
 	elseif lps==1
 		tdic=deepcopy(dic)
-		tdic[patremains[psremains[1]]]=extract(termremains[1:end])
+		tdic[patremains[psremains[1]]]=extract(expression(termremains[1:end]))
 		push!(dica,tdic)
 	else
 		@assert lps>2
 		for shift in 0:ldiff
 			tdic=deepcopy(dic)
-			tdic[patremains[psremains[end]]]=extract(termremains[end-shift:end])
+			tdic[patremains[psremains[end]]]=extract(expression(termremains[end-shift:end]))
 			npatremains=deleteat!(deepcopy(patremains),psremains[end])
 			pushallunique!(dica,facalloc!(termremains[1:end-1-shift],npatremains,psremains[1:end-1],tdic,dica))
 		end
@@ -160,13 +163,45 @@ function matches(n::EX,pat::Symbol)
 	push!(md,[pat=>n])
 	return md
 end
+matches(::Symbol, ::Expression)=[]
+function stageoneables(pat)
+	ois=expandindices(indsin(pat.lhs,Oneable))
+	pat=deepcopy(pat)
+	for toi in ois
+		pat.lhs[toi]=pat.lhs[toi].x
+	end
+	pats=Equation[]
+	push!(pats,pat)
+	if !isempty(ois)
+		for oip in permutations(ois)
+			np=deepcopy(pat)
+			for oi in oip
+				np.rhs=replace(np.rhs,[np.lhs[oi]=>1])
+				np.lhs[oi]=1
+				push!(pats,simplify(np))
+			end
+		end
+	end
+	return uniquefilter(pats)
+end
 function matches(ex::Ex,eq::Equation)
-	m=Equation[]
-	mda=matches(ex,eq.lhs)
-	for md in mda
-		tlh=deepcopy(ex)
-		trh=replace(eq.rhs,md)
-		push!(m,Equation(tlh,trh))
+	m=Any[]
+	mda=Array{Dict}[]
+	if has(eq.lhs,Oneable)
+		staged=stageoneables(eq)
+		for s in staged
+			push!(mda,matches(ex,s.lhs))
+		end
+	else
+		staged=[eq]
+		push!(mda,matches(ex,eq.lhs))
+	end
+	for i in 1:length(mda)
+		for md in mda[i]
+			#tlh=deepcopy(ex)
+			trh=replace(staged[i].rhs,md)
+			push!(m,trh)#Equation(tlh,trh))
+		end
 	end
 	return sort!(m)
 end
