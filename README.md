@@ -1,5 +1,5 @@
 # Equations
-Calculate with symbols as numbers, symbol names starting with 3 underscores are reserved for internal use.
+Calculate with symbols as numbers (symbol names starting with 3 underscores are reserved for internal use):
 ```
 :x+:y
 :x*:y
@@ -8,7 +8,29 @@ Calculate with symbols as numbers, symbol names starting with 3 underscores are 
 sqrt(:x^2)
 ```
 
-Write equations (the ≖ is written as \eqcirc+tab) and derive results by checking for matches:
+Specify relations conveniently with the equ macro:
+```
+x=@equ x=a*b^sqrt(y)+c/d
+```
+
+Substitute with & (see http://artai.co/Plasma.html for real usage examples):
+```
+energy=@equ E=m*c^2
+c=@equ c=299792458
+m=@equ m=3*n
+n=@equ n=9
+print(energy&c&m&n)
+#E ≖ 2426638982589407628
+```
+
+Operate on equations:
+```
+tri=@equ c^2=a^2+b^2
+print(sqrt(tri))
+#c ≖ Sqrt(a a + b b)
+``` 
+
+Equations can also be constructed without macros (the ≖ is written as \eqcirc+tab) and results derived by checking for matches:
 ```
 rule=Der(:a*:x,:x)≖:a
 ex=Der(3*:x,:x)
