@@ -70,7 +70,7 @@ function (&)(ex::Ex,eq::Equation)
 	end
 	m=matches(ex,eq)
 	if !isempty(m)
-		return m[1].rhs
+		return simplify(m[1].rhs)
 	else 
 		return ex
 	end
