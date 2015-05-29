@@ -66,7 +66,34 @@ function (&)(eq::Equation,eqa::Array{Equation})
 	end
 	return eq
 end
-function (&)(ex::Ex,eq::Equation)
+function (&)(ex::Expression,eq::Equation)
+	ex=simplify(ex)
+	if isa(eq.lhs,Symbol)
+		return replace(ex,[eq.lhs=>eq.rhs])
+	end
+	m=matches(ex,eq)
+	if !isempty(m)
+		return simplify(m[1])
+	else
+		tms=Tuple[]
+		for t in 1:length(ex)
+			tm=matches(simplify(expression(ex[t])),eq)
+			if !isempty(tm)
+				push!(tms,(t,tm[1]))
+			end
+		end
+		if !isempty(tms)
+			terms=dcterms(ex)
+			for tup in tms
+				terms[tup[1]]=Factor[tup[2]]
+			end
+			ex=simplify(expression(terms))
+		end
+		return ex
+	end
+end
+function (&)(ex::Component,eq::Equation)
+	ex=simplify(ex)
 	if isa(eq.lhs,Symbol)
 		return replace(ex,[eq.lhs=>eq.rhs])
 	end
@@ -77,6 +104,13 @@ function (&)(ex::Ex,eq::Equation)
 		return ex
 	end
 end
+function (&)(ex::Symbol,eq::Equation)
+	if isa(eq.lhs,Symbol)&&eq.lhs==ex
+		return eq.rhs
+	end
+	return ex
+end
+(&)(x::Number,eq::Equation)=x
 function (&)(ex::Ex,eqa::Array{Equation})
 	for teq in eqa
 		ex=ex&teq
