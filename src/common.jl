@@ -115,7 +115,6 @@ function preprint(io::IO,fac)
 	end
 end
 function print(io::IO,ex::Expression)
-	#print(io, "𝐸(")
 	if isempty(ex.terms)
 		print(io,ex.terms)
 	else
@@ -133,10 +132,7 @@ function print(io::IO,ex::Expression)
 		end
 		preprint(io,ex.terms[end][end])
 	end
-	#print(io, ')')
 end
-#print(io::IO,c::Component)=print(io,c)
-#show(io::IO,s::Symbol)=print(io,s)
 N=Union(Number,Symbol)
 X=Union(Number,Symbol,Component)
 Ex=Union(Symbol,Component,Expression)
@@ -144,8 +140,6 @@ EX=Union(Number,Symbol,Component,Expression)
 typealias Factor EX
 show(io::IO,x::Type{Factor})=print(io, "Factor")
 typealias Term Array{Factor,1}
-#convert(::Type{Term},ex::EX)=Factor[ex]
-#convert(::Type{Array{Factor,1}}, ex::EX)=Factor[ex]
 convert(::Type{Array{Array{Factor,1},1}},a::Array{Any,1})=Term[a]
 
 macro delegate(source, targets) # by JMW
@@ -197,7 +191,7 @@ expression(a::Term)=Expression(Term[a])
 expression(a::Array{Term})=Expression(a)
 function expression(cs::Array{Components})
 	if isempty(cs)
-		return 0#Expression([0])
+		return 0
 	end
 	ex=Expression(Term[])
 	for cc in cs
@@ -213,14 +207,13 @@ function expression(cs::Array{Components})
 		end
 	end
 	if length(ex)==0
-		return 0#Expression([0])
+		return 0
 	else
 		return ex
 	end
 end
 expression(x::X)=expression(Factor[x])
 ==(ex1::Expression,ex2::Expression)=ex1.terms==ex2.terms
-# ==(ex::Expression,n::Number)=simplify(ex)==n
 push!(ex::Expression,a)=push!(ex.terms,a)
 push!(x::X,a)=expression(Factor[x,a])
 +(ex1::Expression,ex2::Expression)=begin;ex=deepcopy(ex1);push!(ex.terms,[ex2]);ex;end
@@ -287,15 +280,6 @@ function indin(array,typ::Type)
 	end
 	return 0
 end
-#=function indin(ex::Expression,typ::Type)
-	for ti in 1:length(ex)
-		ind=indin(ex[ti],item)
-		if ind!=0
-			return ind #needs to return recursive tuple
-		end
-	end
-	return 0
-end=#
 function expandindices(inds::Tuple,ninds::Array{Array{Integer}}=Array{Integer}[],nind::Array{Integer}=Integer[])
 	for l in 1:length(inds)
 		if isa(inds[l],Integer)
@@ -303,7 +287,7 @@ function expandindices(inds::Tuple,ninds::Array{Array{Integer}}=Array{Integer}[]
 		elseif isa(inds[l],Array)
 			for a in inds[l]
 				if isa(a,Tuple)
-					tia=expandindices(a)#,ninds,nind)
+					tia=expandindices(a)
 					for ti in deepcopy(tia) 
 						nnind=deepcopy(nind)
 						pushall!(nnind,ti)
@@ -377,7 +361,7 @@ function indsin(array::Array,typ::Type)
 	return ind
 end
 terms(ex::Expression)=ex.terms
-terms(x::X)=x#Term[Factor[x]]
+terms(x::X)=x #Term[Factor[x]] #hmm
 dcterms(ex::Expression)=terms(deepcopy(ex))
 dcterms(x::X)=x
 function has(a::Array,t::Type)
@@ -454,9 +438,9 @@ function maketype(c::Component,fun) #rewrite with vararg
 	if l==1
 		tc=typeof(c)(fun(getarg(c)))
 	elseif l==2
-		tc=typeof(c)(fun(getarg(c)),componify(getarg(c,2)))
+		tc=typeof(c)(fun(getarg(c)),fun(getarg(c,2)))
 	elseif l==3
-		tc=typeof(c)(fun(getarg(c)),componify(getarg(c,2)),componify(getarg(c,3)))
+		tc=typeof(c)(fun(getarg(c)),fun(getarg(c,2)),fun(getarg(c,3)))
 	else
 		error("File an issue requesting the development of more general component creation or create a custom maketype(t::TheType,function).")
 	end
@@ -529,8 +513,6 @@ function componify(ex::Expression,raw=false)
 				exs[2]=expression(multed)
 				deleteat!(exs,1)
 			end
-#			print(exs[1])
-#			@assert length(exs[1])==1
 			ap[term]=terms(exs[1])[1]
 			for tterm in 2:length(exs[1])
 				push!(ap,exs[1][tterm])
@@ -578,8 +560,6 @@ isless(n::Number,s::Symbol)=true
 isless(s::Complex,n::Complex)=real(s)<real(n)?true:imag(s)<imag(n)?true:false
 isless(n::Real,s::Complex)=true
 isless(s::Complex,n::Real)=false
-#isless(x::N,na::NonAbelian)=true
-#isless(na::NonAbelian,x::N)=false
 isless(na::NonAbelian,na2::NonAbelian)=false
 isless(a::Symbol,op::Operator)=false
 isless(op::Operator,a::Symbol)=false
@@ -612,7 +592,6 @@ function sort!(ex::Expression)
 end
 sort(ex::Expression)=sort!(deepcopy(ex))
 function simplify(ex::Expression)
-	#ex=deepcopy(ex)
 	tex=0
 	nit=0
 	while tex!=ex

@@ -1,5 +1,5 @@
 import Base.sqrt
-immutable Sqrt <: SingleArg #using \sqrt causes problems, maybe (√) works? 
+immutable Sqrt <: SingleArg
 	x
 end
 sqrt(a)=Sqrt(a)

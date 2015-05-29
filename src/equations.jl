@@ -132,7 +132,7 @@ end
 simplify!(eq::Equation)=begin;eq.lhs=simplify!(eq.lhs);eq.rhs=simplify!(eq.rhs);eq;end #the ! functions are not complete
 function simplify(eq::Equation)
 	lhs,rhs=simplify(eq.lhs),simplify(eq.rhs)
-#	if (isa(rhs,Symbol)&&!isa(lhs,Symbol))||(isa(lhs,Number)&&!isa(rhs,Number))
+#	if (isa(rhs,Symbol)&&!isa(lhs,Symbol))||(isa(lhs,Number)&&!isa(rhs,Number)) #this is convenient sometimes but causes breakage
 #		return Equation(rhs,lhs)
 #	else
 		return Equation(lhs,rhs)
@@ -145,8 +145,6 @@ function simplify!(eqa::Array{Equation})
 	return eqa
 end
 simplify(eqa::Array{Equation})=simplify!(deepcopy(eqa))
-relations=Equation[]
-#eq1=Equation(cos(:x)-sin(:x+pi/2),0)
 function pushallunique!(a1::Array,a2::Array)
 	for d in a2
 		if !(d∈a1)
@@ -188,28 +186,9 @@ function matches(eq::Equation)
 		end
 		if !isa(tt,X)
 			deleteat!(tt,term)
-			#if isempty(tt)
-			#	push!(tt,Factor[0])
-			#end
 		end
 		teq.lhs=expression(tt)
 		push!(m,teq)
-#=		if tt!=0
-			dmt=matches(teq,Div)
-			for d in dmt
-				push!(m,d)
-			end
-		end
-
-		tm=matches(teq)
-		if tm!=false
-			for tteq in tm
-				if !(tteq∈m)
-					push!(m,tteq)
-				end
-			end
-		end
-=#
 	end
 	for teq in m
 		teq.rhs=sumnum(componify(teq.rhs))

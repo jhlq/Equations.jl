@@ -38,7 +38,6 @@ function findpows(term::Array)
 				stop2=start2+powl-1
 				if p[start1:stop1]==p[start2:stop2]
 					pocketpow+=1
-					#println(sort(Pow(extract(expression(p[start1:stop1])),pocketpow)))
 					push!(pows,sort(Pow(extract(expression(p[start1:stop1])),pocketpow)))
 				else
 					pocketpow=1

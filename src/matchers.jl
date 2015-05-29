@@ -40,17 +40,7 @@ function validfilter(c1,c2,mda::Array{Dict})
 	end
 	return filtered
 end
-function matches(c1::Component,c2::Component) #implement new for custom types
-	#=
-	mda=Dict[]
-	if isa(getarg(c2),Symbol)
-		tmd=Dict()
-		tmd[getarg(c2)]=getarg(c1)
-		push!(mda,tmd)
-	elseif isa(getarg(c2),Expression)
-		pushallunique!(mda,matches(getarg(c1),getarg(c2)))
-	end
-	=#
+function matches(c1::Component,c2::Component)
 	args1,args2=getargs(c1),getargs(c2)
 	return validfilter(c1,c2,validated(args1,args2))
 end
@@ -83,7 +73,6 @@ end
 getcoef(term::Array)=begin;i=indsin(term,Number);isempty(i)?1:sum(term[i]);end
 function whenallequal(term,pat,ps)
 	mda=Dict[]
-	#print(term,pat,ps)
 	for l in 1:length(ps)
 		if isa(term[l],Component)&&isa(pat[ps[l]],Component)
 			pushallunique!(mda,matches(term[l],pat[ps[l]]))
@@ -225,11 +214,9 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 	connections=Any[]
 	matches=Equation[]
 	for ti in 1:length(termses)
-		#print(ti)
 		matchesfound=Any[]
 		for p in permutations(termses[ti])
 			for l in 1:length(termses[ti])
-				#print(" l:",l)
 				foundmatch=false
 				cantbematch=false
 				if xlen!=0&&l!=xlen
@@ -243,7 +230,6 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 						continue
 					else
 						xsq=componify(Expression(Term[p[1:l]])^2)
-						#println(xsq)
 						if isa(xsq,Expression)
 							@assert length(xsq)==1
 							xsq=xsq[1]
@@ -270,7 +256,6 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 									found=Integer[]
 									nomatch=false
 									for termi in 1:length(termses)
-										#print("termi:",termi)
 										if termi∈[ti,matchi]#||termi∈found
 											continue
 										elseif has(termses[termi],p[1:l])
@@ -282,7 +267,6 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 										a=Factor[]
 										for tl in 1:length(mp)
 											if !in(tl,[1+shif:2l+shif])
-												#println(mp,mp[tl])
 												push!(a,mp[tl])
 											end
 										end
@@ -302,9 +286,7 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 										if !in(eq2,matches)
 											push!(matches,eq2)
 										end
-										#push!(found,termi)
 										foundmatch=true
-										#print("!")
 										break
 									end #if
 								end #if
@@ -317,6 +299,5 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 			end #length(ti)
 		end
 	end
-#	println(unique(connections))
 	return unique(simplify(matches))
 end

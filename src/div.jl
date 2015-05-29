@@ -33,7 +33,6 @@ function divify!(term::Array)
 						push!(aprem,fac)
 					elseif has(term,ap[1][fac])
 						ti=indsin(term,ap[1][fac])
-						#println(ti,term,ap[1][fac])
 						fi=0
 						for tfi in ti
 							if !in(tfi,termrem)
@@ -49,7 +48,6 @@ function divify!(term::Array)
 				end
 				deleteat!(ap[1],aprem)
 				term[i]=Div(expression(ap))
-				#deleteat!(term,sort!(termrem))
 				pushallunique!(remove,termrem)
 			end
 		else
