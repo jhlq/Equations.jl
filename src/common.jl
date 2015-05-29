@@ -97,7 +97,7 @@ function print(io::IO,c::Union(Number,Component))
 		ca=getargs(c)
 		for a in 1:length(ca)-1
 			print(io,ca[a])
-			print(',')
+			print(io,',')
 		end
 		print(io,ca[end])
 		print(io,')')
