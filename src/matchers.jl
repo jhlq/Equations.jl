@@ -34,7 +34,7 @@ end
 function validfilter(c1,c2,mda::Array{Dict})
 	filtered=Dict[]
 	for md in mda
-		if replace(c2,md)==c1
+		if randeval(replace(c2,md))==randeval(c1)
 			push!(filtered,md)
 		end
 	end
@@ -152,6 +152,9 @@ function matches(ex::Expression,pattern::Expression)
 	end
 	md=Dict[]
 	apex=terms(sort(componify(ex)))
+	if !isa(apex,Array)
+		apex=Term[Factor[apex]]
+	end
 	apat=terms(sort(componify(pattern)))
 	if length(apex)==length(apat)==1
 		pushallunique!(md,matches(apex[1],apat[1]))
@@ -195,7 +198,8 @@ function matches(ex::Ex,eq::Equation)
 	if has(eq.lhs,Oneable)
 		staged=stageoneables(eq)
 		for s in staged
-			push!(mda,matches(ex,s.lhs))
+			sm=matches(ex,s.lhs)
+			push!(mda,sm)
 		end
 	else
 		staged=[eq]
@@ -203,9 +207,8 @@ function matches(ex::Ex,eq::Equation)
 	end
 	for i in 1:length(mda)
 		for md in mda[i]
-			#tlh=deepcopy(ex)
 			trh=replace(staged[i].rhs,md)
-			push!(m,trh)#Equation(tlh,trh))
+			push!(m,trh)
 		end
 	end
 	return sort!(m)

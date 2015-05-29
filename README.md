@@ -23,6 +23,12 @@ print(energy&c&m&n)
 #E ≖ 2426638982589407628
 ```
 
+& also does pattern matching:
+```
+print((Der(:x^:n,:x)-Der(-0.1*:x^:m,:x)+1/:a*Der(:a*sqrt(:x),:x))&relations["Der"])
+#n Pow(x,n + (-1)) + 0.1 m Pow(x,m + (-1)) + 0.5 Pow(x,(-0.5))
+```
+
 Operate on equations:
 ```
 tri=@equ c^2=a^2+b^2

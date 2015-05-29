@@ -81,7 +81,6 @@ function (&)(ex::Expression,eq::Equation)
 			tm=matches(simplify(expression(ex[t])),eq)
 			if !isempty(tm)
 				terms[t][:]=tm[1]
-				#push!(tms,(t,tm[1]))
 			else
 				for f in 1:length(terms[t])
 					if isa(terms[t][f],Component)
@@ -93,14 +92,6 @@ function (&)(ex::Expression,eq::Equation)
 				end
 			end
 		end
-		#=
-		if !isempty(tms)
-			terms=dcterms(ex)
-			for tup in tms
-				terms[tup[1]]=Factor[tup[2]]
-			end
-			ex=simplify(expression(terms))
-		end =#
 		return simplify(expression(terms))
 	end
 end

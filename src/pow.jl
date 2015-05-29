@@ -102,10 +102,16 @@ function matches(term::Term,p::Pow)
 	end
 	return Dict[]
 end
+function matches(p::Pow,pat::Pow)
+	validated([p.x,p.y],[pat.x,pat.y])
+end
 matches(::N, ::Pow)=[]
 matches(::Pow, ::Expression)=[]
 	
-simplify(p::Pow)=Pow(simplify(p.x),simplify(p.y))
+function simplify(p::Pow)
+	p,e=(simplify(p.x),simplify(p.y))
+	return p^e
+end
 function simplify(term::Array,t::Type{Pow})
 	potpows=matches(term,t)
 	if !isempty(potpows)
@@ -122,4 +128,22 @@ function simplify(ex::Expression,t::Type{Pow})
 		ap[term]=simplify(ap[term],t)
 	end
 	return extract(expression(ap))	
+end
+function matches(ex::Expression,pattern::Pow)
+	ex=simplify(ex,Pow)
+	if isa(ex,Pow)
+		return matches(ex,pattern)
+	end
+	md=Dict[]
+	apex=terms(sort(componify(ex)))
+	if !isa(apex,Array)
+		apex=Term[Factor[apex]]
+	end
+	if length(apex)==1
+		pushallunique!(md,matches(apex[1],Factor[pattern]))
+	else
+		tmd=validated(apex,Term[Factor[pattern]])
+		pushallunique!(md,tmd)
+	end		
+	return md		
 end

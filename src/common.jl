@@ -627,7 +627,7 @@ function simplify(ex::Expression)
 			for fac in 1:length(ap[term])
 				ap[term][fac]=simplify(ap[term][fac])
 			end
-			sort!(ap[term])
+			#sort!(ap[term])
 		end
 		ex=extract(expression(ap)) #better to check if res::N before calling expression instead of extracting?
 		nit+=1
@@ -635,9 +635,8 @@ function simplify(ex::Expression)
 			warn("Stuck in simplify! Iteration #$nit: $ex")
 		end
 	end
-	return sort!(ex) 
+	return ex#sort!(ex) 
 end
-#simplify!(ex::Expression)=begin;warn("simplify! is incomplete.");ex=simplify(ex);end #this doesn't really save memory...
 function simplify(c::Component)
 	args=deepcopy(getargs(c))
 	for arg in 1:length(args)
@@ -645,7 +644,6 @@ function simplify(c::Component)
 	end
 	return typeof(c)(args...)
 end
-#simplify!(c::Component)=begin;c.x=simplify!(getarg(c));c;end
 simplify(x::N)=x
 simplify(x::N,a)=x
 simplify!(x::N)=x
@@ -670,10 +668,6 @@ function simplify(d::Dict)
 	return nd
 end
 function sumnum(ex::Expression)
-	#if ex==0
-	#	print(0)
-	#	return 0
-	#end
 	terms=dcterms(ex)
 	nterms=Term[]
 	numsum=0
@@ -724,7 +718,6 @@ function sumsym(ex::Expression)
 		tcs=Array(Ex,0)
 		coef=1
 		for term in ap[add]
-			#term=sumsym(term)
 			if isa(term,Ex)
 				push!(tcs,term)
 			elseif isa(term,Number)
@@ -757,7 +750,6 @@ function sumsym!(a::Array)
 	return a
 end
 sumsym(a::Array)=sumsym!(deepcopy(a))
-#sumsym(term::Term)=sumsym(Expression(term)) #there are no sums in a term...
 function findsyms(term::Array)
 	syms=Dict()
 	for fac in 1:length(term)
@@ -775,10 +767,10 @@ function findsyms(ex::Expression)
 	syms=Set{Symbol}()
 	for term in ex
 		for fac in term
-			if isa(c,Symbol)#&&c!=:+
-				push!(syms,c)
-			elseif isa(c,Expression)||isa(c,Component)
-				syms=union(syms,findsyms(c))
+			if isa(fac,Symbol)
+				push!(syms,fac)
+			elseif isa(fac,Expression)||isa(fac,Component)
+				syms=union(syms,findsyms(fac))
 			end
 		end
 	end
@@ -870,9 +862,6 @@ function replace!(ex::Expression,symdic::Dict)
 	return componify(ex)
 end
 replace(ex::Expression,symdic::Dict)=replace!(deepcopy(ex),symdic)
-#replace!(term::Array,symdic::Dict)=replace!(Expression(term),symdic).components
-#replace(term::Array,symdic::Dict)=replace(Expression(term),symdic).components
-#replace(c::Component,symdic::Dict)=maketype(c,x->replace(x,symdic))
 function replace(c::Component,symdic::Dict)
 	args=convert(Array{Any},getargs(c))
 	for arg in 1:length(args)
@@ -906,6 +895,15 @@ function evaluate(ex::Ex,symdic::Dict)
 	return simplify(ex)
 end
 evaluate(x::Number,symdic::Dict)=x
+function randeval(ex::Ex,seed=1)
+	srand(seed)
+	syms=findsyms(ex)
+	d=Dict()
+	for s in syms
+		d[s]=rand()
+	end
+	evaluate(ex,d)
+end
 
 import Base.start, Base.next, Base.done
 start(ex::Expression)=(1,terms(ex))
@@ -913,22 +911,14 @@ function next(ex::Expression,state)
 	return (state[2][state[1]],(state[1]+1,state[2]))
 end
 done(ex::Expression,state)=state[1]>length(state[2])
-#=function matches(t::Term,pat::Component)
-	if length(t)==1&&isa(t[1],typeof(pat))
-		return matches(t[1],pat)
-	end
-	return Dict[]
-end=#
 function matches(ex::Expression,pat::Component)
 	if length(ex)==1
 		return matches(ex[1],pat)
 	end
 	termmds=Array{Dict}[]
-	#println(ex,pat)
 	for term in ex
 		push!(termmds,matches(extract(term),pat))
 	end
-	#for md in term1,for md2 in term2... combine validate	
 	nterms=length(termmds)
 	ndics=Integer[]
 	for n in 1:nterms
@@ -936,20 +926,14 @@ function matches(ex::Expression,pat::Component)
 	end
 	ninc=reduce(*,ndics)-1
 	validated=Dict[]
-	#println(termmds[1],' ',termmds[2],' ',termmds[3],' ',ndics,' ',ninc)
 	for inc in 0:ninc
 		indices=ones(Integer,nterms)
-		#tinc=inc
 		tl=0
 		for ti in 1:nterms
-			#if tl>inc
-			#	break
-			#end
 			tinc=floor(inc/reduce(*,ndics[1:ti-1]))%ndics[ti]
 			tl+=ndics[ti]-1
 			indices[ti]+=tinc
 		end
-		#println(indices)
 		if clash(termmds[1][indices[1]],termmds[2][indices[2]])
 			continue
 		end
