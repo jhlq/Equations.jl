@@ -617,18 +617,14 @@ function simplify(ex::Expression)
 	nit=0
 	while tex!=ex
 		tex=ex
-#		print(terms(ex),"   =>   ")
 		ex=sumsym(sumnum(componify(ex)))
-#		print(terms(ex),"!!!\t")
 		ap=terms(ex)
 		if isa(ap,X)
 			return ap
 		end
-		#println(ap)
 		for term in 1:length(ap)
 			ap[term]=divify!(ap[term])
 			for fac in 1:length(ap[term])
-				#println(ap[term][fac])
 				ap[term][fac]=simplify(ap[term][fac])
 			end
 			sort!(ap[term])
@@ -639,7 +635,7 @@ function simplify(ex::Expression)
 			warn("Stuck in simplify! Iteration #$nit: $ex")
 		end
 	end
-	return ex 
+	return sort!(ex) 
 end
 #simplify!(ex::Expression)=begin;warn("simplify! is incomplete.");ex=simplify(ex);end #this doesn't really save memory...
 function simplify(c::Component)
@@ -878,7 +874,7 @@ replace(ex::Expression,symdic::Dict)=replace!(deepcopy(ex),symdic)
 #replace(term::Array,symdic::Dict)=replace(Expression(term),symdic).components
 #replace(c::Component,symdic::Dict)=maketype(c,x->replace(x,symdic))
 function replace(c::Component,symdic::Dict)
-	args=getargs(c)
+	args=convert(Array{Any},getargs(c))
 	for arg in 1:length(args)
 		args[arg]=replace(args[arg],symdic)
 	end

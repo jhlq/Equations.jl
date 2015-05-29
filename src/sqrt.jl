@@ -4,6 +4,11 @@ immutable Sqrt <: SingleArg #using \sqrt causes problems, maybe (√) works?
 end
 sqrt(a)=Sqrt(a)
 sqrt(eq::Equation)=Equation(simplify(sqrt(eq.lhs)),simplify(sqrt(eq.rhs)))
+function print(io::IO,s::Sqrt)
+	print(io,"√(")
+	print(io,s.x)
+	print(io,')')
+end
 function simplify(sq::Sqrt)
 	sq=Sqrt(simplify(sq.x))
 	if isa(sq.x,Number)
@@ -38,4 +43,12 @@ function matches(eq::Equation,t::Type{Sqrt})
 	push!(m,Equation(Sqrt(lhs),-Sqrt(rhs)))
 	return simplify!(m)
 end
+function matches(s::Sqrt,ex::Expression)
+	ex=simplify(ex)
+	if isa(ex,Sqrt)
+		return matches(s.x,ex.x)
+	end
+	[]
+end
 matches(::Term,::Sqrt)=[]
+matches(::N, ::Sqrt)=[]

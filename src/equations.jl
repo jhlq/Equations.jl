@@ -76,20 +76,32 @@ function (&)(ex::Expression,eq::Equation)
 		return simplify(m[1])
 	else
 		tms=Tuple[]
-		for t in 1:length(ex)
+		terms=dcterms(ex)
+		for t in 1:length(terms)
 			tm=matches(simplify(expression(ex[t])),eq)
 			if !isempty(tm)
-				push!(tms,(t,tm[1]))
+				terms[t][:]=tm[1]
+				#push!(tms,(t,tm[1]))
+			else
+				for f in 1:length(terms[t])
+					if isa(terms[t][f],Component)
+						ttm=matches(terms[t][f],eq)
+						if !isempty(ttm)
+							terms[t][f]=ttm[1]
+						end
+					end
+				end
 			end
 		end
+		#=
 		if !isempty(tms)
 			terms=dcterms(ex)
 			for tup in tms
 				terms[tup[1]]=Factor[tup[2]]
 			end
 			ex=simplify(expression(terms))
-		end
-		return ex
+		end =#
+		return simplify(expression(terms))
 	end
 end
 function (&)(ex::Component,eq::Equation)

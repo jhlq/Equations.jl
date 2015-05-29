@@ -4,7 +4,7 @@ type Der <: Component
 end
 #Der(Pow(:a,:x),:x)≖log(:a)*Pow(:a,:x),
 getargs(d::Der)=[d.x,d.dy]
-relations["Der"]=simplify(Equation[Der(:a,:x)≖0,Der(Oneable(:a)*:x,:x)≖:a,Der(Pow(:x,:n),:x)≖:n*Pow(:x,:n-1),Der(Sqrt(:x),:x)≖0.5*Pow(:x,-0.5)])
+relations["Der"]=simplify(Equation[Der(:a,:x)≖0,Der(Oneable(:a)*:x,:x)≖:a,Der(Oneable(:a)*Pow(:x,:n),:x)≖:n*:a*Pow(:x,:n-1),Der(Oneable(:a)*Sqrt(:x),:x)≖0.5*:a*Pow(:x,-0.5)])
 function matches(d::Der,pat::Der)
 	mdx=matches(d.x,pat.x)
 	mddy=matches(d.dy,pat.dy)
@@ -24,7 +24,7 @@ function matches(d::Der,pat::Der)
 			end
 		end
 	end
-	return validated
+	return validfilter(d,pat,validated)
 end
 matches(::N,::Der)=[]
 matches(::Term,::Der)=[]

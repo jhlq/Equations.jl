@@ -147,6 +147,9 @@ function combine(dic1::Dict,dic2::Dict)
 	return ndic
 end
 function matches(ex::Expression,pattern::Expression)
+	if has(pattern,Pow)
+		ex=simplify(ex,Pow)
+	end
 	md=Dict[]
 	apex=terms(sort(componify(ex)))
 	apat=terms(sort(componify(pattern)))
@@ -164,6 +167,8 @@ function matches(n::EX,pat::Symbol)
 	return md
 end
 matches(::Symbol, ::Expression)=[]
+matches(::Int64, ::Equation)=[]
+matches(::Int64, ::Expression)=[]
 function stageoneables(pat)
 	ois=expandindices(indsin(pat.lhs,Oneable))
 	pat=deepcopy(pat)

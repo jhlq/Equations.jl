@@ -62,7 +62,6 @@ function matches(term::Term,t::Type{Pow})
 	potpows=Term[]
 	for potpow in pows
 		nterm=deepcopy(term)
-		#xlen=1
 		if isa(potpow.x,X)
 			powloc=indin(term,potpow.x)
 			deleteat!(nterm,[powloc:powloc+potpow.y-1])
@@ -70,13 +69,11 @@ function matches(term::Term,t::Type{Pow})
 		elseif isa(potpow.x,Expression)
 			powloc=indin(term,potpow.x)
 			if powloc==0 && length(potpow.x)==1
-				#powloc=indin(term,potpow.x.components[1])
 				factors=uniquefilter(potpow.x.terms[1])
 				for fac in factors
 					deleteat!(nterm,[indin(nterm,fac):indin(nterm,fac)+potpow.y-1])
 				end
 				insert!(nterm,length(nterm)+1,potpow)
-				#xlen=length(potpow.x.components)
 			else
 				error("Could not locate $potpow in $term")
 			end
@@ -102,20 +99,21 @@ function matches(term::Term,p::Pow)
 	if length(m)==1
 		dics=matches(m[1],p)
 		return dics
-#		if !isempty(dic)
-#			return replace(p,dic[1])
-#		end
 	end
 	return Dict[]
 end
+matches(::N, ::Pow)=[]
+matches(::Pow, ::Expression)=[]
 	
-#simplify!(p::Pow)=begin;p.x=simplify(p.x);p.y=simplify(p.y);p;end
 simplify(p::Pow)=Pow(simplify(p.x),simplify(p.y))
 function simplify(term::Array,t::Type{Pow})
 	potpows=matches(term,t)
-	return potpows[1]
+	if !isempty(potpows)
+		return potpows[1]
+	else
+		return term
+	end
 end
-#simplify(term::Array,t::Type{Pow})=simplify!(deepcopy(term),t)
 
 function simplify(ex::Expression,t::Type{Pow})
 	ex=componify(ex)
