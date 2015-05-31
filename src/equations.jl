@@ -1,5 +1,5 @@
 include("common.jl")
-import Base: &
+import Base: &, ctranspose
 
 type Equation
 	lhs::EX
@@ -53,11 +53,18 @@ end
 ≖(a::EX,b::Equation)=EquationChain(a,b.lhs,b.rhs)
 ≖(b::Equation,a::EX)=EquationChain(b.lhs,b.rhs,a)
 ≖(eqc::EquationChain,a)=push!(eqc,a)
-+(eq::Equation,ex::EX)=simplify(eq.lhs+ex≖eq.rhs+ex) #make macro
+-(eq::Equation)=simplify(-eq.lhs≖-eq.rhs) 
++(eq::Equation,ex::EX)=simplify(eq.lhs+ex≖eq.rhs+ex) 
+-(eq::Equation,ex::EX)=simplify(eq.lhs-ex≖eq.rhs-ex) 
 *(eq::Equation,ex::EX)=simplify(eq.lhs*ex≖eq.rhs*ex)
 /(eq::Equation,ex::EX)=simplify(eq.lhs/ex≖eq.rhs/ex)
++(eq1::Equation,eq2::Equation)=simplify(eq1.lhs+eq2.lhs≖eq1.rhs+eq2.rhs) 
+-(eq1::Equation,eq2::Equation)=simplify(eq1.lhs-eq2.lhs≖eq1.rhs-eq2.rhs)
+*(eq1::Equation,eq2::Equation)=simplify(eq1.lhs*eq2.lhs≖eq1.rhs*eq2.rhs)
+/(eq1::Equation,eq2::Equation)=simplify(eq1.lhs/eq2.lhs≖eq1.rhs/eq2.rhs)
 equation(ex::EX)=Equation(ex,0,Any[])
 equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[])
+ctranspose(eq::Equation)=Equation(eq.rhs,eq.lhs)
 ==(eq1::Equation,eq2::Equation)=eq1.lhs==eq2.lhs&&eq1.rhs==eq2.rhs
 (&)(eq1::Equation,eq2::Equation)=simplify(Equation(replace(eq1.lhs,[eq2.lhs=>eq2.rhs]),replace(eq1.rhs,[eq2.lhs=>eq2.rhs])))
 function (&)(eq::Equation,eqa::Array{Equation})
