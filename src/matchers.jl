@@ -158,9 +158,8 @@ function matches(n::EX,pat::Symbol)
 	push!(md,[pat=>n])
 	return md
 end
-matches(::Symbol, ::Expression)=[]
-matches(::Int64, ::Equation)=[]
-matches(::Int64, ::Expression)=[]
+matches(::N, ::Expression)=[]
+matches(::Number, ::Equation)=[]
 function stageoneables(pat)
 	ois=expandindices(indsin(pat.lhs,Oneable))
 	pat=deepcopy(pat)
