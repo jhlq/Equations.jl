@@ -12,10 +12,50 @@ function /(ex::Expression,x::Ex)
 	end
 	return expression(ap)
 end
-
+function divbine!(term::Term)
+	dis=indsin(term,Div)
+	if isempty(dis)
+		return term
+	end
+	df=Factor[]
+	for i in dis
+		push!(df,term[i].x)
+	end
+	deleteat!(term,dis)
+	push!(term,Div(simplify(expression(df))))
+	return term
+end
+divbine(term::Term)=divbine!(deepcopy(term))
+function divbinedify!(term::Term)
+	if !isa(term[end],Div)
+		return term
+	end
+	x=term[end].x
+	if isa(x,Expression)
+		if length(x)==1
+			x=x[1]
+		else
+			return term
+		end
+	elseif !isa(x,Array)
+		x=[x]
+	end
+	remove=Integer[]
+	for fi in 1:length(x)
+		i=indin(term[1:end-1],x[fi])
+		if i!=0
+			push!(remove,fi)
+			deleteat!(term,i)
+		elseif isa(x[fi],Number)
+			unshift!(term,1/x[fi])
+		end
+	end
+	deleteat!(x,remove)
+	return term		
+end
+divbinedify(term::Term)=divbinedify!(deepcopy(term))
 function divify!(term::Array)
 	dis=indsin(term,Div)
-	term=deepcopy(term)
 	remove=Int64[]
 	for i in dis
 		if term[i].x==1
@@ -76,7 +116,9 @@ divify(x::X)=x
 function simplify(ex::Expression,t::Type{Div})
 	ap=dcterms(ex)
 	for term in 1:length(ap)
-		ap[term]=divify!(ap[term])
+		ap[term]=divify!(ap[term]) #this should be phased out
+		ap[term]=divbine!(ap[term])
+		ap[term]=divbinedify!(ap[term]) #this needn't be called if divify succeeded however it will fail if divbine was called before and in that case divbine doesn't need be called here...
 	end
 	return simplify(expression(ap))
 end
