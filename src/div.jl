@@ -1,6 +1,6 @@
 import Base./
 
-immutable ╱ <: SingleArg #\diagup
+type ╱ <: SingleArg #\diagup
 	x
 end
 Div=╱
@@ -47,10 +47,18 @@ function divbinedify!(term::Term)
 			push!(remove,fi)
 			deleteat!(term,i)
 		elseif isa(x[fi],Number)
+			push!(remove,fi)
 			unshift!(term,1/x[fi])
 		end
 	end
 	deleteat!(x,remove)
+	if isempty(x)
+		deleteat!(term,length(term))
+	elseif length(x)==1
+		term[end].x=x[1]
+	else
+		term[end].x=simplify(expression(x))
+	end
 	return term		
 end
 divbinedify(term::Term)=divbinedify!(deepcopy(term))
@@ -63,7 +71,7 @@ function divify!(term::Array)
 		elseif isa(term[i].x,Div)
 			term[i]=term[i].x.x
 		elseif isa(term[i].x,Expression)
-			ap=dcterms(term[i].x)
+			ap=terms(term[i].x)
 			if length(ap)==1
 				aprem=Integer[]
 				termrem=Integer[]
@@ -101,12 +109,12 @@ function divify!(term::Array)
 		end
 	end
 	if !isempty(remove)
-		ret=deepcopy(term)
-		deleteat!(ret,sort!(remove))
-		if isempty(ret)
-			push!(ret,1)
+		#ret=deepcopy(term)
+		deleteat!(term,sort!(remove))
+		if isempty(term)
+			push!(term,1)
 		end
-		return ret
+		return term
 	else
 		return term
 	end	

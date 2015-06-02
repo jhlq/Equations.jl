@@ -603,6 +603,8 @@ function simplify(ex::Expression)
 		end
 		for term in 1:length(ap)
 			ap[term]=divify!(ap[term])
+			ap[term]=divbine!(ap[term])
+			ap[term]=divbinedify!(ap[term])
 			for fac in 1:length(ap[term])
 				ap[term][fac]=simplify(ap[term][fac])
 			end
