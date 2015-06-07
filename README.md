@@ -1,4 +1,11 @@
+[![Build Status](https://travis-ci.org/jhlq/Equations.jl.svg?branch=master)](https://travis-ci.org/jhlq/Equations.jl)
+
 # Equations
+To install the latest version write:
+```
+Pkg.clone("Equations")
+```
+
 Calculate with symbols as numbers (symbol names starting with 3 underscores are reserved for internal use):
 ```
 :x+:y
@@ -27,6 +34,20 @@ print(energy&c&m&n)
 ```
 print((Der(:x^:n,:x)-Der(-0.1*:x^:m,:x)+1/:a*Der(:a*sqrt(:x),:x))&relations["Der"])
 #n Pow(x,n + (-1)) + 0.1 m Pow(x,m + (-1)) + 0.5 Pow(x,(-0.5))
+```
+
+Write your own patterns as equations:
+```
+relation=@equ Log(:a,:a)=1
+Log(:e)&relation
+Log(9,9)&relation
+Log(:x+:y,:x+:y)&relation
+```
+
+Use the Oneable type for optional coefficients:
+```
+rel=@equ Oneable(a)*x=y
+:q&rel
 ```
 
 Operate on equations:
@@ -78,4 +99,3 @@ evaluate(meq,[:x=>0])
 
 Types currently implemented to various degrees include Div, Sqrt, Pow, Der and soon Integral (∫). To implement your own type make it descend from Component and define custom simplify and matches along with type specific functionality, the first field of your custom type should be named x although that convention is being phased out in favor of getarg(c,argn).
 
-[![Build Status](https://travis-ci.org/jhlq/Equations.jl.svg?branch=master)](https://travis-ci.org/jhlq/Equations.jl)

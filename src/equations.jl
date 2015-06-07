@@ -118,6 +118,10 @@ function (&)(ex::Symbol,eq::Equation)
 	if isa(eq.lhs,Symbol)&&eq.lhs==ex
 		return eq.rhs
 	end
+	m=matches(ex,eq)
+	if !isempty(m)
+		return simplify(m[1])
+	end
 	return ex
 end
 (&)(x::Number,eq::Equation)=x
@@ -258,6 +262,7 @@ matches(ex::EX,rec::Integer)=matches(equation(ex),rec)
 include("div.jl")
 include("sqrt.jl")
 include("pow.jl")
+include("log.jl")
 include("der.jl")
 include("vec.jl")
 function evaluate(eq::Equation,symdic::Dict)

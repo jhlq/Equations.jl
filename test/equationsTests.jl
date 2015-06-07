@@ -15,6 +15,9 @@ n=@equ n=9
 tri=@equ c^2=a^2+b^2
 @test randeval(sqrt(tri).rhs)==randeval(sqrt(:a^2+:b^2))
 
+rel=@equ Oneable(a)*x=y
+@test :q&rel==:y
+
 #evaluate
 eq=equation(1/:x-sqrt(:x))
 @test evaluate(eq,[:x=>1])==(0,0)
