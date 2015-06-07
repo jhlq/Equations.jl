@@ -1,4 +1,9 @@
 # Equations
+To install the latest version write:
+```
+Pkg.clone("Equations")
+```
+
 Calculate with symbols as numbers (symbol names starting with 3 underscores are reserved for internal use):
 ```
 :x+:y
@@ -27,6 +32,14 @@ print(energy&c&m&n)
 ```
 print((Der(:x^:n,:x)-Der(-0.1*:x^:m,:x)+1/:a*Der(:a*sqrt(:x),:x))&relations["Der"])
 #n Pow(x,n + (-1)) + 0.1 m Pow(x,m + (-1)) + 0.5 Pow(x,(-0.5))
+```
+
+Write your own patterns as equations:
+```
+relation=@equ Log(:a,:a)=1
+Log(:e)&relation
+Log(9,9)&relation
+Log(:x+:y,:x+:y)&relation
 ```
 
 Operate on equations:
