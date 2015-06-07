@@ -3,6 +3,7 @@ type Log <: Component
 	x
 	y
 end
+Log(ex::Ex)=Log(ex,:e)
 log(ex::Ex)=Log(ex,:e)
 log(ex::Ex,p::EX)=Log(ex,p)
 function simplify(l::Log)
