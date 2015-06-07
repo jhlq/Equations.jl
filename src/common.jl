@@ -52,7 +52,9 @@ end
 
 type Expression 
 	terms::Array{Array{Union(Number,Symbol,Component,Expression),1},1}
+	simplified::Bool
 end
+Expression(terms)=Expression(terms,false)
 length(ex::Expression)=length(ex.terms)
 getindex(ex::Expression,i::Integer)=getindex(ex.terms,i)
 function getindex(ex::Expression,t::Array)
@@ -214,14 +216,17 @@ function expression(cs::Array{Components})
 end
 expression(x::X)=expression(Factor[x])
 ==(ex1::Expression,ex2::Expression)=ex1.terms==ex2.terms
-push!(ex::Expression,a)=push!(ex.terms,a)
+function push!(ex::Expression,a)
+	ex.simplified=false 
+	push!(ex.terms,a)
+end
 push!(x::X,a)=expression(Factor[x,a])
 +(ex1::Expression,ex2::Expression)=begin;ex=deepcopy(ex1);push!(ex.terms,[ex2]);ex;end
 +(ex::Expression,a::X)=begin;ex=deepcopy(ex);push!(ex.terms,[a]);ex;end
 -(ex::Expression,a::X)=begin;ex=deepcopy(ex);push!(ex.terms,[-1,a]);ex;end
 -(a::X,ex::Expression)=a+(-1*ex)
 -(ex1::Expression,ex2::Expression)=begin;ex=deepcopy(ex1);push!(ex,Factor[-1,ex2]);ex;end
-+(a::X,ex::Expression)=begin;ex=deepcopy(ex);insert!(ex.terms,1,Factor[a]);ex;end
++(a::X,ex::Expression)=begin;ex=deepcopy(ex);push!(ex,Factor[a]);ex;end
 *(ex1::Expression,ex2::Expression)=expression(Factor[deepcopy(ex1),deepcopy(ex2)])
 .*(a::Array,ex::Ex)=ex.*a
 function .*(ex::Ex,a::Array)
@@ -237,6 +242,7 @@ function *(a::X,ex::Expression)
 	for ti in 1:length(ex)
 		insert!(ex[ti],1,a)
 	end
+	ex.simplified=false
 	return ex
 end
 
@@ -592,6 +598,9 @@ function sort!(ex::Expression)
 end
 sort(ex::Expression)=sort!(deepcopy(ex))
 function simplify(ex::Expression)
+	if ex.simplified
+		return ex
+	end
 	tex=0
 	nit=0
 	while tex!=ex
@@ -616,6 +625,7 @@ function simplify(ex::Expression)
 			warn("Stuck in simplify! Iteration #$nit: $ex")
 		end
 	end
+	ex.simplified=true
 	return ex#sort!(ex) 
 end
 function simplify(c::Component)
@@ -840,6 +850,7 @@ function replace!(ex::Expression,symdic::Dict)
 	if isa(ex,Array)
 		ex=extract(expression(ex))
 	end
+	ex.simplified=false
 	return componify(ex)
 end
 replace(ex::Expression,symdic::Dict)=replace!(deepcopy(ex),symdic)
