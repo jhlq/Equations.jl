@@ -131,6 +131,17 @@ function (&)(ex::Ex,eqa::Array{Equation})
 	end
 	return ex
 end
+function (&)(eq::Equation,sym::Symbol)
+	s=solve(eq,sym)
+	if isa(s,Nothing)
+		error("Please implement code to solve $eq for $sym")
+	end
+	if isa(s.lhs,Component)
+		s=s&sym
+	end
+	return s
+end
+(&)(c::Component,sym::Symbol)="Please implement a solver for $(typeof(c))"
 function equivalent(eq1::Equation,eq2::Equation)
 	m=matches(eq2)
 	for eq in m
@@ -272,6 +283,40 @@ function evaluate(eq::Equation,symdic::Dict)
 		end
 	end
 	return (evaluate(eq.lhs,symdic),evaluate(eq.rhs,symdic))
+end
+function solve(eq::Equation,sym::Symbol)
+	eq=simplify(eq)
+	indsl=expandindices(indsin(eq.lhs,sym))
+	indsh=expandindices(indsin(eq.rhs,sym))
+	if length(indsl)==0||length(indsh)==0
+		if length(indsl)==0
+			inds=indsh
+			lhs=eq.rhs
+			rhs=eq.lhs
+		else
+			inds=indsl
+			lhs=eq.lhs
+			rhs=eq.rhs
+		end
+		if length(inds)==1
+			inds=inds[1]
+			for termi in 1:length(lhs)
+				if termi==inds[1]
+					continue
+				end
+				rhs=rhs-expression(lhs[termi])
+			end
+			lhs=lhs[inds[1]]
+			for fac in lhs
+				if fac==lhs[inds[2]]
+					continue
+				end
+				rhs=rhs/fac
+			end
+			lhs=lhs[inds[2]]
+			return simplify(Equation(lhs,rhs))
+		end
+	end
 end
 function solve(eq::Equation,rec::Integer=1)
 	seq=simplify(eq)

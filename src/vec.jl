@@ -84,6 +84,7 @@ type Dot <: Component
 	y
 end
 print(io::IO,c::Dot)=print(io,c.x,'⋅',c.y)
+dot(x::EX,y::EX)=Dot(x,y)
 function dot(v1::Vec,v2::Vec)
 	if isa(v1.v,Array)&&isa(v2.v,Array)&&length(v1.v)==length(v2.v)
 		ex=Expression(Term[Factor[v1.v[1]*v2.v[1]]])

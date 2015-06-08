@@ -57,6 +57,9 @@ length(ex::Expression)=length(ex.terms)
 getindex(ex::Expression,i::Integer)=getindex(ex.terms,i)
 function getindex(ex::Expression,t::Array)
 	p=ex[t[1]]
+	if length(t)==1
+		return p
+	end
 	for i in 2:length(t)-1
 		p=p[t[i]]
 	end
