@@ -132,16 +132,23 @@ function (&)(ex::Ex,eqa::Array{Equation})
 	return ex
 end
 function (&)(eq::Equation,sym::Symbol)
-	s=solve(eq,sym)
+	if isa(eq.lhs,Component)
+		s=solve(eq,sym,typeof(eq.lhs))
+	else
+		s=solve(eq,sym)
+	end
 	if isa(s,Nothing)
 		error("Please implement code to solve $eq for $sym")
 	end
-	if isa(s.lhs,Component)
-		s=s&sym
-	end
+#	if isa(s.lhs,Component) #how to avoid infinite recursion?
+#		s=s&sym
+#	end
 	return s
 end
-(&)(c::Component,sym::Symbol)="Please implement a solver for $(typeof(c))"
+function solve(c::Component,sym::Symbol,t::Type)
+	print_with_color(:green,"Please implement a solver for $(typeof(c))")
+	c
+end
 function equivalent(eq1::Equation,eq2::Equation)
 	m=matches(eq2)
 	for eq in m

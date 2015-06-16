@@ -42,3 +42,6 @@ for s in sol
 	res=evaluate(eq,[s.lhs=>s.rhs])
 	@test res[1]==res[2]
 end
+eq=simplify(@equ m*V=m*v1+M*v2);
+seq=eq&:v1
+@test randeval(seq.rhs)==randeval(((eq-:M*:v2)/:m).lhs)
