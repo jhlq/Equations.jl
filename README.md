@@ -15,6 +15,11 @@ Calculate with symbols as numbers (symbol names starting with 3 underscores are 
 sqrt(:x^2)
 ```
 
+To include units use the Physical type:
+```
+l=Physical(:l,:meter);t=Physical(:t,:second);v=simplify(l/t)
+```
+
 Specify relations conveniently with the equ macro:
 ```
 x=@equ x=a*b^sqrt(y)+c/d

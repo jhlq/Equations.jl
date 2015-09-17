@@ -349,3 +349,5 @@ function solve(eq::Equation,op)
 end
 solve(ex::Ex)=solve(equation(ex))
 solve(ex::Ex,a)=solve(equation(ex),a)
+
+include("units.jl")
