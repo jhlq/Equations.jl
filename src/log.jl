@@ -1,4 +1,4 @@
-import Base: log,exp
+import Base: log,exp,cos,sin
 type Log <: Component
 	x
 	y
@@ -26,9 +26,31 @@ type Exp <: Component
 end
 exp(ex::Ex)=Exp(ex)
 function simplify(l::Exp)
-	l=Exp(simplify(l.x))
-	if isa(l.x,Number)
-		return exp(l.x)
+	x=simplify(l.x)
+	if isa(x,Number)
+		return exp(x)
 	end
-	return l
+	return Exp(x)
+end
+type Cos <: Component
+	x
+end
+cos(ex::Ex)=Cos(ex)
+function simplify(l::Cos)
+	x=simplify(l.x)
+	if isa(x,Number)
+		return cos(x)
+	end
+	return cos(x)
+end
+type Sin <: Component
+	x
+end
+sin(ex::Ex)=Sin(ex)
+function simplify(l::Sin)
+	x=simplify(l.x)
+	if isa(x,Number)
+		return sin(x)
+	end
+	return Sin(x)
 end

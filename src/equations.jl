@@ -24,7 +24,7 @@ macro equ(eq)
 end
 function print(io::IO,eq::Equation)
 	print(io,eq.lhs)
-	print(io," ≖ ")
+	print(io," = ")
 	print(io,eq.rhs)
 end
 ≖(a::EX,b::EX)=Equation(a,b)
@@ -351,3 +351,4 @@ solve(ex::Ex)=solve(equation(ex))
 solve(ex::Ex,a)=solve(equation(ex),a)
 
 include("units.jl")
+include("tensors.jl")
