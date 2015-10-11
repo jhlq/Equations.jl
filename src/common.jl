@@ -436,18 +436,12 @@ function has(c::Component,x::Type)
 end
 has(n::N,x::Symbol)=n==x
 has(::Symbol, ::Type)=false
-function maketype(c::Component,fun) #rewrite with vararg
-	l=length(names(c))
-	if l==1
-		tc=typeof(c)(fun(getarg(c)))
-	elseif l==2
-		tc=typeof(c)(fun(getarg(c)),fun(getarg(c,2)))
-	elseif l==3
-		tc=typeof(c)(fun(getarg(c)),fun(getarg(c,2)),fun(getarg(c,3)))
-	else
-		error("File an issue requesting the development of more general component creation or create a custom maketype(t::TheType,function).")
+function maketype(c::Component,fun) 
+	args=getargs(c)
+	for argi in 1:length(args)
+		args[argi]=fun(args[argi])
 	end
-	return tc
+	return typeof(c)(args...)
 end
 function unnest(ex::Expression)
 	nt=Term[]

@@ -8,10 +8,18 @@ type Equation
 end
 Equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[]) #or set?
 function tosym(expr)
+	#println(expr)
 	if isa(expr,Symbol)
 		return QuoteNode(:($expr))
 	elseif isa(expr,Expr)
-		for s in 2:length(expr.args)
+		if expr.head==:vcat
+			#dump(expr)
+			s1=1
+		else
+			s1=2
+		end
+		for s in s1:length(expr.args)
+			#println(expr.args[s])
 			expr.args[s]=tosym(expr.args[s])
 		end
 	end

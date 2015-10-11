@@ -2,6 +2,13 @@ type Der <: Component
 	x
 	dy
 end
+function print(io::IO,d::Der)
+	if isa(d.dy,X) && isa(d.x,X)
+		print(io,"∂$(d.x)/∂$(d.dy)")
+	else
+		print(io,"∂($(d.x))/∂($(d.dy))")
+	end
+end
 getargs(d::Der)=[d.x,d.dy]
 type DerOp <: NonAbelian
 	dy
