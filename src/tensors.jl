@@ -42,7 +42,7 @@ type D<:NonAbelian
 	x
 end
 function print(io::IO,d::D)
-	if isa(d.x,X)
+	if isa(d.x,Symbol)
 		print(io,"d$(d.x)")
 	else
 		print(io,"d($(d.x))")
@@ -62,30 +62,37 @@ end
 ⊗(tp::TensorProduct,t)=begin;tp=deepcopy(tp);push!(tp.tensors,t);tp;end
 ⊗(t,tp::TensorProduct)=begin;tp=deepcopy(tp);unshift!(tp.tensors,t);tp;end
 ⊗(t1,t2)=TensorProduct([t1,t2])
-function print(io::IO,tp::TensorProduct)
-	print("$(tp.tensors[1]) ⊗")
+function print(io::IO,tp::TensorProduct) #rewrite with macro
+	print(io,"$(tp.tensors[1]) ⊗")
 	for i in 2:length(tp.tensors)-1
-		print(" $(tp.tensors[i]) ⊗")
+		print(io," $(tp.tensors[i]) ⊗")
 	end
-	print(" $(tp.tensors[end])")
+	print(io," $(tp.tensors[end])")
 end
-type WedgeProduct <: AbstractTensor
+type Wedge <: AbstractTensor
 	tensors
 end
-function ∧(tp1::WedgeProduct,tp2::WedgeProduct)
+function ∧(tp1::Wedge,tp2::Wedge)
 	tp=deepcopy(tp1)
 	for t in tp2.tensors
 		push!(tp.tensors,t)
 	end
 	tp
 end
-∧(tp::WedgeProduct,t)=begin;tp=deepcopy(tp);push!(tp.tensors,t);tp;end
-∧(t,tp::WedgeProduct)=begin;tp=deepcopy(tp);unshift!(tp.tensors,t);tp;end
-∧(t1,t2)=WedgeProduct([t1,t2])
-function print(io::IO,tp::WedgeProduct)
-	print("$(tp.tensors[1]) ∧")
+∧(tp::Wedge,t)=begin;tp=deepcopy(tp);push!(tp.tensors,t);tp;end
+∧(t,tp::Wedge)=begin;tp=deepcopy(tp);unshift!(tp.tensors,t);tp;end
+∧(t1,t2)=Wedge([t1,t2])
+function print(io::IO,tp::Wedge)
+	print(io,"$(tp.tensors[1]) ∧")
 	for i in 2:length(tp.tensors)-1
-		print(" $(tp.tensors[i]) ∧")
+		print(io," $(tp.tensors[i]) ∧")
 	end
-	print(" $(tp.tensors[end])")
+	print(io," $(tp.tensors[end])")
+end
+
+type Form<:Component
+	x
+	T
+	w
+	p
 end

@@ -155,7 +155,7 @@ function matches(ex::Expression,pattern::Expression)
 end
 function matches(n::EX,pat::Symbol)
 	md=Dict[]
-	push!(md,[pat=>n])
+	push!(md,Dict(pat=>n))
 	return md
 end
 matches(::N, ::Expression)=[]
@@ -172,7 +172,7 @@ function stageoneables(pat)
 		for oip in permutations(ois)
 			np=deepcopy(pat)
 			for oi in oip
-				np.rhs=replace(np.rhs,[np.lhs[oi]=>1])
+				np.rhs=replace(np.rhs,Dict(np.lhs[oi]=>1))
 				np.lhs[oi]=1
 				push!(pats,simplify(np))
 			end

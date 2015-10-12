@@ -14,12 +14,12 @@ function findpows(term::Array)
 	pows=Pow[]
 	exis=indsin(term,Expression)
 	for exi in exis
-		tex=componify(replace(term,[term[exi]=>:___internal]))
+		tex=componify(replace(term,Dict(term[exi]=>:___internal)))
 		@assert length(tex)==1
 		tpows=Pow[]
 		pushallunique!(tpows,findpows(Expression(tex[1])))
 		for tp in tpows
-			tp=replace(tp,[:___internal=>term[exi]])
+			tp=replace(tp,Dict(:___internal=>term[exi]))
 		end
 		pushallunique!(pows,tpows)
 	end

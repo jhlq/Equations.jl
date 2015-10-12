@@ -34,4 +34,20 @@ eq1_19=@equ Tensor(T,a´,b´)*Tensor(χ,a,a´)*Tensor(Φ,b´,b)=Tensor(T,a,b)
 
 eq1_22=@equ Tensor(E,a,0)∧Tensor(E,b,0)=Tensor(E,a,0)⊗Tensor(E,b,0)-Tensor(E,b,0)⊗Tensor(E,a,0)
 
+eq1_24=@equ P=Form(1/p!,Tensor(P,0,[a1,:...,ap],p),Tensor(E,a1,0)∧:...∧Tensor(E,ap,0),p)
+eq1_25=@equ Q=Form(1/q!,Tensor(Q,0,[b1,:...,bq],q),q)
+
 eq1_28=@equ P∧Q=-1^(p*q)*Q∧P
+
+eq1_32=@equ P=Form(1/p!,Tensor(P,0,[a1,:...,ap],p),Tensor(dx,a1,0)∧:...∧Tensor(dx,ap,0),p)
+eq1_33=@equ dP=Form(1/p!,Der(Tensor(P,,0,[a1,...,ap],p),Tensor(x,b,0)),Tensor(dx,b,0)∧Tensor(dx,a1,0)∧:...∧Tensor(dx,ap,0),p)
+
+eq1_36=@equ Tensor(A,a,a´)=Der(Tensor(x,a,0),Tensor(x´,a´,0))
+eq1_37=@equ Tensor(P,0,[a´1,:...,a´p])=Tensor(A,a1,a´1)*:...*Tensor(A,ap,a´p)*Tensor(P,0,[a1,:...,ap])
+
+eq1_45=@equ D(P∧Q)=D(P)∧Q+(-1)^p*P∧D(Q)
+
+eq1_68=@equ D(F)=0
+eq1_69=@equ F=Tensor(F,0,[a,b])*D(Tensor(x,a,0))∧D(Tensor(x,b,0))/2
+
+eq1_77=@equ ds^2=-dt^2+dρ^2+ρ^2*dθ^2+dz^2

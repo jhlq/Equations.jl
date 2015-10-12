@@ -12,7 +12,8 @@ function tosym(expr)
 	if isa(expr,Symbol)
 		return QuoteNode(:($expr))
 	elseif isa(expr,Expr)
-		if expr.head==:vcat
+		#dump(expr)
+		if expr.head==:vect
 			#dump(expr)
 			s1=1
 		else
