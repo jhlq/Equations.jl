@@ -51,3 +51,10 @@ eq1_68=@equ D(F)=0
 eq1_69=@equ F=Tensor(F,0,[a,b])*D(Tensor(x,a,0))∧D(Tensor(x,b,0))/2
 
 eq1_77=@equ ds^2=-dt^2+dρ^2+ρ^2*dθ^2+dz^2
+
+eq1_80=@equ F=-Bθ*dρ∧dz
+eq1_81=@equ D(F)=0
+eq1_82=@equ Tensor("*F",0,[a,b])=Tensor(ε,[c,d],[a,b])*Tensor(F,0,[c,d])/2
+
+eq1_87=@equ A=Tensor(A,0,a)*D(Tensor(x,a,0))
+eq1_88=@equ Tensor(η,0,[α,β])=-2Trace(Tensor(T,0,α)*Tensor(T,0,β))

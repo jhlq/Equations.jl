@@ -265,7 +265,7 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 									if !nomatch
 										a=Factor[]
 										for tl in 1:length(mp)
-											if !in(tl,[1+shif:2l+shif])
+											if !in(tl,collect(1+shif:2l+shif))
 												push!(a,mp[tl])
 											end
 										end

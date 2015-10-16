@@ -24,8 +24,8 @@ function simplify(sq::Sqrt)
 			nfacs=length(facs)
 			if iseven(nfacs)
 				for p in permutations(facs)
-					if p[1:nfacs/2]==p[nfacs/2+1:nfacs]
-						return simplify(expression(p[1:nfacs/2]))
+					if p[1:Int(nfacs/2)]==p[Int(nfacs/2+1):nfacs]
+						return simplify(expression(p[1:Int(nfacs/2)]))
 					end
 				end
 			end

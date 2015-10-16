@@ -146,7 +146,7 @@ function (&)(eq::Equation,sym::Symbol)
 	else
 		s=solve(eq,sym)
 	end
-	if isa(s,Nothing)
+	if isa(s,Void)
 		error("Please implement code to solve $eq for $sym")
 	end
 #	if isa(s.lhs,Component) #how to avoid infinite recursion?
@@ -197,7 +197,7 @@ function pushallunique!(a1::Array,d)
 	end
 	return a1
 end
-pushallunique!(a1::Array,b::Bool)=Nothing
+pushallunique!(a1::Array,b::Bool)=Void
 uniquefilter{T}(a::Array{T})=pushallunique!(T[],a)
 include("matchers.jl")
 matchfuns=Function[]
@@ -220,7 +220,7 @@ function matches(eq::Equation)
 			end
 			push!(teq.rhs,nterm)
 		else
-			teq.rhs=Expression(Term[[teq.rhs],[-1,terms[term]]])
+			teq.rhs=Expression(Term[[teq.rhs],[-1;terms[term]]])
 		end
 		if !isa(tt,X)
 			deleteat!(tt,term)

@@ -25,8 +25,8 @@ function findpows(term::Array)
 	end
 	nfacs=length(term)
 	for p in unique(permutations(term))
-		for powl in 1:floor(nfacs/2)
-			maxpow=floor(nfacs/powl)
+		for powl in 1:Int(floor(nfacs/2))
+			maxpow=Int(floor(nfacs/powl))
 			pocketpow=1
 			for pow in 1:maxpow-1
 				start1=1+(pow-1)*powl
@@ -63,14 +63,14 @@ function matches(term::Term,t::Type{Pow})
 		nterm=deepcopy(term)
 		if isa(potpow.x,X)
 			powloc=indin(term,potpow.x)
-			deleteat!(nterm,[powloc:powloc+potpow.y-1])
+			deleteat!(nterm,collect(powloc:powloc+potpow.y-1))
 			insert!(nterm,powloc,potpow)		
 		elseif isa(potpow.x,Expression)
 			powloc=indin(term,potpow.x)
 			if powloc==0 && length(potpow.x)==1
 				factors=uniquefilter(potpow.x.terms[1])
 				for fac in factors
-					deleteat!(nterm,[indin(nterm,fac):indin(nterm,fac)+potpow.y-1])
+					deleteat!(nterm,collect(indin(nterm,fac):indin(nterm,fac)+potpow.y-1))
 				end
 				insert!(nterm,length(nterm)+1,potpow)
 			else

@@ -17,10 +17,10 @@ sqrt(:x^2)
 
 To include units use the Physical type:
 ```
-l=Physical(:l,:meter);t=Physical(:t,:second);v=simplify(l/t)
+l=Physical(:l,:meter);t=Physical(:t,:second);v=l/t;print(v)
 ```
 
-Specify relations conveniently with the equ macro:
+Specify equations conveniently with the equ macro:
 ```
 x=@equ x=a*b^sqrt(y)+c/d
 ```

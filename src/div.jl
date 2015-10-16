@@ -2,6 +2,9 @@ type ╱ <: SingleArg #\diagup
 	x
 end
 Div=╱
+function print(io::IO,d::Div)
+	print(io,"/($(d.x))")
+end
 /(x::X,ex::Ex)=expression(Factor[x,Div(ex)])
 function /(ex::Expression,x::Ex)
 	ap=dcterms(ex)

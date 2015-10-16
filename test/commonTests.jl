@@ -41,4 +41,8 @@ ex2=Equations.sumsym(-:x+:x*:y+:x)
 @test Equations.sumsym(1-:x+:x)==1
 @test Equations.sumnum(1+:x-1)==:x
 
-@test evaluate(:x+:z,[:x=>3,:z=>4])==7
+@test evaluate(:x+:z,Dict(:x=>3,:z=>4))==7
+
+#Units
+l=Physical(:l,:m);t=Physical(:t,:s);v=l/t;
+@test v==Physical(:l/:t,:m/:s)

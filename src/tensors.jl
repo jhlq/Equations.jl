@@ -96,3 +96,6 @@ type Form<:Component
 	w
 	p
 end
+type Trace
+	x
+end
