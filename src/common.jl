@@ -1,4 +1,4 @@
-import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,.*,==
+import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,.*,==,/, setindex!
 
 abstract Component
 function ==(c1::Component, c2::Component)
@@ -51,7 +51,7 @@ function ==(cs1::Components,cs2::Components)
 end
 
 type Expression 
-	terms::Array{Array{Union(Number,Symbol,Component,Expression),1},1}
+	terms::Array{Array{Union{Number,Symbol,Component,Expression},1},1}
 end
 length(ex::Expression)=length(ex.terms)
 getindex(ex::Expression,i::Integer)=getindex(ex.terms,i)
@@ -86,7 +86,7 @@ function setindex!(c::Component,a,t::Array)
 	end
 	p[t[end]]=a
 end
-function print(io::IO,c::Union(Number,Component))
+function print(io::IO,c::Union{Number,Component})
 	if isa(c,Number)&&(isa(c,Complex)||c<0)
 		print(io,'(')
 		show(io,c)
@@ -136,10 +136,10 @@ function print(io::IO,ex::Expression)
 		preprint(io,ex.terms[end][end])
 	end
 end
-N=Union(Number,Symbol)
-X=Union(Number,Symbol,Component)
-Ex=Union(Symbol,Component,Expression)
-EX=Union(Number,Symbol,Component,Expression)
+N=Union{Number,Symbol}
+X=Union{Number,Symbol,Component}
+Ex=Union{Symbol,Component,Expression}
+EX=Union{Number,Symbol,Component,Expression}
 typealias Factor EX
 show(io::IO,x::Type{Factor})=print(io, "Factor")
 typealias Term Array{Factor,1}
@@ -244,7 +244,7 @@ function *(a::X,ex::Expression)
 end
 
 *(a::Number,c::Component)=Expression([a,c])
-*(c1::Union(Component,Symbol),c2::Union(Component,Symbol))=Expression(Term[Factor[c1,c2]])
+*(c1::Union{Component,Symbol},c2::Union{Component,Symbol})=Expression(Term[Factor[c1,c2]])
 function *(ex::Expression,x::EX)
 	ap=terms(deepcopy(ex))
 	for t in ap

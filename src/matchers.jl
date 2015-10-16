@@ -5,7 +5,7 @@ type Named <: Component
 	sym::Symbol
 end
 
-relations=Dict{String,Vector{Equation}}()
+relations=Dict{AbstractString,Vector{Equation}}()
 
 function validated(related::Array,pat::Array)
 	tmd=Dict[]

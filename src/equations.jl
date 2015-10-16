@@ -75,7 +75,7 @@ equation(ex::EX)=Equation(ex,0,Any[])
 equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[])
 ctranspose(eq::Equation)=Equation(eq.rhs,eq.lhs)
 ==(eq1::Equation,eq2::Equation)=eq1.lhs==eq2.lhs&&eq1.rhs==eq2.rhs
-(&)(eq1::Equation,eq2::Equation)=simplify(Equation(replace(eq1.lhs,[eq2.lhs=>eq2.rhs]),replace(eq1.rhs,[eq2.lhs=>eq2.rhs])))
+(&)(eq1::Equation,eq2::Equation)=simplify(Equation(replace(eq1.lhs,Dict(eq2.lhs=>eq2.rhs)),replace(eq1.rhs,Dict(eq2.lhs=>eq2.rhs))))
 function (&)(eq::Equation,eqa::Array{Equation})
 	for teq in eqa
 		eq=eq&teq
@@ -85,7 +85,7 @@ end
 function (&)(ex::Expression,eq::Equation)
 	ex=simplify(ex)
 	if isa(eq.lhs,Symbol)
-		return replace(ex,[eq.lhs=>eq.rhs])
+		return replace(ex,Dict(eq.lhs=>eq.rhs))
 	end
 	m=matches(ex,eq)
 	if !isempty(m)
@@ -114,7 +114,7 @@ end
 function (&)(ex::Component,eq::Equation)
 	ex=simplify(ex)
 	if isa(eq.lhs,Symbol)
-		return replace(ex,[eq.lhs=>eq.rhs])
+		return replace(ex,Dict(eq.lhs=>eq.rhs))
 	end
 	m=matches(ex,eq)
 	if !isempty(m)

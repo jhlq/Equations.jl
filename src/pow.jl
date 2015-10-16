@@ -5,7 +5,7 @@ end
 ==(p1::Pow,p2::Pow)=p1.x==p2.x&&p1.y==p2.y
 import Base: ^, hash
 ^(x::EX,y::Ex)=Pow(x,y)
-^(x::Ex,y::FloatingPoint)=Pow(x,y)
+^(x::Ex,y::AbstractFloat)=Pow(x,y)
 ^(x::Ex,y::Complex)=Pow(x,y)
 hash(p::Pow) = hash(p.x) + hash(p.y)
 replace(p::Pow,dic::Dict)=Pow(replace(p.x,dic),replace(p.y,dic))

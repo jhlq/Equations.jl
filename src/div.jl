@@ -1,5 +1,3 @@
-import Base./
-
 type ╱ <: SingleArg #\diagup
 	x
 end
