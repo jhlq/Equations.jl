@@ -1,3 +1,5 @@
+#Based on http://www.aei.mpg.de/~gielen/diffgeo.pdf
+
 using Equations
 
 Ea=Tensor(:E,0,:a,2) 			#1.1

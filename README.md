@@ -1,12 +1,7 @@
 [![Build Status](https://travis-ci.org/jhlq/Equations.jl.svg?branch=master)](https://travis-ci.org/jhlq/Equations.jl)
 
 # Equations
-To install the latest version write:
-```
-Pkg.clone("Equations")
-```
-
-Calculate with symbols as numbers (symbol names starting with 3 underscores are reserved for internal use):
+Calculate with symbols as numbers:
 ```
 :x+:y
 :x*:y
@@ -64,7 +59,7 @@ print(sqrt(tri))
 
 Equations can also be constructed without macros (the ≖ is written as \eqcirc+tab) and results derived by checking for matches:
 ```
-rule=Der(:a*:x,:x)≖:a
+rule=Der(:a*:x,:x)≖:a #equivalent to Equation(Der(:a*:x,:x),:a)
 ex=Der(3*:x,:x)
 m=matches(ex,rule)
 ```
@@ -102,5 +97,9 @@ meq=matches(:x^2+:a*:x,Div)[1]
 evaluate(meq,[:x=>0])
 ```
 
-Types currently implemented to various degrees include Div, Sqrt, Pow, Der and soon Integral (∫). To implement your own type make it descend from Component and define custom simplify and matches along with type specific functionality, the first field of your custom type should be named x although that convention is being phased out in favor of getarg(c,argn).
+To implement your own type make it descend from Component, you may also have to replace "using Equations" with "importall Equations". The first field of a Component is conventionally named x.
 
+To install the latest version write:
+```
+Pkg.clone("Equations")
+```

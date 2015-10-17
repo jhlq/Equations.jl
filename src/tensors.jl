@@ -13,11 +13,16 @@ end
 type Braket<:Component
 	x
 	y
+	o #middle element
 end
+Braket(x,y)=Braket(x,y,1)
 function print(io::IO,bk::Braket)
 	print(io,'⟨')
 	print(io,bk.x)
 	print(io,'|')
+	if bk.o!=1
+		print(io,"$(bk.o)|")
+	end
 	print(io,bk.y)
 	print(io,'⟩')
 end
@@ -98,4 +103,8 @@ type Form<:Component
 end
 type Trace
 	x
+end
+type Commutator
+	x
+	y
 end
