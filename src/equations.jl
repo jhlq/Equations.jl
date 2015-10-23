@@ -13,15 +13,25 @@ function tosym(expr)
 		return QuoteNode(:($expr))
 	elseif isa(expr,Expr)
 		#dump(expr)
-		if expr.head==:vect
+		if expr.head==:vcat
 			#dump(expr)
-			s1=1
+			for s in 1:length(expr.args)
+				#println(expr.args[s])
+				for p in 1:length(expr.args[s].args)
+					expr.args[s].args[p]=tosym(expr.args[s].args[p])
+				end
+			end
 		else
-			s1=2
-		end
-		for s in s1:length(expr.args)
-			#println(expr.args[s])
-			expr.args[s]=tosym(expr.args[s])
+			if expr.head==:vect
+				#dump(expr)
+				s1=1
+			else
+				s1=2
+			end
+			for s in s1:length(expr.args)
+				#println(expr.args[s])
+				expr.args[s]=tosym(expr.args[s])
+			end
 		end
 	end
 	return expr
