@@ -31,6 +31,16 @@ macro equ(eq)
 	push!(neq.args,tosym(eq.args[1]),≖,tosym(eq.args[2]))
 	neq
 end
+macro equs(eqs...)
+	l=length(eqs)
+	eqa=Expr(:vect)
+	for i in 1:l
+		neq=Expr(:comparison)
+		push!(neq.args,tosym(eqs[i].args[1]),≖,tosym(eqs[i].args[2]))
+		push!(eqa.args,neq)
+	end
+	return eqa
+end
 function print(io::IO,eq::Equation)
 	print(io,eq.lhs)
 	print(io," = ")

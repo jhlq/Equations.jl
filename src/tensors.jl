@@ -6,17 +6,25 @@ type Tensor<:AbstractTensor
 	rank
 end
 Tensor(a,b,c)=Tensor(a,b,c,-1)
+Tensor(a)=Tensor(a,-1,-1,-1)
 function print(io::IO,t::Tensor)
 	print(io,"$(t.x)($(t.upper),$(t.lower))")
 end
 
-type Braket<:Component
+type Bra<:Component
+	x
+end
+
+type Ket<:Component
+	x
+end
+type BraKet<:Component
 	x
 	y
 	o #middle element
 end
-Braket(x,y)=Braket(x,y,1)
-function print(io::IO,bk::Braket)
+BraKet(x,y)=BraKet(x,y,1)
+function print(io::IO,bk::BraKet)
 	print(io,'⟨')
 	print(io,bk.x)
 	print(io,'|')
@@ -75,7 +83,7 @@ function print(io::IO,tp::TensorProduct) #rewrite with macro
 	print(io," $(tp.tensors[end])")
 end
 type Wedge <: AbstractTensor
-	tensors
+	tensors::Term
 end
 function ∧(tp1::Wedge,tp2::Wedge)
 	tp=deepcopy(tp1)
@@ -101,10 +109,14 @@ type Form<:Component
 	w
 	p
 end
-type Trace
+type Trace<:Component
 	x
 end
-type Commutator
+type Commutator<:Component
 	x
 	y
 end
+type Transpose<:Component
+	x
+end
+

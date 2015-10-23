@@ -5,23 +5,23 @@ using Equations
 Ea=Tensor(:E,0,:a,2) 			#1.1
 u=Tensor(:u,:a,0,1)*Ea			#1.2
 
-eq1_3=@equ Braket(ω,α*v+β*w)=α*Braket(ω,v)+β*Braket(ω,w)	#1.3
+eq1_3=@equ BraKet(ω,α*v+β*w)=α*BraKet(ω,v)+β*BraKet(ω,w)	#1.3
 ω=Tensor(:ω,0,:a,1)*Tensor(:E,:a,0,2)				#1.4
 
-eq1_5=@equ Braket(Tensor(E,a,0,2),Tensor(E,0,b,2))=Delta(a,b)	#1.5
-eq1_6=@equ Braket(αη+βλ,u)=α*Braket(η,u)+β*Braket(λ,u)		#1.6
-eq1_7=@equ Braket(ω,u)=Tensor(ω,0,a,1)*Tensor(u,a,0,1)		#1.7
+eq1_5=@equ BraKet(Tensor(E,a,0,2),Tensor(E,0,b,2))=Delta(a,b)	#1.5
+eq1_6=@equ BraKet(αη+βλ,u)=α*BraKet(η,u)+β*BraKet(λ,u)		#1.6
+eq1_7=@equ BraKet(ω,u)=Tensor(ω,0,a,1)*Tensor(u,a,0,1)		#1.7
 
-eq1_8=@equ Braket(D(f),X)=X*f					#1.8
+eq1_8=@equ BraKet(D(f),X)=X*f					#1.8
 xj=Tensor(:x,:j,0,1)
-eq1_9=@equ Braket(DerOp(Tensor(x,i,0,1)),D(xj))=Delta(i,j)	#1.9
-eq1_10=@equ Braket(DerOp(Tensor(x,i,0,1)),D(xj))=DerOp(Tensor(x,i,0,1))*xj
+eq1_9=@equ BraKet(DerOp(Tensor(x,i,0,1)),D(xj))=Delta(i,j)	#1.9
+eq1_10=@equ BraKet(DerOp(Tensor(x,i,0,1)),D(xj))=DerOp(Tensor(x,i,0,1))*xj
 Xj=Tensor(:X,:j,0,1)
 X=Xj*DerOp(xj)
-eq1_11=@equ Braket(D(f),X)=X*f
+eq1_11=@equ BraKet(D(f),X)=X*f
 
 #If
-eq1_12=@equ Braket(D(f),X)=0
+eq1_12=@equ BraKet(D(f),X)=0
 #Then f is a constant in the direction of the vector X.
 
 eq1_13=@equ D(f)=Der(f,xi)*D(xi)
@@ -37,12 +37,12 @@ eq1_19=@equ Tensor(T,a´,b´)*Tensor(χ,a,a´)*Tensor(Φ,b´,b)=Tensor(T,a,b)
 eq1_22=@equ Tensor(E,a,0)∧Tensor(E,b,0)=Tensor(E,a,0)⊗Tensor(E,b,0)-Tensor(E,b,0)⊗Tensor(E,a,0)
 
 eq1_24=@equ P=Form(1/p!,Tensor(P,0,[a1,:...,ap],p),Tensor(E,a1,0)∧:...∧Tensor(E,ap,0),p)
-eq1_25=@equ Q=Form(1/q!,Tensor(Q,0,[b1,:...,bq],q),q)
+eq1_25=@equ Q=Form(1/q!,Tensor(Q,0,[b1,:...,bq],q),Tensor(E,b1,0)∧:...∧Tensor(E,bq,0),q)
 
 eq1_28=@equ P∧Q=-1^(p*q)*Q∧P
 
 eq1_32=@equ P=Form(1/p!,Tensor(P,0,[a1,:...,ap],p),Tensor(dx,a1,0)∧:...∧Tensor(dx,ap,0),p)
-eq1_33=@equ dP=Form(1/p!,Der(Tensor(P,,0,[a1,...,ap],p),Tensor(x,b,0)),Tensor(dx,b,0)∧Tensor(dx,a1,0)∧:...∧Tensor(dx,ap,0),p)
+eq1_33=@equ dP=Form(1/p!,Der(Tensor(P,0,[a1,:...,ap],p),Tensor(x,b,0)),Tensor(dx,b,0)∧Tensor(dx,a1,0)∧:...∧Tensor(dx,ap,0),p)
 
 eq1_36=@equ Tensor(A,a,a´)=Der(Tensor(x,a,0),Tensor(x´,a´,0))
 eq1_37=@equ Tensor(P,0,[a´1,:...,a´p])=Tensor(A,a1,a´1)*:...*Tensor(A,ap,a´p)*Tensor(P,0,[a1,:...,ap])
