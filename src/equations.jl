@@ -2,11 +2,11 @@ include("common.jl")
 import Base: &, ctranspose
 
 type Equation
-	lhs::EX
-	rhs::EX
+	lhs#::EX
+	rhs#::EX
 	divisions
 end
-Equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[]) #or set?
+Equation(ex1,ex2)=Equation(ex1,ex2,Any[]) #or set?
 function tosym(expr)
 	#println(expr)
 	if isa(expr,Symbol)
@@ -56,7 +56,7 @@ function print(io::IO,eq::Equation)
 	print(io," = ")
 	print(io,eq.rhs)
 end
-≖(a::EX,b::EX)=Equation(a,b)
+≖(a,b)=Equation(a,b)
 complexity(eq::Equation)=complexity(eq.lhs)+complexity(eq.rhs)
 isless(eq1::Equation,eq2::Equation)=complexity(eq1)<complexity(eq2)
 type EquationChain

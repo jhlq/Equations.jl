@@ -935,5 +935,6 @@ function pushall!(a::Array,b::Array)
 	for c in b
 		push!(a,c)
 	end
+	a
 end
 pushall!(a::Array,b)=push!(a,b)

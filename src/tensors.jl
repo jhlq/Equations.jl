@@ -10,7 +10,59 @@ Tensor(a)=Tensor(a,-1,-1,-1)
 function print(io::IO,t::Tensor)
 	print(io,"$(t.x)($(t.upper),$(t.lower))")
 end
-
+type Ten<:AbstractTensor
+	x
+	indices
+end
+function print(io::IO,t::Ten)
+	print(io,"$(t.x)($(t.indices))")
+end
+abstract Index
+function simplify(ex,t=Type{Ten})
+	inds=indsin(ex,Ten)
+	for te in 1:length(inds)
+		it1=inds[te][2] 
+		termi=it1[te][1]
+		indices=Array[]
+		for i in it1
+			push!(indices,Any[])
+			pushall!(indices[i],ex[termi][i].indices)
+		end
+		ii=[0,0]
+		for i in 1:length(indices)
+			b=false
+			for j in 1:length(indices)
+				if i==j
+					continue
+				elseif indices[i]==indices[j]
+					ii[1]=it1[i]
+					ii[2]=it1[j]
+					b=true
+					break
+				end
+			end
+			if b
+				break
+			end
+		end
+		if ii[1]!=0
+			if isa(ex[termi][ii[1]].indices,Array)
+				#handle
+			else
+				l=length(ex[termi][ii[1]].x)
+				nx=0
+				for i in 1:l
+					nx+=ex[termi][ii[1]].x[i]*ex[termi][ii[2]].x[i]
+					#println(nx)
+				end
+				ex[termi][ii[1]]=nx
+				ex[termi][ii[2]]=1
+				ex=simplify(ex)
+			end
+		end
+	end
+	return ex
+end
 type Bra<:Component
 	x
 end

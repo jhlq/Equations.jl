@@ -2,11 +2,14 @@ using Equations
 using Base.Test
 
 include("commonTests.jl")
-include("divTests.jl")
+include("DivTests.jl")
 include("equationsTests.jl")
 include("matchersTests.jl")
-include("powTests.jl")
-include("derTests.jl")
-include("vecTests.jl")
+include("PowTests.jl")
+include("DerTests.jl")
+include("VecTests.jl")
 include("plasmaTests.jl")
-include("logTests.jl")
+include("LogTests.jl")
+include("TenTests.jl")
+
+
