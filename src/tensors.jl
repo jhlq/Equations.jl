@@ -18,6 +18,14 @@ function print(io::IO,t::Ten)
 	print(io,"$(t.x)($(t.indices))")
 end
 abstract Index
+function allnum(a::Array)
+	for n in a
+		if !isa(n,Number)
+			return false
+		end
+	end
+	return true
+end
 function simplify(ex,t=Type{Ten})
 	inds=indsin(ex,Ten)
 	for te in 1:length(inds)
@@ -46,8 +54,15 @@ function simplify(ex,t=Type{Ten})
 			end
 		end
 		if ii[1]!=0
-			if isa(ex[termi][ii[1]].indices,Array)
-				#handle
+			aa=[isa(ex[termi][ii[1]].indices,Array),isa(ex[termi][ii[2]].indices,Array)]
+			if sum(aa)>0
+				if sum(aa)==2
+					if allnum([ex[termi][ii[1]].indices;ex[termi][ii[2]].indices])
+						
+					end
+				else
+					#handle
+				end
 			else
 				l=length(ex[termi][ii[1]].x)
 				nx=0
@@ -62,6 +77,33 @@ function simplify(ex,t=Type{Ten})
 		end
 	end
 	return ex
+end
+type Alt<:AbstractTensor #Alternating tensor
+	x
+end
+function print(io::IO,a::Alt)
+	print(io,"ϵ($(a.x))")
+end
+function permsign(p)
+  n = length(p)
+  A = zeros(n,n)
+  if minimum(p)==0
+	p+=1
+  end
+  for i in 1:n
+    try
+      A[i,p[i]] = 1
+    catch er
+      error("Correct the indices of the Alt tensor: $p")
+    end
+  end
+  det(A)
+end
+function simplify(a::Alt)
+	if isa(a.x,Array)&&allnum(a.x)
+		return permsign(a.x)
+	end
+	return a
 end
 type Bra<:Component
 	x
