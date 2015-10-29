@@ -105,7 +105,7 @@ end
 function (&)(ex::Expression,eq::Equation)
 	ex=simplify(ex)
 	if isa(eq.lhs,Symbol)
-		return replace(ex,Dict(eq.lhs=>eq.rhs))
+		return simplify(replace(ex,Dict(eq.lhs=>eq.rhs)))
 	end
 	m=matches(ex,eq)
 	if !isempty(m)
@@ -380,4 +380,4 @@ solve(ex::Ex)=solve(equation(ex))
 solve(ex::Ex,a)=solve(equation(ex),a)
 
 include("units.jl")
-include("tensors.jl")
+

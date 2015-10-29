@@ -325,9 +325,9 @@ function indsin(array::Array,item)
 	return ind
 end
 function indsin(ex::Expression,item)
-	if simplify(ex)<ex
-		warn("Please call simplify on $ex")
-	end
+	#if simplify(ex)<ex
+	#	warn("Please call simplify on $ex")
+	#end
 	inds=Tuple[]
 	for ti in 1:length(ex)
 		ind=indsin(ex[ti],item)
@@ -435,7 +435,7 @@ function has(c::Component,x::Type)
 	return false
 end
 has(n::N,x::Symbol)=n==x
-has(::Symbol, ::Type)=false
+has(::N, ::Type)=false
 function maketype(c::Component,fun) 
 	args=getargs(c)
 	for argi in 1:length(args)
@@ -588,6 +588,7 @@ function sort!(ex::Expression)
 	return expression(sort!(ap))
 end
 sort(ex::Expression)=sort!(deepcopy(ex))
+include("tensors.jl")
 function simplify(ex::Expression)
 	tex=0
 	nit=0
@@ -610,8 +611,11 @@ function simplify(ex::Expression)
 		ex=extract(expression(ap)) #better to check if res::N before calling expression instead of extracting?
 		nit+=1
 		if nit>90
-			warn("Stuck in simplify! Iteration #$nit: $ex")
+			warn("Stuck in simplify! Iteration $nit: $ex")
 		end
+	end
+	if has(ex,Ten)
+		ex=simplify(ex,Ten)
 	end
 	return ex#sort!(ex) 
 end
@@ -847,13 +851,13 @@ function replace(c::Component,symdic::Dict)
 	end
 	return typeof(c)(args...)
 end
-function replace(a::Array,symdic::Dict)
-	a=deepcopy(a)
+function replace!(a::Array,symdic::Dict)
 	for i in 1:length(a)
 		a[i]=replace(a[i],symdic)
 	end
 	return a
 end
+replace(a::Array,symdic::Dict)=replace!(deepcopy(a),symdic)
 function replace(s::Symbol,symdic::Dict)
 	for tup in symdic
 		sym,val=tup

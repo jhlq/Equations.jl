@@ -10,14 +10,6 @@ Tensor(a)=Tensor(a,-1,-1,-1)
 function print(io::IO,t::Tensor)
 	print(io,"$(t.x)($(t.upper),$(t.lower))")
 end
-type Ten<:AbstractTensor
-	x
-	indices
-end
-function print(io::IO,t::Ten)
-	print(io,"$(t.x)($(t.indices))")
-end
-abstract Index
 function allnum(a::Array)
 	for n in a
 		if !isa(n,Number)
@@ -26,15 +18,33 @@ function allnum(a::Array)
 	end
 	return true
 end
+type Ten<:AbstractTensor
+	x
+	indices
+end
+function simplify(t::Ten)
+	if isa(t.x,Array)
+		if isa(t.indices,Number)
+			return t.x[t.indices]
+		elseif isa(t.indices,Array)&&allnum(t.indices)
+			return t.x[t.indices...]
+		end
+	end
+	return t
+end
+function print(io::IO,t::Ten)
+	print(io,"$(t.x)($(t.indices))")
+end
+abstract Index
 function simplify(ex,t=Type{Ten})
 	inds=indsin(ex,Ten)
 	for te in 1:length(inds)
 		it1=inds[te][2] 
-		termi=it1[te][1]
+		termi=inds[te][1]
 		indices=Array[]
-		for i in it1
+		for i in 1:length(it1)
 			push!(indices,Any[])
-			pushall!(indices[i],ex[termi][i].indices)
+			pushall!(indices[i],ex[termi][it1[i]].indices)
 		end
 		ii=[0,0]
 		for i in 1:length(indices)
@@ -79,25 +89,25 @@ function simplify(ex,t=Type{Ten})
 	return ex
 end
 type Alt<:AbstractTensor #Alternating tensor
-	x
+	x::Array{Any}
 end
 function print(io::IO,a::Alt)
 	print(io,"ϵ($(a.x))")
 end
 function permsign(p)
-  n = length(p)
-  A = zeros(n,n)
-  if minimum(p)==0
+	n = length(p)
+	A = zeros(n,n)
+	if minimum(p)==0
 	p+=1
-  end
-  for i in 1:n
-    try
-      A[i,p[i]] = 1
-    catch er
-      error("Correct the indices of the Alt tensor: $p")
-    end
-  end
-  det(A)
+	end
+	for i in 1:n
+		try
+			A[i,p[i]] = 1
+		catch er
+			error("Correct the indices of the Alt tensor: $p")
+		end
+	end
+	det(A)
 end
 function simplify(a::Alt)
 	if isa(a.x,Array)&&allnum(a.x)
