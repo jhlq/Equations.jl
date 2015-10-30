@@ -12,3 +12,8 @@ ex=ex&Equation(:a,a)&Equation(:b,b)
 #@test c[1]==ex&@equ(i=1)
 #@test c[2]==ex&@equ(i=2)
 #@test c[3]==ex&@equ(i=3)
+
+ex=Ten([1,2,3],:i)*Ten([3,2,1],:i)
+@test sumconv(ex)==10
+ex=:c+Ten([:a1,:a2,:a3],:i)*Ten([:b1,:b2,:b3],:i)+:c;nex=sumconv(ex)
+@test nex==simplify(2*:c+:a1*:b1+:a2*:b2+:a3*:b3)

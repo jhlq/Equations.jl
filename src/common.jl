@@ -427,6 +427,9 @@ function has(c::Component,x::Symbol)
 	return false
 end
 function has(c::Component,x::Type)
+	if isa(c,x)
+		return true
+	end
 	for a in getargs(c)
 		if has(a,x)
 			return true

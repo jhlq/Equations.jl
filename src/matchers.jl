@@ -2,7 +2,7 @@ type Oneable <: Component
 	x
 end
 type Named <: Component
-	sym::Symbol
+	x
 end
 
 relations=Dict{AbstractString,Vector{Equation}}()
@@ -159,6 +159,7 @@ function matches(n::EX,pat::Symbol)
 	return md
 end
 matches(::N, ::Expression)=[]
+matches(::N, ::Component)=[]
 matches(::Number, ::Equation)=[]
 function stageoneables(pat)
 	ois=expandindices(indsin(pat.lhs,Oneable))

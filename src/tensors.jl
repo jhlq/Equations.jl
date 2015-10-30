@@ -26,17 +26,128 @@ function simplify(t::Ten)
 	if isa(t.x,Array)
 		if isa(t.indices,Number)
 			return t.x[t.indices]
-		elseif isa(t.indices,Array)&&allnum(t.indices)
-			return t.x[t.indices...]
+		elseif isa(t.indices,Array)
+			if allnum(t.indices)
+				return t.x[t.indices...]
+			elseif isa(t.indices[end],Number)
+				s=size(t.x)
+				i=Any[]
+				for l in 1:length(s)-1
+					push!(i,:)
+				end
+				push!(i,t.indices[end])
+				return Ten(t.x[i...],t.indices[1:end-1])
+			end
 		end
 	end
 	return t
 end
 function print(io::IO,t::Ten)
-	print(io,"$(t.x)($(t.indices))")
+	print(io,"$(t.x)(")
+	if isa(t.indices,Array)
+		if !isempty(t.indices)
+			print(io,t.indices[1])
+			for i in 2:length(t.indices)
+				print(io,' ',t.indices[i])
+			end
+		end
+	else
+		print(io,t.indices)
+	end
+	print(io,")")
 end
-abstract Index
+abstract AbstractIndex<:Component
+type Up<:AbstractIndex
+	x
+end
+function sumconv(ex)
+	inds=indsin(ex,Ten)
+#	println(inds)
+	for te in 1:length(inds)
+		it1=inds[te][2] 
+		termi=inds[te][1]
+		indices=Array[]
+		for i in 1:length(it1)
+			push!(indices,Any[])
+			pushall!(indices[i],ex[termi][it1[i]].indices)
+		end
+		ii=[0,0]
+		iii=[1,1]
+		for i in 1:length(indices)
+		for i2 in 1:length(indices[i])
+			b=false
+			for j in 1:length(indices)
+			for j2 in 1:length(indices[j])
+				if i==j&&i2==j2
+					continue
+				elseif indices[i][i2]==indices[j][j2]
+					ii[1]=it1[i]
+					ii[2]=it1[j]
+					iii[1]=i2
+					iii[2]=j2
+					b=true
+					break
+				end
+			end
+			end
+			if b
+				break
+			end
+		end
+		end
+#		println(indices,ii,iii)
+		if ii[1]!=0
+#		println(ex[termi][ii[1]])
+#		println(ex[termi][ii[2]])
+			if isa(ex[termi][ii[1]].x,Array)&&isa(ex[termi][ii[2]].x,Array)
+				nex=0
+				for t in 1:termi-1
+					#println(ex[termi-t])
+					nex=expression(ex[termi-t])+nex
+				end
+				s1=size(ex[termi][ii[1]].x)
+				s2=size(ex[termi][ii[2]].x)
+				xxi1=Any[]
+				xxi2=Any[]
+				for si in 1:length(s1)
+					push!(xxi1,:)
+				end
+				xxi1[end]=0
+				for si in 1:length(s2)
+					push!(xxi2,:)
+				end
+				xxi2[end]=0
+				nind1=deepcopy(indices[ii[1]])
+				deleteat!(nind1,iii[1])
+				nind2=deepcopy(indices[ii[2]])
+				deleteat!(nind2,iii[2])
+				for xi in 1:s1[end]
+					nt=deepcopy(ex[termi])
+					xxi1[end]=xi
+					xxi2[end]=xi
+					if isempty(nind1)
+						nt[ii[1]]=nt[ii[1]].x[xxi1...]
+					else
+						nt[ii[1]]=Ten(nt[ii[1]].x[xxi1...],nind1)
+					end
+					if isempty(nind2)
+						nt[ii[2]]=nt[ii[2]].x[xxi2...]
+					else
+						nt[ii[2]]=Ten(nt[ii[2]].x[xxi2...],nind2)
+					end
+					nex=nex+expression(nt)
+				end
+				for t in termi+1:length(ex)
+					nex=nex+expression(ex[t])
+				end
+				return simplify(nex)
+			end
+		end
+	end
+	return ex
+end
 function simplify(ex,t=Type{Ten})
+#=
 	inds=indsin(ex,Ten)
 	for te in 1:length(inds)
 		it1=inds[te][2] 
@@ -63,7 +174,7 @@ function simplify(ex,t=Type{Ten})
 				break
 			end
 		end
-		if ii[1]!=0
+		if ii[1]!=0&&isa(ex[termi][ii[1]].x,Array)&&isa(ex[termi][ii[2]].x,Array)
 			aa=[isa(ex[termi][ii[1]].indices,Array),isa(ex[termi][ii[2]].indices,Array)]
 			if sum(aa)>0
 				if sum(aa)==2
@@ -86,7 +197,8 @@ function simplify(ex,t=Type{Ten})
 			end
 		end
 	end
-	return ex
+=#
+	return sumconv(ex)
 end
 type Alt<:AbstractTensor #Alternating tensor
 	x::Array{Any}
