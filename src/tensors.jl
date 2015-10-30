@@ -62,7 +62,7 @@ type Up<:AbstractIndex
 end
 function sumconv(ex)
 	inds=indsin(ex,Ten)
-#	println(inds)
+	println(inds)
 	for te in 1:length(inds)
 		it1=inds[te][2] 
 		termi=inds[te][1]
@@ -145,6 +145,26 @@ function sumconv(ex)
 		end
 	end
 	return ex
+end
+function sumconv(t::Ten)
+	if isa(t.indices,Array)
+		iii=[0,0]
+		for i in 1:length(t.indices)
+			b=false
+			for j in 2:length(t.indices)
+				if i==j
+					continue
+				elseif t.indices[i]==t.indices[j]
+					iii[1]=i;iii[2]=j
+					b=true;break
+				end
+			end
+			if b;break;end
+		end
+		if iii[1]!=0
+			
+		end
+	end
 end
 function simplify(ex,t=Type{Ten})
 #=

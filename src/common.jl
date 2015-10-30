@@ -613,12 +613,13 @@ function simplify(ex::Expression)
 		end
 		ex=extract(expression(ap)) #better to check if res::N before calling expression instead of extracting?
 		nit+=1
+		if has(ex,Ten)
+			ex=simplify(ex,Ten)
+		end
 		if nit>90
 			warn("Stuck in simplify! Iteration $nit: $ex")
+			break
 		end
-	end
-	if has(ex,Ten)
-		ex=simplify(ex,Ten)
 	end
 	return ex#sort!(ex) 
 end
