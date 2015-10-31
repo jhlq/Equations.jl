@@ -17,3 +17,8 @@ ex=Ten([1,2,3],:i)*Ten([3,2,1],:i)
 @test sumconv(ex)==10
 ex=:c+Ten([:a1,:a2,:a3],:i)*Ten([:b1,:b2,:b3],:i)+:c;nex=sumconv(ex)
 @test nex==simplify(2*:c+:a1*:b1+:a2*:b2+:a3*:b3)
+
+@test simplify(Ten(eye(3,3),[:i,:i]))==3
+@test simplify(Ten(eye(4,4),[:i,:i]))==4
+@test simplify(Ten(eye(5,5),[:i,:i]))==5
+

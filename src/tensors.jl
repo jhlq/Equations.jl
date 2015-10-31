@@ -20,8 +20,9 @@ function allnum(a::Array)
 end
 type Ten<:AbstractTensor
 	x
-	indices
+	indices::Array{Any}
 end
+Ten(x,s::Symbol)=Ten(x,[s])
 function simplify(t::Ten)
 	if isa(t.x,Array)
 		if isa(t.indices,Number)
@@ -60,9 +61,21 @@ abstract AbstractIndex<:Component
 type Up<:AbstractIndex
 	x
 end
+function duplicates(arr)
+	for a in 1:length(arr)
+		for b in 1:length(arr)
+			if a==b
+				continue
+			elseif arr[a]==arr[b]
+				return [a,b]
+			end
+		end
+	end
+	return 0
+end
 function sumconv(ex)
 	inds=indsin(ex,Ten)
-	println(inds)
+	#println(inds)
 	for te in 1:length(inds)
 		it1=inds[te][2] 
 		termi=inds[te][1]
@@ -148,23 +161,35 @@ function sumconv(ex)
 end
 function sumconv(t::Ten)
 	if isa(t.indices,Array)
-		iii=[0,0]
-		for i in 1:length(t.indices)
-			b=false
-			for j in 2:length(t.indices)
-				if i==j
-					continue
-				elseif t.indices[i]==t.indices[j]
-					iii[1]=i;iii[2]=j
-					b=true;break
+		iii=duplicates(t.indices)
+		if iii!=0
+			ni=length(t.indices)
+			si=size(t.x)
+			idif=length(si)-ni
+			slind=Any[]
+			for n in 1-idif:ni
+				if n==iii[1]
+					push!(slind,1)
+				elseif n==iii[2]
+					push!(slind,1)
+				else
+					push!(slind,:)
 				end
 			end
-			if b;break;end
-		end
-		if iii[1]!=0
-			
+			nex=Ten(t.x[slind...],deleteat!(deepcopy(t.indices),iii))
+			for s1 in 1:si[iii[1]+idif]-1
+				slind[iii[1]+idif]+=1
+				slind[iii[2]+idif]+=1
+				#for s2 in 1:si[iii[2]+idif]-1
+					nex=nex+Ten(t.x[slind...],deleteat!(deepcopy(t.indices),iii))
+				#	slind[iii[2]+idif]+=1
+				#end
+				#slind[iii[2]+idif]=1
+			end
+			return nex
 		end
 	end
+	t
 end
 function simplify(ex,t=Type{Ten})
 #=
@@ -220,6 +245,22 @@ function simplify(ex,t=Type{Ten})
 =#
 	return sumconv(ex)
 end
+function simplify(t::Ten)
+	if duplicates(t.indices)!=0
+		for i in 1:30
+			nt=sumconv(t)
+			if nt==t
+				break
+			else
+				t=nt
+			end
+		end
+		return simplify(t)
+	elseif isempty(t.indices)&&!isa(t.x,Array)
+		return t.x
+	end
+	t
+end
 type Alt<:AbstractTensor #Alternating tensor
 	x::Array{Any}
 end
@@ -242,8 +283,12 @@ function permsign(p)
 	det(A)
 end
 function simplify(a::Alt)
-	if isa(a.x,Array)&&allnum(a.x)
-		return permsign(a.x)
+	if isa(a.x,Array)
+		if allnum(a.x)
+			return permsign(a.x)
+		elseif duplicates(a.x)!=0
+			return 0
+		end
 	end
 	return a
 end
