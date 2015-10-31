@@ -23,26 +23,6 @@ type Ten<:AbstractTensor
 	indices::Array{Any}
 end
 Ten(x,s::Symbol)=Ten(x,[s])
-function simplify(t::Ten)
-	if isa(t.x,Array)
-		if isa(t.indices,Number)
-			return t.x[t.indices]
-		elseif isa(t.indices,Array)
-			if allnum(t.indices)
-				return t.x[t.indices...]
-			elseif isa(t.indices[end],Number)
-				s=size(t.x)
-				i=Any[]
-				for l in 1:length(s)-1
-					push!(i,:)
-				end
-				push!(i,t.indices[end])
-				return Ten(t.x[i...],t.indices[1:end-1])
-			end
-		end
-	end
-	return t
-end
 function print(io::IO,t::Ten)
 	print(io,"$(t.x)(")
 	if isa(t.indices,Array)
@@ -180,11 +160,7 @@ function sumconv(t::Ten)
 			for s1 in 1:si[iii[1]+idif]-1
 				slind[iii[1]+idif]+=1
 				slind[iii[2]+idif]+=1
-				#for s2 in 1:si[iii[2]+idif]-1
-					nex=nex+Ten(t.x[slind...],deleteat!(deepcopy(t.indices),iii))
-				#	slind[iii[2]+idif]+=1
-				#end
-				#slind[iii[2]+idif]=1
+				nex=nex+Ten(t.x[slind...],deleteat!(deepcopy(t.indices),iii))
 			end
 			return nex
 		end
@@ -258,6 +234,22 @@ function simplify(t::Ten)
 		return simplify(t)
 	elseif isempty(t.indices)&&!isa(t.x,Array)
 		return t.x
+	elseif isa(t.x,Array)
+		if isa(t.indices,Number)
+			return t.x[t.indices]
+		elseif isa(t.indices,Array)
+			if allnum(t.indices)
+				return t.x[t.indices...]
+			elseif isa(t.indices[end],Number)
+				s=size(t.x)
+				i=Any[]
+				for l in 1:length(s)-1
+					push!(i,:)
+				end
+				push!(i,t.indices[end])
+				return Ten(t.x[i...],t.indices[1:end-1])
+			end
+		end
 	end
 	t
 end
