@@ -76,7 +76,7 @@ function duplicates(arrs...)
 		for j in i+1:larrs
 			d=duplicates(arrs[i],arrs[j])
 			if d!=0
-				return d
+				return ([i,j],d)
 			end
 		end
 	end
