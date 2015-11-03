@@ -173,7 +173,18 @@ function sumconv!(t::Term)
 	for i in inds
 		t[i]=sumconv(t[i])
 	end
-	
+	indsa=Array[]
+	for i in inds
+		push!(indsa,t[i].indices)
+	end
+	iiii=duplicates(indsa...)
+	if iiii!=0
+		ti1=inds[iiii[1][1]]
+		ti2=inds[iiii[1][2]]
+		iii=iiii[2]
+		println(ti1,ti2,iii)
+	end
+		
 end
 sumconv(t::Term)=sumconv!(deepcopy(t))
 function sumconv(t::Ten)
