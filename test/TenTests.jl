@@ -22,3 +22,10 @@ ex=:c+Ten([:a1,:a2,:a3],:i)*Ten([:b1,:b2,:b3],:i)+:c;nex=sumconv(ex)
 @test simplify(Ten(eye(4,4),[:i,:i]))==4
 @test simplify(Ten(eye(5,5),[:i,:i]))==5
 
+#print(simplify(Ten([1,2],:j)*Ten([3 2;1 -1],[:i,:j]))) == [3,1](i) + 2 [2,-1](i)
+#print(simplify(Ten([1,2],:j)*Ten([3 2;1 -1],[:j,:i]))) == [3 2](i) + 2 [1 -1](i)
+
+@test duplicates([1,2,3,4,2])==[2,5]
+@test duplicates([1,2,3,4,2,2])==[5,6]
+@test duplicates([1,2,3],[0,3,0])==[3,2]
+@test duplicates([1,3,3],[3,3,3])==[3,3]

@@ -42,12 +42,29 @@ type Up<:AbstractIndex
 	x
 end
 function duplicates(arr)
-	for a in 1:length(arr)
-		for b in 1:length(arr)
+	larr=length(arr)
+	for a in 1:larr
+		aa=larr-a+1
+		for b in 1:larr
+			bb=larr-b+1
 			if a==b
 				continue
-			elseif arr[a]==arr[b]
-				return [a,b]
+			elseif arr[aa]==arr[bb]
+				return [bb,aa]
+			end
+		end
+	end
+	return 0
+end
+function duplicates(arr1,arr2)
+	larr1=length(arr1)
+	for a in 1:larr1
+		aa=larr1-a+1
+		larr2=length(arr2)
+		for b in 1:larr2
+			bb=larr1-b+1
+			if arr1[aa]==arr2[bb]
+				return [aa,bb]
 			end
 		end
 	end
@@ -139,6 +156,14 @@ function sumconv(ex)
 	end
 	return ex
 end
+function sumconv!(t::Term)
+	inds=indsin(t,Ten)
+	for i in inds
+		t[i]=sumconv(t[i])
+	end
+	
+end
+sumconv(t::Term)=sumconv!(deepcopy(t))
 function sumconv(t::Ten)
 	if isa(t.indices,Array)
 		iii=duplicates(t.indices)
