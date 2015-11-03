@@ -153,10 +153,10 @@ function (&)(ex::Symbol,eq::Equation)
 	if isa(eq.lhs,Symbol)&&eq.lhs==ex
 		return eq.rhs
 	end
-	m=matches(ex,eq)
-	if !isempty(m)
-		return simplify(m[1])
-	end
+#	m=matches(ex,eq)
+#	if !isempty(m)
+#		return simplify(m[1])
+#	end
 	return ex
 end
 (&)(x::Number,eq::Equation)=x
