@@ -62,9 +62,21 @@ function duplicates(arr1,arr2)
 		aa=larr1-a+1
 		larr2=length(arr2)
 		for b in 1:larr2
-			bb=larr1-b+1
+			bb=larr2-b+1
 			if arr1[aa]==arr2[bb]
 				return [aa,bb]
+			end
+		end
+	end
+	return 0
+end
+function duplicates(arrs...)
+	larrs=length(arrs)
+	for i in 1:larrs-1
+		for j in i+1:larrs
+			d=duplicates(arrs[i],arrs[j])
+			if d!=0
+				return d
 			end
 		end
 	end

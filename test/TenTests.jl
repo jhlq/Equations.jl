@@ -29,3 +29,4 @@ ex=:c+Ten([:a1,:a2,:a3],:i)*Ten([:b1,:b2,:b3],:i)+:c;nex=sumconv(ex)
 @test duplicates([1,2,3,4,2,2])==[5,6]
 @test duplicates([1,2,3],[0,3,0])==[3,2]
 @test duplicates([1,3,3],[3,3,3])==[3,3]
+@test duplicates([1,3,5],[12,241,13,3],[3,1,1])==[2,4]
