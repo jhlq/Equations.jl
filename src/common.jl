@@ -596,6 +596,7 @@ function simplify(ex::Expression)
 	tex=0
 	nit=0
 	while tex!=ex
+		#println(ex)
 		tex=ex
 		ex=sumsym(sumnum(componify(ex)))
 		ap=terms(ex)
@@ -696,6 +697,7 @@ function sumnum(ex::Expression)
 end
 sumnum(c::Component)=typeof(c)(sumnum(getarg(c)))
 sumnum(x::N)=x 
+#sumnum(a::Term)=a
 function sumsym(ex::Expression)
 	ap=terms(deepcopy(ex))
 	nap=length(ap)

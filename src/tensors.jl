@@ -70,7 +70,7 @@ function duplicates(arr1,arr2)
 	end
 	return 0
 end
-function duplicates(arrs...)
+function arrduplicates(arrs...)
 	larrs=length(arrs)
 	for i in 1:larrs-1
 		for j in i+1:larrs
@@ -177,14 +177,47 @@ function sumconv!(t::Term)
 	for i in inds
 		push!(indsa,t[i].indices)
 	end
-	iiii=duplicates(indsa...)
+	iiii=arrduplicates(indsa...)
 	if iiii!=0
 		ti1=inds[iiii[1][1]]
 		ti2=inds[iiii[1][2]]
 		iii=iiii[2]
-		println(ti1,ti2,iii)
+		t1=t[ti1];t2=t[ti2]
+		st1=size(t1.x);st2=size(t2.x)
+		lst1=length(st1);lst2=length(st2)
+		iti1=Any[];iti2=Any[]
+		for l in 1:lst1
+			push!(iti1,:)
+		end
+		for l in 1:lst2
+			push!(iti2,:)
+		end
+		lit1=length(t1.indices);lit2=length(t2.indices)
+		iti1[end-lit1+iii[1]]=1
+		iti2[end-lit2+iii[2]]=1
+		nex=deepcopy(t) 
+		nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]))
+		nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]))
+		nex[ti1]=nt1;nex[ti2]=nt2
+		nex=expression(nex)
+		for di1 in 1:st1[end-lit1+iii[1]]-1
+			iti1[end-lit1+iii[1]]+=1
+			iti2[end-lit2+iii[2]]+=1
+			tnex=deepcopy(t) 
+			nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]))
+			nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]))
+			tnex[ti1]=nt1;tnex[ti2]=nt2
+			nex=expression(tnex)+nex
+		end
+		return componify(nex)
+		#create subarrays sa1-2
+			#create indexthings [:,:,i]
+				#size array => [:,:,:]
+			#loop over dim [:,:,i]
+				#loop over [:,i]
+		#sum subarrays
 	end
-		
+	t
 end
 sumconv(t::Term)=sumconv!(deepcopy(t))
 function sumconv(t::Ten)
@@ -215,59 +248,15 @@ function sumconv(t::Ten)
 	end
 	t
 end
-function simplify(ex,t=Type{Ten})
-#=
-	inds=indsin(ex,Ten)
-	for te in 1:length(inds)
-		it1=inds[te][2] 
-		termi=inds[te][1]
-		indices=Array[]
-		for i in 1:length(it1)
-			push!(indices,Any[])
-			pushall!(indices[i],ex[termi][it1[i]].indices)
-		end
-		ii=[0,0]
-		for i in 1:length(indices)
-			b=false
-			for j in 1:length(indices)
-				if i==j
-					continue
-				elseif indices[i]==indices[j]
-					ii[1]=it1[i]
-					ii[2]=it1[j]
-					b=true
-					break
-				end
-			end
-			if b
-				break
-			end
-		end
-		if ii[1]!=0&&isa(ex[termi][ii[1]].x,Array)&&isa(ex[termi][ii[2]].x,Array)
-			aa=[isa(ex[termi][ii[1]].indices,Array),isa(ex[termi][ii[2]].indices,Array)]
-			if sum(aa)>0
-				if sum(aa)==2
-					if allnum([ex[termi][ii[1]].indices;ex[termi][ii[2]].indices])
-						
-					end
-				else
-					#handle
-				end
-			else
-				l=length(ex[termi][ii[1]].x)
-				nx=0
-				for i in 1:l
-					nx+=ex[termi][ii[1]].x[i]*ex[termi][ii[2]].x[i]
-					#println(nx)
-				end
-				ex[termi][ii[1]]=nx
-				ex[termi][ii[2]]=1
-				ex=simplify(ex)
-			end
-		end
-	end
-=#
+function simplify(ex::Expression,t=Type{Ten})
 	return sumconv(ex)
+	nexs=Expression[]
+	nex=sumconv(ex[1])
+	for t in 2:length(ex)
+		nex+=sumconv(ex[t])
+	end
+	#show(nex)
+	return nex
 end
 function simplify(t::Ten)
 	if duplicates(t.indices)!=0
