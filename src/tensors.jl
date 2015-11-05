@@ -82,7 +82,8 @@ function arrduplicates(arrs...)
 	end
 	return 0
 end
-function sumconv(ex)
+sumconv(ex)=simplify(ex,Ten)
+function sumconv_dep(ex)
 	inds=indsin(ex,Ten)
 	#println(inds)
 	for te in 1:length(inds)
@@ -195,29 +196,23 @@ function sumconv!(t::Term)
 		lit1=length(t1.indices);lit2=length(t2.indices)
 		iti1[end-lit1+iii[1]]=1
 		iti2[end-lit2+iii[2]]=1
-		nex=deepcopy(t) 
+		newterm=deepcopy(t)
 		nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]))
 		nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]))
-		nex[ti1]=nt1;nex[ti2]=nt2
-		nex=expression(nex)
+		newterm[ti1]=nt1;newterm[ti2]=nt2
+		at=Term[newterm]
 		for di1 in 1:st1[end-lit1+iii[1]]-1
 			iti1[end-lit1+iii[1]]+=1
 			iti2[end-lit2+iii[2]]+=1
-			tnex=deepcopy(t) 
+			newnewterm=deepcopy(t) 
 			nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]))
 			nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]))
-			tnex[ti1]=nt1;tnex[ti2]=nt2
-			nex=expression(tnex)+nex
+			newnewterm[ti1]=nt1;newnewterm[ti2]=nt2
+			push!(at,newnewterm)
 		end
-		return componify(nex)
-		#create subarrays sa1-2
-			#create indexthings [:,:,i]
-				#size array => [:,:,:]
-			#loop over dim [:,:,i]
-				#loop over [:,i]
-		#sum subarrays
+		return at
 	end
-	t
+	return Term[t]
 end
 sumconv(t::Term)=sumconv!(deepcopy(t))
 function sumconv(t::Ten)
@@ -249,14 +244,11 @@ function sumconv(t::Ten)
 	t
 end
 function simplify(ex::Expression,t=Type{Ten})
-	return sumconv(ex)
-	nexs=Expression[]
-	nex=sumconv(ex[1])
-	for t in 2:length(ex)
-		nex+=sumconv(ex[t])
+	nat=Term[]
+	for t in ex
+		pushall!(nat,sumconv(t))
 	end
-	#show(nex)
-	return nex
+	return Expression(nat)
 end
 function simplify(t::Ten)
 	if duplicates(t.indices)!=0
