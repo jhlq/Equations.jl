@@ -184,6 +184,9 @@ function sumconv!(t::Term)
 		ti2=inds[iiii[1][2]]
 		iii=iiii[2]
 		t1=t[ti1];t2=t[ti2]
+		if !(isa(t1.x,Array)&&isa(t2.x,Array))
+			return Term[t]
+		end
 		st1=size(t1.x);st2=size(t2.x)
 		lst1=length(st1);lst2=length(st2)
 		iti1=Any[];iti2=Any[]
@@ -216,7 +219,7 @@ function sumconv!(t::Term)
 end
 sumconv(t::Term)=sumconv!(deepcopy(t))
 function sumconv(t::Ten)
-	if isa(t.indices,Array)
+	if isa(t.indices,Array)&&isa(t.x,Array)
 		iii=duplicates(t.indices)
 		if iii!=0
 			ni=length(t.indices)
@@ -251,13 +254,18 @@ function simplify(ex::Expression,t=Type{Ten})
 	return Expression(nat)
 end
 function simplify(t::Ten)
-	if duplicates(t.indices)!=0
+	if duplicates(t.indices)!=0&&isa(t.x,Array)
+		nt=sumconv(t)
 		for i in 1:30
-			nt=sumconv(t)
 			if nt==t
 				break
 			else
 				t=nt
+			end
+			if isa(t,Ten)&&duplicates(t.indices)!=0
+				nt=sumconv(t)
+			else
+				break
 			end
 		end
 		return simplify(t)

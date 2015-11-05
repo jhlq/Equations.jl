@@ -35,3 +35,9 @@ str=takebuf_string(io)
 @test duplicates([1,3,3],[3,3,3])==[3,3]
 @test Equations.arrduplicates([1,3,5],[12,241,13,3],[3,1,1])==([1,2],[2,4])
 @test Equations.arrduplicates([1,3,55],[12,241,13],[33,1324,5,6,1])==([1,3],[1,5])
+
+ex=Ten(:A,[:j,:i,:i])*Ten(:B,:j);r=ex&@equs(A=ones(3,3,3), B=[1,2,3])
+@test r==18
+
+ex=Ten(:A,[:i,:i]);eq=@equ A=eye(3,3);r=ex&eq
+@test r==3
