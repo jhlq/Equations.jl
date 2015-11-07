@@ -4,6 +4,16 @@ ex=Ten([1,2,3],:i)*Ten([90,80,70],:i)
 ex=Ten(:A,:i)*Ten(:A,:j)
 @test simplify(ex&@equs(A=[1,2,3], j=i))==14
 
+a=Alt([:i,:j])
+@test a.x[1,2]==1
+@test a.x[2,1]==-1
+a=Alt([:i,:j,:k])
+@test a.x[1,2,3]==1
+@test a.x[3,2,1]==-1
+a=Alt([:i,:j,:k,:l])
+@test a.x[1,2,3,4]==1
+@test a.x[4,2,3,1]==-1
+
 ex=Alt([:i,:j,:k])*Ten(:a,:j)*Ten(:b,:k)
 a=[1,2,3]
 b=[90,80,70]
@@ -12,6 +22,7 @@ ex=ex&Equation(:a,a)&Equation(:b,b)
 #@test c[1]==ex&@equ(i=1)
 #@test c[2]==ex&@equ(i=2)
 #@test c[3]==ex&@equ(i=3)
+ex=Alt([1,:j,:k])*Ten([1,2,3],:j)*Ten([90,80,70],:k);t=ex[1]
 
 ex=:c+Ten([:a1,:a2,:a3],:i)*Ten([:b1,:b2,:b3],:i)+:c;nex=simplify(ex)
 @test nex==simplify(2*:c+:a1*:b1+:a2*:b2+:a3*:b3)

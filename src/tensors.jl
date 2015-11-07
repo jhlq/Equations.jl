@@ -170,7 +170,7 @@ function sumconv_dep(ex)
 	return ex
 end
 function sumconv!(t::Term)
-	inds=indsin(t,Ten)
+	inds=indsin(t,AbstractTensor)
 	for i in inds
 		t[i]=sumconv(t[i])
 	end
@@ -291,10 +291,20 @@ function simplify(t::Ten)
 	t
 end
 type Alt<:AbstractTensor #Alternating tensor
-	x::Array{Any}
+	x
+	indices::Array{Any}
+end
+Alt(inds::Array)=Alt(maltx(length(inds)),inds)
+function maltx(r)
+	x=zeros(fill!(zeros(Integer,r),r)...)
+	i=collect(1:r)
+	for ip in permutations(i)
+		x[ip...]=permsign(ip)
+	end
+	x
 end
 function print(io::IO,a::Alt)
-	print(io,"ϵ($(a.x))")
+	print(io,"ϵ($(a.indices))")
 end
 function permsign(p)
 	n = length(p)
@@ -312,15 +322,16 @@ function permsign(p)
 	det(A)
 end
 function simplify(a::Alt)
-	if isa(a.x,Array)
-		if allnum(a.x)
-			return permsign(a.x)
-		elseif duplicates(a.x)!=0
+	if isa(a.indices,Array)
+		if allnum(a.indices)
+			return permsign(a.indices)
+		elseif duplicates(a.indices)!=0
 			return 0
 		end
 	end
 	return a
 end
+simplify(a::Alt,t::Type)=simplify(a)
 type Bra<:Component
 	x
 end
