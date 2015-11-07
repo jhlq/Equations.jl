@@ -15,14 +15,19 @@ a=Alt([:i,:j,:k,:l])
 @test a.x[4,2,3,1]==-1
 
 ex=Alt([:i,:j,:k])*Ten(:a,:j)*Ten(:b,:k)
-a=[1,2,3]
+a=[5,123,-12]
 b=[90,80,70]
 c=cross(a,b)
 ex=ex&Equation(:a,a)&Equation(:b,b)
-#@test c[1]==ex&@equ(i=1)
-#@test c[2]==ex&@equ(i=2)
-#@test c[3]==ex&@equ(i=3)
-ex=Alt([1,:j,:k])*Ten([1,2,3],:j)*Ten([90,80,70],:k);t=ex[1]
+@test c[1]==ex&@equ(i=1)
+@test c[2]==ex&@equ(i=2)
+@test c[3]==ex&@equ(i=3)
+ex=Alt([1,2,:k])*Ten([1,2,3],2)*Ten([90,80,70],:k);sex=simplify(ex)
+@test sex==140
+ex=Alt([1,3,:k])*Ten([1,2,3],3)*Ten([90,80,70],:k);sex=simplify(ex)
+@test sex==-240
+ex=Alt([1,:j,:k])*Ten([1,2,3],:j)*Ten([90,80,70],:k);sex=simplify(ex)
+@test sex==-100
 
 ex=:c+Ten([:a1,:a2,:a3],:i)*Ten([:b1,:b2,:b3],:i)+:c;nex=simplify(ex)
 @test nex==simplify(2*:c+:a1*:b1+:a2*:b2+:a3*:b3)

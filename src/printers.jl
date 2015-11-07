@@ -18,6 +18,9 @@ function ps(t::Term)
 	s[1:end-1]
 end
 function ps{T}(ar::Array{T,1})
+	if isempty(ar)
+		return "$T[]"
+	end
 	s="$T["
 	for a in ar
 		s*=ps(a)*","

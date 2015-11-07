@@ -22,7 +22,7 @@ type Ten<:AbstractTensor
 	x
 	indices::Array{Any}
 end
-Ten(x,s::Symbol)=Ten(x,[s])
+Ten(x,s::N)=Ten(x,[s])
 function print(io::IO,t::Ten)
 	print(io,"$(t.x)(")
 	if isa(t.indices,Array)
