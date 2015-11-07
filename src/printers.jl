@@ -40,3 +40,11 @@ function ps(c::Component)
 end
 ps(s::Symbol)=":$s"
 ps(n::Number)="$n"
+
+
+function print(io::IO,u::U)
+	print(io,u.x)
+	print(io," [")
+	print(io,u.units)
+	print(io,"]")
+end

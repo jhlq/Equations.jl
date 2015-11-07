@@ -168,11 +168,11 @@ function (&)(ex::Ex,eqa::Array{Equation})
 	return ex
 end
 function (&)(eq::Equation,sym::Symbol)
-	#if isa(eq.lhs,Component)
-	#	s=solve(eq,sym,typeof(eq.lhs))
-	#else
+	if isa(eq.lhs,Component)
+		s=solve(eq,sym,typeof(eq.lhs))
+	else
 		s=solve(eq,sym)
-	#end
+	end
 	if isa(s,Void)
 		error("Please implement code to solve $eq for $sym")
 	end

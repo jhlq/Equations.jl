@@ -10,9 +10,9 @@ Calculate with symbols as numbers:
 sqrt(:x^2)
 ```
 
-To include units use the Physical type:
+To include units use the U type (sensitive to ordering, put unitless stuff last):
 ```
-l=Physical(:l,:meter);t=Physical(:t,:second);v=l/t;print(v)
+l=U(:l,:meter);t=U(:t,:second);v=l/t;print(v)
 ```
 
 Specify equations conveniently with the equ macro:
