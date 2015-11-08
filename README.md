@@ -1,6 +1,15 @@
 [![Build Status](https://travis-ci.org/jhlq/Equations.jl.svg?branch=master)](https://travis-ci.org/jhlq/Equations.jl)
 
 # Equations
+Tensors are available! The summation convention applies automatically. Traces and dot/cross products:
+```
+Ten(:I,[:i,:i])&@equ I=eye(3) # 3
+Ten(:A,[:i,:i])&@equ A=[:a 0;0 :b] # a+b
+Ten(:A,:i)*Ten(:A,:j)&@equs(A=[1,2,3], j=i)
+Ten(:A,[:j,:i,:i])*Ten(:B,:j)&@equs(A=ones(3,3,3), B=[1,2,3]) # 18
+Alt([:i,:j,:k])*Ten([:a1,:a2,:a3],:j)*Ten([:b1,:b2,:b3],:k)&@equ i=1
+```
+
 Calculate with symbols as numbers:
 ```
 :x+:y
@@ -46,8 +55,8 @@ Log(:x+:y,:x+:y)&relation
 
 Use the Oneable type for optional coefficients:
 ```
-rel=@equ Oneable(a)*x=y
-:q&rel
+rel=@equ Oneable(a)*x*z=y
+:q*:r&rel
 ```
 
 Operate on equations:

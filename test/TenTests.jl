@@ -28,6 +28,8 @@ ex=Alt([1,3,:k])*Ten([1,2,3],3)*Ten([90,80,70],:k);sex=simplify(ex)
 @test sex==-240
 ex=Alt([1,:j,:k])*Ten([1,2,3],:j)*Ten([90,80,70],:k);sex=simplify(ex)
 @test sex==-100
+r=Alt([:i,:j,:k])*Ten([:a1,:a2,:a3],:j)*Ten([:b1,:b2,:b3],:k)&@equ i=1
+@test r==simplify(:a2*:b3+-1.0*:a3*:b2)
 
 ex=:c+Ten([:a1,:a2,:a3],:i)*Ten([:b1,:b2,:b3],:i)+:c;nex=simplify(ex)
 @test nex==simplify(2*:c+:a1*:b1+:a2*:b2+:a3*:b3)
@@ -35,6 +37,8 @@ ex=:c+Ten([:a1,:a2,:a3],:i)*Ten([:b1,:b2,:b3],:i)+:c;nex=simplify(ex)
 @test simplify(Ten(eye(3,3),[:i,:i]))==3
 @test simplify(Ten(eye(4,4),[:i,:i]))==4
 @test simplify(Ten(eye(5,5),[:i,:i]))==5
+r=Ten(:A,[:i,:i])&@equ A=[:a 0;0 :b]
+@test r==:a+:b
 
 io=IOBuffer()
 print(io,simplify(Ten([1,2],:j)*Ten([3 2;1 -1],[:i,:j]))) 
