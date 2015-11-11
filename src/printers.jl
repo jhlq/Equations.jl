@@ -27,8 +27,13 @@ function ps{T}(ar::Array{T,1})
 	end
 	s[1:end-1]*"]"
 end
-function ps{T}(a::T)
-	"$T"
+#function ps{T}(a::T)
+#	"$T"
+#end
+function ps(a)
+	io=IOBuffer()
+	show(io,a) 
+	str=takebuf_string(io)
 end
 function ps(c::Component)
 	ar=getargs(c)
@@ -47,4 +52,11 @@ function print(io::IO,u::U)
 	print(io," [")
 	print(io,u.units)
 	print(io,"]")
+end
+ps(a::Alt)="Alt($(a.indices))"
+function show(io::IO,a::Alt)
+	print(io,ps(a))
+end
+function print(io::IO,a::Alt)
+	print(io,"ϵ$(a.indices)")
 end

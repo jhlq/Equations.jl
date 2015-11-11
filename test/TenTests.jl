@@ -43,11 +43,11 @@ r=Ten(:A,[:i,:i])&@equ A=[:a 0;0 :b]
 io=IOBuffer()
 print(io,simplify(Ten([1,2],:j)*Ten([3 2;1 -1],[:i,:j]))) 
 str=takebuf_string(io)
-@test str=="[3,1](i) + 2 [2,-1](i)"
+@test str=="Any[3,1](i) + 2 [2,-1](i)"
 io=IOBuffer()
 print(io,simplify(Ten([1,2],:j)*Ten([3 2;1 -1],[:j,:i]))) 
 str=takebuf_string(io)
-@test str=="[3 2](i) + 2 [1 (-1)](i)"
+@test str=="Any[3 2](i) + 2 [1 (-1)](i)"
 
 @test duplicates([1,2,3,4,2])==[2,5]
 @test duplicates([1,2,3,4,2,2])==[5,6]
@@ -61,3 +61,10 @@ ex=Ten(:A,[:j,:i,:i])*Ten(:B,:j);r=ex&@equs(A=ones(3,3,3), B=[1,2,3])
 
 ex=Ten(:A,[:i,:i]);eq=@equ A=eye(3,3);r=ex&eq
 @test r==3
+
+
+r=simplify(Ten([1,0],:i)+Ten([0,1],:i))
+@test r==Ten([1,1],:i)
+r=simplify(Ten([:c,:d],:i)+Ten([:a,:b],:i))
+@test r==Ten(Any[:c+:a,:d+:b],Any[:i])
+r=simplify(Alt([:i,:j,:k])*Ten([:a1,:a2,:a3],:j)*Ten([:b1,:b2,:b3],:k))

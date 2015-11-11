@@ -246,11 +246,44 @@ function sumconv(t::Ten)
 	end
 	t
 end
+function sumlify(tt::Array{Term})
+	ntt=Term[]
+	skip=Int[]
+	for ti1 in 1:length(tt)
+		tt1=tt[ti1]
+		if isa(tt1[1],Ten)&&isa(tt1[1].x,Array)
+			t1=tt1[1]
+			if t1.x==zeros(size(t1.x))
+				continue
+			end
+			nt=deepcopy(t1)
+			nt.x=convert(Array{Any},nt.x)
+			for ti2 in 2:length(tt)
+				if !in(ti2,skip)&&length(tt[ti2])==1&&ti2!=ti1
+					t2=tt[ti2][1]
+					if isa(t2,Ten)&&size(t1.x)==size(t2.x)&&t1.indices==t2.indices
+						nt.x=nt.x+t2.x
+						push!(skip,ti2)
+					end
+				end
+			end
+			if !in(ti1,skip)
+				nnt=Factor[nt]
+				pushall!(nnt,tt1[2:end])
+				push!(ntt,nnt)
+			end
+		else
+			push!(ntt,tt[ti1])
+		end
+	end
+	ntt
+end
 function simplify(ex::Expression,t=Type{Ten})
 	nat=Term[]
 	for t in ex
 		pushall!(nat,sumconv(t))
 	end
+	nat=sumlify(nat)
 	return Expression(nat)
 end
 function simplify(t::Ten)
