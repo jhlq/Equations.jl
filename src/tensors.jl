@@ -139,6 +139,13 @@ function sumconv!(t::Term)
 	return Term[t]
 end
 sumconv(t::Term)=sumconv!(deepcopy(t))
+function sumconv(tt::Array{Term})
+	nat=Term[]
+	for t in tt
+		pushall!(nat,sumconv(t))
+	end
+	nat
+end
 function sumconv(t::Ten)
 	if isa(t.indices,Array)&&isa(t.x,Array)
 		iii=duplicates(t.indices)
@@ -227,7 +234,7 @@ function sumlify(tt::Array{Term})
 			for n in [tt1[1:tensi[1]-1];tt1[tensi[1]+1:end]]
 				num=num*n
 			end
-			nt.x=num*convert(Array{Any},nt.x)
+			nt.x=simplify(num*convert(Array{Any},nt.x))
 			del=Integer[]
 			for ti2 in 1:length(tt)
 				tt2=tt[ti2]
@@ -239,7 +246,7 @@ function sumlify(tt::Array{Term})
 						nums=nums*n
 					end
 					#println(ti2,num,tt1[tensi[1]],nums,t2.x)
-					nt.x=nt.x+nums*t2.x
+					nt.x=simplify(nt.x+nums*t2.x)
 					push!(del,ti2)
 				end
 			end
@@ -256,12 +263,28 @@ function untensify!(tt::Array{Term})
 	for ti in 1:length(tt)
 		for fi in 1:length(tt[ti])
 			if isa(tt[ti][fi],Ten)
-				if isempty(tt[ti][fi].indices)&&isa(tt[ti][fi].x,Number)
-					tt[ti][fi]=tt[ti][fi].x
-				elseif isa(tt[ti][fi].x,Array)
-					if tt[ti][fi].x==zeros(size(tt[ti][fi].x))
+				t=tt[ti][fi]
+				if isempty(t.indices)&&isa(t.x,Number)
+					tt[ti][fi]=t.x
+				elseif isa(t.x,Array)
+					if t.x==zeros(size(t.x))
 						push!(del,ti)
-					#elseif in(1,size(tt[ti][fi].x)
+					end
+					s=size(t.x)
+					if in(1,s)&&length(s)>length(t.indices)
+						ns=Integer[]
+						for ts in s
+							if ts!=1
+								push!(ns,ts)
+							end
+						end
+						t.x=reshape(t.x,ns...)
+					end
+					s=size(t.x)
+					if length(s)==1&&isa(t.indices[1],Number)
+						tt[ti][fi]=t.x[t.indices[1]]
+					elseif length(s)==length(t.indices)&&allnum(t.indices)
+						tt[ti][fi]=t.x[t.indices...]
 					end
 				end
 			end
@@ -275,9 +298,13 @@ function simplify(ex::Expression,typ=Type{Ten})
 	for t in ex
 		pushall!(nat,sumconv(t))
 	end
-	untensify!(nat)
-	nat=sumlify(nat)
-	return Expression(nat)
+	nnat=sumconv(nat)
+	while nnat!=nat
+		nat=nnat;nnat=sumconv(nnat)
+	end
+	untensify!(nnat)
+	nnat=sumlify(nnat)
+	return Expression(nnat)
 end
 function simplify(t::Ten)
 	if duplicates(t.indices)!=0&&isa(t.x,Array)

@@ -15,6 +15,7 @@ a=Alt([:i,:j,:k,:l])
 @test a.x[4,2,3,1]==-1
 
 ex=Alt([:i,:j,:k])*Ten(:a,:j)*Ten(:b,:k);a=[5,123,-12];b=[90,80,70];ex=ex&Equation(:a,a)&Equation(:b,b)
+@test ex==Ten(Any[9570.0,-1430.0,-10670.0],Any[:i])
 c=cross(a,b)
 @test c[1]==ex&@equ(i=1)
 @test c[2]==ex&@equ(i=2)
@@ -67,10 +68,13 @@ r=simplify(Ten([:c,:d],:i)+Ten([:a,:b],:i))
 r=simplify(Alt([:i,:j,:k])*Ten([:a1,:a2,:a3],:j)*Ten([:b1,:b2,:b3],:k))
 
 tt=Term[Factor[3,Ten([:a,:b],:i)],Factor[5,Ten([:c,:d],:i)]];stt=Equations.sumlify(tt)
-@test stt==Term[Factor[Equations.Ten(Any[:a+:c,:b+:d],Any[:i]),3]]
+@test stt[1][1].x[1]==simplify(Any[3*:a+5*:c,3*:b+5*:d][1]) 
+@test stt[1][1].x[2]==simplify(Any[3*:a+5*:c,3*:b+5*:d][2]) 
+#stt==simplify(Term[Factor[Equations.Ten(Any[3*:a+5*:c,3*:b+5*:d],Any[:i])]])
 
 ex=Equations.sumlify(Equations.untensify!(sumconv(Alt([:i,:j])*Ten([10,100],:j)).terms))
-@test ex==Term[Factor[Equations.Ten(Any[100.0,-10.0],Any[:i]),10]]
+@test ps(ex[1][1])=="Equations.Ten(Any[100.0,-10.0],Any[:i])"
+#ex==Term[Factor[Equations.Ten(Any[100.0,-10.0],Any[:i]),10]]
 
 ex=Alt([:i,:j,:k])*Ten([1,0,0],:j)*Ten([0,0,1],:k);ex=sumconv(ex);ex=sumconv(ex);tt=Equations.untensify!(ex.terms);ttt=Equations.sumlify(tt)
-@test ttt[1][1]&(@equ i=2)==1
+@test ttt[1][1]&(@equ i=2)==-1
