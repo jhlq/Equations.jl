@@ -82,92 +82,13 @@ function arrduplicates(arrs...)
 	end
 	return 0
 end
-sumconv(ex)=simplify(ex,Ten)
-function sumconv_dep(ex)
-	inds=indsin(ex,Ten)
-	#println(inds)
-	for te in 1:length(inds)
-		it1=inds[te][2] 
-		termi=inds[te][1]
-		indices=Array[]
-		for i in 1:length(it1)
-			push!(indices,Any[])
-			pushall!(indices[i],ex[termi][it1[i]].indices)
-		end
-		ii=[0,0]
-		iii=[1,1]
-		for i in 1:length(indices)
-		for i2 in 1:length(indices[i])
-			b=false
-			for j in 1:length(indices)
-			for j2 in 1:length(indices[j])
-				if i==j&&i2==j2
-					continue
-				elseif indices[i][i2]==indices[j][j2]
-					ii[1]=it1[i]
-					ii[2]=it1[j]
-					iii[1]=i2
-					iii[2]=j2
-					b=true
-					break
-				end
-			end
-			end
-			if b
-				break
-			end
-		end
-		end
-#		println(indices,ii,iii)
-		if ii[1]!=0
-#		println(ex[termi][ii[1]])
-#		println(ex[termi][ii[2]])
-			if isa(ex[termi][ii[1]].x,Array)&&isa(ex[termi][ii[2]].x,Array)
-				nex=0
-				for t in 1:termi-1
-					#println(ex[termi-t])
-					nex=expression(ex[termi-t])+nex
-				end
-				s1=size(ex[termi][ii[1]].x)
-				s2=size(ex[termi][ii[2]].x)
-				xxi1=Any[]
-				xxi2=Any[]
-				for si in 1:length(s1)
-					push!(xxi1,:)
-				end
-				xxi1[end]=0
-				for si in 1:length(s2)
-					push!(xxi2,:)
-				end
-				xxi2[end]=0
-				nind1=deepcopy(indices[ii[1]])
-				deleteat!(nind1,iii[1])
-				nind2=deepcopy(indices[ii[2]])
-				deleteat!(nind2,iii[2])
-				for xi in 1:s1[end]
-					nt=deepcopy(ex[termi])
-					xxi1[end]=xi
-					xxi2[end]=xi
-					if isempty(nind1)
-						nt[ii[1]]=nt[ii[1]].x[xxi1...]
-					else
-						nt[ii[1]]=Ten(nt[ii[1]].x[xxi1...],nind1)
-					end
-					if isempty(nind2)
-						nt[ii[2]]=nt[ii[2]].x[xxi2...]
-					else
-						nt[ii[2]]=Ten(nt[ii[2]].x[xxi2...],nind2)
-					end
-					nex=nex+expression(nt)
-				end
-				for t in termi+1:length(ex)
-					nex=nex+expression(ex[t])
-				end
-				return simplify(nex)
-			end
-		end
+sumconv(a)=simplify(a,Ten)
+function sumconv(ex::Expression)
+	nat=Term[]
+	for t in ex
+		pushall!(nat,sumconv(t))
 	end
-	return ex
+	Expression(nat)
 end
 function sumconv!(t::Term)
 	inds=indsin(t,AbstractTensor)
@@ -246,43 +167,115 @@ function sumconv(t::Ten)
 	end
 	t
 end
-function sumlify(tt::Array{Term})
+function sumlify_dep(tt::Array{Term})
 	ntt=Term[]
 	skip=Int[]
 	for ti1 in 1:length(tt)
 		tt1=tt[ti1]
-		if isa(tt1[1],Ten)&&isa(tt1[1].x,Array)
-			t1=tt1[1]
-			if t1.x==zeros(size(t1.x))
-				continue
-			end
+		tensi=indsin(tt1,Ten)
+		t1=tt1[tensi[1]]
+		if isa(t1.x,Array)&&t1.x==zeros(size(t1.x))
+			continue
+		end
+		if length(tensi)==1&&allnum(tt1[1:tensi[1]-1])&&allnum(tt1[tensi[1]+1:end])&&isa(t1.x,Array)
 			nt=deepcopy(t1)
-			nt.x=convert(Array{Any},nt.x)
+			num=1
+			for n in [tt1[1:tensi[1]-1];tt1[tensi[1]+1:end]]
+				num=num*n
+			end
+			nt.x=num*convert(Array{Any},nt.x)
 			for ti2 in 2:length(tt)
-				if !in(ti2,skip)&&length(tt[ti2])==1&&ti2!=ti1
-					t2=tt[ti2][1]
-					if isa(t2,Ten)&&size(t1.x)==size(t2.x)&&t1.indices==t2.indices
-						nt.x=nt.x+t2.x
+				tt2=tt[ti2]
+				tensi2=indsin(tt2,Ten)
+				if !in(ti2,skip)&&length(tensi2)==1&&ti2!=ti1&&allnum(tt2[1:tensi2[1]-1])&&allnum(tt2[tensi2[1]+1:end])&&isa(tt2[tensi2[1]].x,Array)
+					t2=tt[ti2][tensi2[1]]
+					nums=1
+					for n in [tt2[1:tensi2[1]-1];tt2[tensi2[1]+1:end]]
+						nums=nums*n
+					end
+					#for n in tt2[tensi2[1]+1:end]
+					#	nums=nums*n
+					#end
+					if size(t1.x)==size(t2.x)&&t1.indices==t2.indices
+						nt.x=nt.x+nums*t2.x
 						push!(skip,ti2)
 					end
 				end
 			end
 			if !in(ti1,skip)
 				nnt=Factor[nt]
-				pushall!(nnt,tt1[2:end])
+				pushall!(nnt,tt1[1:tensi[1]-1])
+				pushall!(nnt,tt1[tensi[1]+1:end])
 				push!(ntt,nnt)
 			end
 		else
 			push!(ntt,tt[ti1])
 		end
+		#println(ntt)
 	end
 	ntt
 end
-function simplify(ex::Expression,t=Type{Ten})
+function sumlify(tt::Array{Term})
+	tt=deepcopy(tt)
+	ntt=Term[]
+	while !isempty(tt)
+		tt1=shift!(tt)
+		tensi=indsin(tt1,Ten)
+		if length(tensi)==1&&allnum(tt1[1:tensi[1]-1])&&allnum(tt1[tensi[1]+1:end])&&isa(tt1[tensi[1]].x,Array)
+			nt=tt1[tensi[1]]
+			num=1
+			for n in [tt1[1:tensi[1]-1];tt1[tensi[1]+1:end]]
+				num=num*n
+			end
+			nt.x=num*convert(Array{Any},nt.x)
+			del=Integer[]
+			for ti2 in 1:length(tt)
+				tt2=tt[ti2]
+				tensi2=indsin(tt2,Ten)
+				if length(tensi2)==1&&isa(tt2[tensi2[1]].x,Array)&&size(nt.x)==size(tt[ti2][tensi2[1]].x)&&nt.indices==tt[ti2][tensi2[1]].indices&&allnum(tt2[1:tensi2[1]-1])&&allnum(tt2[tensi2[1]+1:end])
+					t2=tt[ti2][tensi2[1]]
+					nums=1
+					for n in [tt2[1:tensi2[1]-1];tt2[tensi2[1]+1:end]]
+						nums=nums*n
+					end
+					#println(ti2,num,tt1[tensi[1]],nums,t2.x)
+					nt.x=nt.x+nums*t2.x
+					push!(del,ti2)
+				end
+			end
+			deleteat!(tt,del)
+			push!(ntt,Factor[nt])
+		else
+			push!(ntt,tt1)
+		end
+	end
+	ntt
+end
+function untensify!(tt::Array{Term})
+	del=Integer[]
+	for ti in 1:length(tt)
+		for fi in 1:length(tt[ti])
+			if isa(tt[ti][fi],Ten)
+				if isempty(tt[ti][fi].indices)&&isa(tt[ti][fi].x,Number)
+					tt[ti][fi]=tt[ti][fi].x
+				elseif isa(tt[ti][fi].x,Array)
+					if tt[ti][fi].x==zeros(size(tt[ti][fi].x))
+						push!(del,ti)
+					#elseif in(1,size(tt[ti][fi].x)
+					end
+				end
+			end
+		end
+	end
+	deleteat!(tt,del)
+	tt
+end
+function simplify(ex::Expression,typ=Type{Ten})
 	nat=Term[]
 	for t in ex
 		pushall!(nat,sumconv(t))
 	end
+	untensify!(nat)
 	nat=sumlify(nat)
 	return Expression(nat)
 end
