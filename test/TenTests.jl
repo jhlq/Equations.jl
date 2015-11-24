@@ -78,3 +78,27 @@ ex=Equations.sumlify(Equations.untensify!(sumconv(Alt([:i,:j])*Ten([10,100],:j))
 
 ex=Alt([:i,:j,:k])*Ten([1,0,0],:j)*Ten([0,0,1],:k);ex=sumconv(ex);ex=sumconv(ex);tt=Equations.untensify!(ex.terms);ttt=Equations.sumlify(tt)
 @test ttt[1][1]&(@equ i=2)==-1
+
+
+a=rand(Int,3)%9;b=rand(Int,3)%9
+ab=[Equation(:a,a),Equation(:b,b)]
+ex=Ten(:a,:i)*Ten(:b,:i)
+@test ex&ab==dot(a,b)
+ex=Alt([:i,:j,:k])*Ten(:a,:j)*Ten(:b,:k)
+c=cross(a,b)
+x=(ex&ab).x
+@test c==x
+ex=Alt([:i,:j,:k])*Ten(:a,:j)*Ten(:b,:k)*Ten(:a,:m)*Ten(:b,:m)
+r=cross(a,b)*dot(a,b)
+x=(ex&ab).x
+@test r==x
+ex=Alt([:i,:j,:k])*Ten(:a,:j)*Ten(:b,:k)*Ten(:a,:m)*Ten(:b,:m)+Ten(:b,:i)
+r=cross(a,b)*dot(a,b)+b
+x=(ex&ab).x
+@test r==x
+c=rand(Int,3)%9;d=rand(Int,3)%9
+abcd=[Equation(:a,a),Equation(:b,b),Equation(:c,c),Equation(:d,d)]
+ex=Alt([:i,:j,:k])*Ten(:a,:j)*Ten(:b,:k)*Alt([:m,:n,:o])*Ten(:c,:n)*Ten(:d,:o)
+r=dot(cross(a,b),cross(c,d))
+x=ex&abcd&Equation(:m,:i)
+@test r==x

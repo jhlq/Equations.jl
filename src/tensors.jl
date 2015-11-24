@@ -222,6 +222,18 @@ function sumlify_dep(tt::Array{Term})
 	end
 	ntt
 end
+function indsmatch(inds1,inds2)
+	l1=length(inds1)
+	if l1==length(inds2)
+		for i in 1:l1
+			if !isa(inds1[i],typeof(inds2[i]))
+				return false
+			end
+		end
+		return true
+	end
+	false
+end
 function sumlify(tt::Array{Term})
 	tt=deepcopy(tt)
 	ntt=Term[]
@@ -252,6 +264,8 @@ function sumlify(tt::Array{Term})
 			end
 			deleteat!(tt,del)
 			push!(ntt,Factor[nt])
+#		elseif length(tensi)>1
+#
 		else
 			push!(ntt,tt1)
 		end
