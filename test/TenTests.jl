@@ -102,3 +102,5 @@ ex=Alt([:i,:j,:k])*Ten(:a,:j)*Ten(:b,:k)*Alt([:m,:n,:o])*Ten(:c,:n)*Ten(:d,:o)
 r=dot(cross(a,b),cross(c,d))
 x=ex&abcd&Equation(:m,:i)
 @test r==x
+
+include("../examples/tensors.jl")
