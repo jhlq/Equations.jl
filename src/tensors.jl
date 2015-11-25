@@ -322,11 +322,17 @@ function simplify(ex::Expression,typ=Type{Ten})
 			nnat[n][m]=simplify(nnat[n][m])
 		end
 	end
+	#println(Expression(nnat))
 	untensify!(nnat)
 	nnat=sumlify(nnat)
 	return Expression(nnat)
 end
 function simplify(t::Ten)
+	if isa(t.x,Array)
+		if t.x==zeros(size(t.x))
+			return 0
+		end
+	end	
 	if duplicates(t.indices)!=0&&isa(t.x,Array)
 		nt=sumconv(t)
 		for i in 1:30
@@ -345,12 +351,14 @@ function simplify(t::Ten)
 	elseif isempty(t.indices)&&!isa(t.x,Array)
 		return t.x
 	elseif isa(t.x,Array)
-		if isa(t.indices,Number)
+		if isa(t.indices,Number)&&length(size(t.x))==1
 			return t.x[t.indices]
 		elseif isa(t.indices,Array)
-			if allnum(t.indices)
+			if allnum(t.indices)#&&length(size(t.x))==length(t.indices)
+				#println(length(t.indices));println(length(size(t.x)))
 				return t.x[t.indices...]
-			elseif isa(t.indices[end],Number)
+			end
+			if isa(t.indices[end],Number)
 				s=size(t.x)
 				i=Any[]
 				for l in 1:length(s)-1

@@ -47,3 +47,8 @@ ex9b=Alt([:i,:j,:k])*Alt([:r,:s,:t])*Ten(A,[:i,:r])*Ten(A,[:j,:s])*Ten(A,[:k,:t]
 r9b=simplify(ex9b)
 @assert round(det(A))==r9a==round(r9b)
 
+#Inverse
+eq1=@equ detA=Alt([x,y,z])*Ten(A,[x,1])*Ten(A,[y,2])*Ten(A,[z,3])
+eq2=@equ invA=Alt([j,m,n])*Alt([i,p,q])*Ten(A,[m,p])*Ten(A,[n,q])/(2detA)
+eq3=eq2&eq1&Equation(:A,A)
+@assert round((eq3&@equs(i=1,j=3)).rhs/inv(A)[1,3])==1
