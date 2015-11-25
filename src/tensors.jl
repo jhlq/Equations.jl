@@ -304,6 +304,7 @@ function untensify!(tt::Array{Term})
 			end
 		end
 	end
+	#println(tt)
 	deleteat!(tt,del)
 	tt
 end
@@ -315,6 +316,11 @@ function simplify(ex::Expression,typ=Type{Ten})
 	nnat=sumconv(nat)
 	while nnat!=nat
 		nat=nnat;nnat=sumconv(nnat)
+	end
+	for n in 1:length(nnat)
+		for m in 1:length(nnat[n])
+			nnat[n][m]=simplify(nnat[n][m])
+		end
 	end
 	untensify!(nnat)
 	nnat=sumlify(nnat)
@@ -506,5 +512,11 @@ type Commutator<:Component
 end
 type Transpose<:Component
 	x
+end
+function simplify(t::Transpose)
+	if isa(t.x,Ten)&&isa(t.x.x,Matrix)&&length(t.x.indices)==2
+		return Ten(t.x.x',[t.x.indices[2],t.x.indices[1]])
+	end
+	t
 end
 

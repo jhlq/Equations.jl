@@ -104,3 +104,6 @@ x=ex&abcd&Equation(:m,:i)
 @test r==x
 
 include("../examples/tensors.jl")
+
+B=[:b1 :b2;:b3 :b4];ex=Alt([:i,:j])*Alt([:k,:l])*Ten(B,[:i,:k])*Ten(B,[:j,:l]);r=simplify(ex)
+@test r==simplify(2*:b1*:b4+-2.0*:b2*:b3)
