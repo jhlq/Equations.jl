@@ -259,7 +259,7 @@ function sumlify(tt::Array{Term})
 			nt=deepcopy(t1)
 			nt.x=convert(Array{Any},nt.x)
 			for ti2 in 2:length(tt)
-				if !in(ti2,skip)&&length(tt[ti2])==1&&ti2!=ti1
+				if !in(ti2,skip)&&ti2!=ti1&&isa(tt[ti2][1],Ten)&&tt[ti2][2:end]==tt[ti1][2:end]
 					t2=tt[ti2][1]
 					if isa(t2,Ten)&&size(t1.x)==size(t2.x)&&t1.indices==t2.indices
 						nt.x=nt.x+t2.x
