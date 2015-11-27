@@ -51,4 +51,13 @@ r9b=simplify(ex9b)
 eq1=@equ detA=Alt([x,y,z])*Ten(A,[x,1])*Ten(A,[y,2])*Ten(A,[z,3])
 eq2=@equ invA=Alt([j,m,n])*Alt([i,p,q])*Ten(A,[m,p])*Ten(A,[n,q])/(2detA)
 eq3=eq2&eq1&Equation(:A,A)
-@assert round((eq3&@equs(i=1,j=3)).rhs/inv(A)[1,3])==1
+@assert abs((eq3&@equs(i=1,j=3)).rhs-inv(A)[1,3])<0.001
+
+#Matrix multiplication
+B=rand(Int,3,3)%9
+AB=[Equation(:A,A),Equation(:B,B)]
+C=Ten(:A,[:i,:k])*Ten(:B,[:k,:j])
+@assert C&AB&@equs(i=3,j=2) == (A*B)[3,2]
+
+D=Ten(:A,[:i,:j])*Ten(:B,[:i,:j])
+@assert D&AB==sum(A.*B)
