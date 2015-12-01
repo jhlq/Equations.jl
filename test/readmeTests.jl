@@ -37,3 +37,27 @@ meq=eq&quadratic
 f1(ex::Expression)=ex[1][1]
 f2(fac::Factor)=3*fac
 @test (:a+:b)&[f1,f2]==3*:a
+f3(eq::Equation)=eq'
+f4(eq::Equation)=sqrt(eq)
+@test (@equ(a=b^2)&[f3,f4]).lhs==:b
+
+l=U(:l,:meter);t=U(:t,:second);v=l/t
+@test v==U(:l*Equations.╱(:t),:meter*Equations.╱(:second))
+
+rule=Der(:a*:x,:x)≖:a #equivalent to Equation(Der(:a*:x,:x),:a)
+ex=Der(3*:x,:x)
+m=matches(ex,rule)[1] #equivalent to ex&rule
+@test m==ex&rule==3
+
+eq=Equation(:x*:z+:y)
+@test eq.rhs==0
+@test !isempty(matches(eq))
+eq=Equation(:x^2,9)
+@test matches(eq,Sqrt)[1].rhs==3
+
+meq=matches(:x^2+:a*:x≖0,Div)[1]
+try
+	evaluate(meq,Dict(:x=>0))
+	@test false
+catch er
+end

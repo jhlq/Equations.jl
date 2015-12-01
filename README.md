@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/jhlq/Equations.jl.svg?branch=master)](https://travis-ci.org/jhlq/Equations.jl)
 
 # Equations
-Tensors are available! The summation convention applies automatically. See (the tensors file in examples)[https://github.com/jhlq/Equations.jl/blob/master/examples/tensors.jl] for usage.
+Tensors are available! The summation convention applies automatically. See [the tensors file in examples](https://github.com/jhlq/Equations.jl/blob/master/examples/tensors.jl) for usage.
 ```
 Ten(:I,[:i,:i])&@equ I=eye(3) # 3
 Ten(:A,[:i,:i])&@equ A=[:a 0;0 :b] # a+b
@@ -74,6 +74,9 @@ meq=eq&quadratic
 f1(ex::Expression)=ex[1][1]
 f2(fac::Factor)=3*fac
 @assert (:a+:b)&[f1,f2]==3*:a
+f3(eq::Equation)=eq'
+f4(eq::Equation)=sqrt(eq)
+@equ(a=b^2)&[f3,f4]
 ```
 
 To include units use the U type (sensitive to ordering, put unitless stuff last):
@@ -85,26 +88,23 @@ Equations can also be constructed without macros (the ≖ is written as \eqcirc+
 ```
 rule=Der(:a*:x,:x)≖:a #equivalent to Equation(Der(:a*:x,:x),:a)
 ex=Der(3*:x,:x)
-m=matches(ex,rule)
+m=matches(ex,rule)[1] #equivalent to ex&rule
 ```
 
-For also combining factors and terms use:
+Simplification is automatic when using & however sometimes has to be carried out manually:
 ```
 simplify((:x+:y)^3)
 simplify(:x*:y/:x)
 simplify(sqrt(:x*:z*:y*:z*:y*:x))
 ```
 
-Equations have a left hand side (lhs) and a right hand side (rhs) that when omitted defaults to 0. Custom matching can be accomplished by passing a function to matches that takes a equation and returns a list of matches.
+Equations have a left hand side (lhs) and a right hand side (rhs) that when omitted defaults to 0. 
 ```
 eq=Equation(:x*:z+:y)
 eq.rhs
 matches(eq)
 eq=Equation(:x^2,9)
 matches(eq,Sqrt)
-eq=3*:x^2-5*:x+1.5 ≖ 0
-meq=matches(eq,quadratic)[1]
-@assert evaluate(eq.lhs,Dict(:x=>meq.rhs))==0
 ```
 
 If you try to evaluate an equation that has been constructed through division by setting one of the divided symbols to zero an error will be thrown:

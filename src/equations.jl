@@ -158,11 +158,11 @@ function (&)(ex::Symbol,eq::Equation)
 	return ex
 end
 (&)(x::Number,eq::Equation)=x
-function (&)(ex::Ex,eqa::Array)
+function (&)(ex::Union{Ex,Equation},eqa::Array)
 	for teq in eqa
 		ex=ex&teq
 	end
-	return ex
+	return simplify(ex)
 end
 function (&)(eq::Equation,sym::Symbol)
 	if isa(eq.lhs,Component)
