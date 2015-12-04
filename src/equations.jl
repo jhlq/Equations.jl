@@ -2,7 +2,7 @@ include("common.jl")
 import Base: &, ctranspose
 
 type Equation
-	lhs#::EX
+	lhs#::EX #relaxed this to allow arbitrary substitution, for example a tensor Ten(A) where A is replaced with an array. Do note that raw arrays should never be present in expressions, unless you are a practitioner of Chaos Magic (ie UNDEFINED results).
 	rhs#::EX
 	divisions
 end

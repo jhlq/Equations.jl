@@ -110,7 +110,6 @@ function divify!(term::Array)
 		end
 	end
 	if !isempty(remove)
-		#ret=deepcopy(term)
 		deleteat!(term,sort!(remove))
 		if isempty(term)
 			push!(term,1)

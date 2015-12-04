@@ -1,23 +1,4 @@
 abstract AbstractTensor<:NonAbelian
-type Tensor<:AbstractTensor
-	x
-	upper
-	lower
-	rank
-end
-Tensor(a,b,c)=Tensor(a,b,c,-1)
-Tensor(a)=Tensor(a,-1,-1,-1)
-function print(io::IO,t::Tensor)
-	print(io,"$(t.x)($(t.upper),$(t.lower))")
-end
-function allnum(a::Array)
-	for n in a
-		if !isa(n,Number)
-			return false
-		end
-	end
-	return true
-end
 type Ten<:AbstractTensor
 	x
 	indices::Array{Any}
@@ -36,6 +17,25 @@ function print(io::IO,t::Ten)
 		print(io,t.indices)
 	end
 	print(io,")")
+end
+function allnum(a::Array)
+	for n in a
+		if !isa(n,Number)
+			return false
+		end
+	end
+	return true
+end
+type Tensor<:AbstractTensor
+	x
+	upper
+	lower
+	rank
+end
+Tensor(a,b,c)=Tensor(a,b,c,-1)
+Tensor(a)=Tensor(a,-1,-1,-1)
+function print(io::IO,t::Tensor)
+	print(io,"$(t.x)($(t.upper),$(t.lower))")
 end
 abstract AbstractIndex<:Component
 type Up<:AbstractIndex
@@ -174,54 +174,6 @@ function sumconv(t::Ten)
 	end
 	t
 end
-function sumlify_dep(tt::Array{Term})
-	ntt=Term[]
-	skip=Int[]
-	for ti1 in 1:length(tt)
-		tt1=tt[ti1]
-		tensi=indsin(tt1,Ten)
-		t1=tt1[tensi[1]]
-		if isa(t1.x,Array)&&t1.x==zeros(size(t1.x))
-			continue
-		end
-		if length(tensi)==1&&allnum(tt1[1:tensi[1]-1])&&allnum(tt1[tensi[1]+1:end])&&isa(t1.x,Array)
-			nt=deepcopy(t1)
-			num=1
-			for n in [tt1[1:tensi[1]-1];tt1[tensi[1]+1:end]]
-				num=num*n
-			end
-			nt.x=num*convert(Array{Any},nt.x)
-			for ti2 in 2:length(tt)
-				tt2=tt[ti2]
-				tensi2=indsin(tt2,Ten)
-				if !in(ti2,skip)&&length(tensi2)==1&&ti2!=ti1&&allnum(tt2[1:tensi2[1]-1])&&allnum(tt2[tensi2[1]+1:end])&&isa(tt2[tensi2[1]].x,Array)
-					t2=tt[ti2][tensi2[1]]
-					nums=1
-					for n in [tt2[1:tensi2[1]-1];tt2[tensi2[1]+1:end]]
-						nums=nums*n
-					end
-					#for n in tt2[tensi2[1]+1:end]
-					#	nums=nums*n
-					#end
-					if size(t1.x)==size(t2.x)&&t1.indices==t2.indices
-						nt.x=nt.x+nums*t2.x
-						push!(skip,ti2)
-					end
-				end
-			end
-			if !in(ti1,skip)
-				nnt=Factor[nt]
-				pushall!(nnt,tt1[1:tensi[1]-1])
-				pushall!(nnt,tt1[tensi[1]+1:end])
-				push!(ntt,nnt)
-			end
-		else
-			push!(ntt,tt[ti1])
-		end
-		#println(ntt)
-	end
-	ntt
-end
 function indsmatch(inds1,inds2)
 	l1=length(inds1)
 	if l1==length(inds2)
@@ -257,7 +209,6 @@ function sumlify(tt::Array{Term})
 					for n in [tt2[1:tensi2[1]-1];tt2[tensi2[1]+1:end]]
 						nums=nums*n
 					end
-					#println(ti2,num,tt1[tensi[1]],nums,t2.x)
 					nt.x=simplify(nt.x+nums*t2.x)
 					push!(del,ti2)
 				end
@@ -304,7 +255,6 @@ function untensify!(tt::Array{Term})
 			end
 		end
 	end
-	#println(tt)
 	deleteat!(tt,del)
 	tt
 end
@@ -322,7 +272,6 @@ function simplify(ex::Expression,typ=Type{Ten})
 			nnat[n][m]=simplify(nnat[n][m])
 		end
 	end
-	#println(Expression(nnat))
 	untensify!(nnat)
 	nnat=sumlify(nnat)
 	return Expression(nnat)
@@ -355,7 +304,6 @@ function simplify(t::Ten)
 			return t.x[t.indices]
 		elseif isa(t.indices,Array)
 			if allnum(t.indices)#&&length(size(t.x))==length(t.indices)
-				#println(length(t.indices));println(length(size(t.x)))
 				return t.x[t.indices...]
 			end
 			if isa(t.indices[end],Number)
@@ -477,7 +425,7 @@ end
 ⊗(tp::TensorProduct,t)=begin;tp=deepcopy(tp);push!(tp.tensors,t);tp;end
 ⊗(t,tp::TensorProduct)=begin;tp=deepcopy(tp);unshift!(tp.tensors,t);tp;end
 ⊗(t1,t2)=TensorProduct([t1,t2])
-function print(io::IO,tp::TensorProduct) #rewrite with macro
+function print(io::IO,tp::TensorProduct) 
 	print(io,"$(tp.tensors[1]) ⊗")
 	for i in 2:length(tp.tensors)-1
 		print(io," $(tp.tensors[i]) ⊗")

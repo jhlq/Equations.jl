@@ -27,7 +27,7 @@ sqrt(:x^2)
 Specify equations conveniently with the equ macros:
 ```
 x=@equ x=a*b^sqrt(y)+c/d
-@assert (x&@equs(a=3, b=2, y=9, c=8, d=4)).rhs==3*2^sqrt(9)+8/4
+x&@equs(a=3, b=2, y=9, c=8, d=4)
 ```
 
 Operate on equations:

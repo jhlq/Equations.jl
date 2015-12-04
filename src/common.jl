@@ -1,4 +1,4 @@
-import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,.*,==,/, setindex!
+import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,.*,==,/, setindex!, Base.replace, Base.start, Base.next, Base.done
 
 abstract Component
 function ==(c1::Component, c2::Component)
@@ -472,7 +472,7 @@ function componify(ex::Expression,raw=false)
 		xs=X[]
 		for fac in ap[term]
 			if isa(fac,Array)
-				warn("How did the array $fac end up in $ex?") #through replace!
+				#warn("How did the array $fac end up in $ex?") #through replace!
 				push!(exs,componify(Expression(fac)))
 			elseif isa(fac,Expression)
 				push!(exs,componify(fac))
@@ -597,7 +597,6 @@ function simplify(ex::Expression)
 	tex=0
 	nit=0
 	while tex!=ex
-		#println(ex)
 		tex=ex
 		ex=sumsym(sumnum(componify(ex)))
 		ap=terms(ex)
@@ -616,7 +615,6 @@ function simplify(ex::Expression)
 		ex=extract(expression(ap)) #better to check if res::N before calling expression instead of extracting?
 		nit+=1
 		if has(ex,Ten)
-			#println(ps(ex))
 			ex=simplify(ex,Ten)
 		end
 		if nit>90
@@ -699,7 +697,6 @@ function sumnum(ex::Expression)
 end
 sumnum(c::Component)=typeof(c)(sumnum(getarg(c)))
 sumnum(x::N)=x 
-#sumnum(a::Term)=a
 function sumsym(ex::Expression)
 	ap=terms(deepcopy(ex))
 	nap=length(ap)
@@ -713,7 +710,7 @@ function sumsym(ex::Expression)
 			elseif isa(term,Number)
 				coef*=term
 			else			
-				warn("Don't know how to handle $term")
+				error("Don't know how to handle $term")
 			end
 		end
 		com=Components(tcs,coef)
@@ -815,7 +812,6 @@ function delexs(symdic::Dict)
 	end
 	return sd
 end
-import Base.replace
 function replace!(ex::Expression,symdic::Dict)
 	for ti in 1:length(ex)
 		for c in 1:length(ex[ti])
@@ -894,8 +890,6 @@ function randeval(ex::Ex,seed=1)
 	end
 	evaluate(ex,d)
 end
-
-import Base.start, Base.next, Base.done
 start(ex::Expression)=(1,terms(ex))
 function next(ex::Expression,state)
 	return (state[2][state[1]],(state[1]+1,state[2]))
