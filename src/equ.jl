@@ -102,7 +102,7 @@ function (&)(eq::Equation,eqa::Array{Equation})
 	for teq in eqa
 		eq=eq&teq
 	end
-	return eq
+	return simplify(eq)
 end
 (&)(eq::Equation,fun::Function)=fun(eq)
 (&)(ex::EX,fun::Function)=fun(ex)

@@ -10,11 +10,6 @@ Ten(:A,[:j,:i,:i])*Ten(:B,:j)&@equs(A=ones(3,3,3), B=[1,2,3]) # 18
 Alt([:i,:j,:k])*Ten([:a1,:a2,:a3],:j)*Ten([:b1,:b2,:b3],:k)&@equ i=1
 ```
 
-To install the latest version write:
-```
-Pkg.clone("Equations")
-```
-
 Calculate with symbols as numbers:
 ```
 :x+:y
