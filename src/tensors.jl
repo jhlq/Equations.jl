@@ -3,7 +3,17 @@ type Ten<:AbstractTensor
 	x
 	indices::Array{Any}
 end
-Ten(x,s::N)=Ten(x,[s])
+function Ten(x,i)
+	if isa(x,Array)&&!isa(x,Array{Any})
+		x=convert(Array{Any},x)
+	end
+	if !isa(i,Array)
+		i=Any[i]
+	elseif !isa(i,Array{Any})
+		i=convert(Array{Any},i)
+	end
+	Ten(x,i)
+end
 function print(io::IO,t::Ten)
 	print(io,"$(t.x)(")
 	if isa(t.indices,Array)
