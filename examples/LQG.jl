@@ -21,7 +21,7 @@ println("The pole is rotated about the time axis of the barn. When one object is
 
 
 
-g=@equ g=Ten(diagm([-1,1,1,1]),[μ,v])
+η=@equ η=Ten(diagm([-1,1,1,1]),[μ,v])
 a=@equs(Δt=0.91,Δx1=3.5,Δx2=5,Δx3=-1.54,ϕ=1.59)
 #3
 eq2_8=@equ Δs^2=-(c*Δt)^2+(Δx1)^2+(Δx2)^2+(Δx3)^2
@@ -31,19 +31,19 @@ dX=[:Δt, :Δx1, :Δx2, :Δx3]
 dX=@equ ΔX=Ten([Δt, Δx1, Δx2, Δx3], v)
 ds´=@equ Δs´^2=Λ*(-(c*Δt)^2+(Δx1)^2+(Δx2)^2+(Δx3)^2)
 #Λ*ΔX
-@assert simplify(g*dX)&@equ(μ=2) == (:g*:ΔX ≖ :Δx1)
+@assert simplify(η*dX)&@equ(μ=2) == (:η*:ΔX ≖ :Δx1)
 
 simplify(@equ(1=Λ*ΔX)&eq2_11&dX)&@equ(μ´=1)
-@equ(Ten(ΔX´,μ´)=Λ*g*ΔX)&eq2_11&g&dX&@equ(μ´=1)
-@equ(Ten(ΔX´,μ´)=Λ*ΔX)&eq2_11&g&dX&@equ(v=μ)&@equ(μ´=1)
+@equ(Ten(ΔX´,μ´)=Λ*η*ΔX)&eq2_11&η&dX&@equ(μ´=1)
+@equ(Ten(ΔX´,μ´)=Λ*ΔX)&eq2_11&η&dX&@equ(v=μ)&@equ(μ´=1)
 
-ds2=@equ(Δs^2=g*Ten([Δt, Δx1, Δx2, Δx3], v)*Ten([Δt, Δx1, Δx2, Δx3], μ))&g
+ds2=@equ(Δs^2=η*Ten([Δt, Δx1, Δx2, Δx3], v)*Ten([Δt, Δx1, Δx2, Δx3], μ))&η
 @assert ds2.rhs&a==(eq2_8.rhs&@equ(c=1))&a
 dX´=@equ(ΔX´=Λ*Ten([Δt, Δx1, Δx2, Δx3], μ))&eq2_11
-gdX´=@equ(ΔX´=Λ*g*Ten([Δt, Δx1, Δx2, Δx3], v))&g&eq2_11
-ds´=@equ(Δs´^2=g*Λ*g*Ten([Δt, Δx1, Δx2, Δx3], v)*Λ*Ten([Δt, Δx1, Δx2, Δx3], μ))&g&eq2_11
+ηdX´=@equ(ΔX´=Λ*η*Ten([Δt, Δx1, Δx2, Δx3], v))&η&eq2_11
+ds´=@equ(Δs´^2=η*Λ*η*Ten([Δt, Δx1, Δx2, Δx3], v)*Λ*Ten([Δt, Δx1, Δx2, Δx3], μ))&η&eq2_11
 
-#print(simplify(gdX´*dX´)) #seems correct
+#print(simplify(ηdX´*dX´)) #seems correct
 
 Δt´=@equ(Δt´=Δt*Cosh(ϕ)-Δx1*Sinh(ϕ))
 Δx´=@equ(Δx1´=-Δt*Sinh(ϕ)+Δx1*Cosh(ϕ))
@@ -52,5 +52,5 @@ ds´=@equ(Δs´^2=g*Λ*g*Ten([Δt, Δx1, Δx2, Δx3], v)*Λ*Ten([Δt, Δx1, Δx2
 #must enable interpolation...
 
 #@assert round(eq2_8´.rhs&a,3)==round(ds2.rhs&a,3)
-#correct g?
-ds´=@equ(Δs´^2=g*Λ*g*Ten([Δt, Δx1, Δx2, Δx3], v)*Λ*Ten([Δt, Δx1, Δx2, Δx3], μ))&g&eq2_11
+#correct η?
+ds´=@equ(Δs´^2=η*Λ*η*Ten([Δt, Δx1, Δx2, Δx3], v)*Λ*Ten([Δt, Δx1, Δx2, Δx3], μ))&η&eq2_11

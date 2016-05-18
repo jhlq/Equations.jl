@@ -1,3 +1,12 @@
+b=3;a=@equ a=$b #:a ≖ 3
+@test a==Equation(:a,3)
+P=@equ P=Ten($(map(x->pi^x,1:3)),i)
+@test floor(P.rhs&@equ(i=1))==3
+arr=@equs(e=$e, pi=$pi, M=$(eye(b)))
+@test arr[1].rhs == e
+@test arr[2].rhs == pi
+@test arr[3].rhs == eye(b) 
+
 @test Ten(:I,[:i,:i])&@equ(I=eye(3))==3
 @test Ten(:A,[:i,:i])&@equ(A=[:a 0;0 :b])==:a+:b
 @test Ten(:A,:i)*Ten(:B,:j)&@equs(A=[1,2,3],B=[3,2,1], j=i)==10

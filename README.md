@@ -1,6 +1,13 @@
 [![Build Status](https://travis-ci.org/jhlq/Equations.jl.svg?branch=master)](https://travis-ci.org/jhlq/Equations.jl)
 
 # Equations
+New feature! Interpolation with $:
+```
+b=3;@equ a=$b #:a ≖ 3
+@equ P=Ten($(map(x->pi^x,1:3)),i)
+@equs(e=$e, pi=$pi, M=$(eye(b)))
+```
+
 Tensors are available! The summation convention applies automatically. See [the tensors file in examples](https://github.com/jhlq/Equations.jl/blob/master/examples/tensors.jl) for usage.
 ```
 Ten(:I,[:i,:i])&@equ I=eye(3) # 3

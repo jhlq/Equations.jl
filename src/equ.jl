@@ -12,7 +12,9 @@ function tosym(expr)
 	if isa(expr,Symbol)
 		return QuoteNode(:($expr))
 	elseif isa(expr,Expr)
-		if expr.head==:vcat
+		if expr.head==:$
+			expr=esc(expr.args[1])
+		elseif expr.head==:vcat
 			for s in 1:length(expr.args)
 				for p in 1:length(expr.args[s].args)
 					expr.args[s].args[p]=tosym(expr.args[s].args[p])
