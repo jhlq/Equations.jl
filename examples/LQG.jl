@@ -46,10 +46,11 @@ eq2_8´=@equ(Δs^2=-($(dX´.rhs)&@equ(μ´=1))^2+($(dX´.rhs)&@equ(μ´=2))^2+(�
 #4 ✓
 emM=[0 -:E1 -:E2 -:E3;:E1 0 :B3 -:B2;:E2 -:B3 0 :B1;:E3 :B2 -:B1 0]
 eq2_31=@equ Ten(F,[μ,v])=Ten($emM,[μ,v])
-eq2_35=@equ Alt([m,n,o,p])*Ten([∂t,∂1,∂2,∂3],:n)*Ten($emM,[o,p])=0
-print(eq2_35&@equ m=1)
+eq2_35=@equ Alt([s,m,n,l])*Ten([∂t,∂1,∂2,∂3],m)*Ten($emM,[n,l])=0
+@assert (eq2_35/2)&@equ(s=1) == simplify(:∂1*:B1+:∂2*:B2+:∂3*:B3 ≖ 0.0) #Yay, ∂iBi!
+@assert (-eq2_35/2)&@equ(s=2) == simplify(:∂t*:B1+:∂2*:E3+-1.0*:∂3*:E2 ≖ 0.0)
 
-n1=Ten(diagm([-1,1,1,1]),[:j,:j´])
-n2=Ten(diagm([-1,1,1,1]),[:k,:k´])
-simplify(@equ(2*Delta(i,m)=Alt([i,j,k])*($n1*$n2*Alt([j,k,m]))))
+#n1=Ten(diagm([-1,1,1,1]),[:j,:j´])
+#n2=Ten(diagm([-1,1,1,1]),[:k,:k´])
+#simplify(@equ(2*Delta(i,m)=Alt([i,j,k])*($n1*$n2*Alt([j,k,m]))))
 
