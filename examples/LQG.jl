@@ -1,7 +1,7 @@
 #Based on the book about Loop Quantum Gravity by Rodolfo Gambini and Jorge Pullin.
 
 #Ch 2.
-#1. The pole in the barn paradox.
+#1. The pole in the barn paradox. ✓
 #Lorentz transformation:
 gam=@equ γ=1/(1-v^2)	#c=1
 tp=@equ t´=γ*(t-v*x)
@@ -20,37 +20,36 @@ println("Time at the tip is earlier than at the base, hence when the tip touches
 println("The pole is rotated about the time axis of the barn. When one object is rotated relative to another their projections become dwarfed, like when drawing a line at right angle from the minute pointer of a clock to its hour pointer, the projection becomes progressively smaller until it disappears at ninety degrees which in this analogy is light speed. Photons can therefore be complete universes that are rotated at right angles with respect to this universe.")
 
 
+#2
+M=[:t^2 :t*:x1 :q :q;:x1*:t :x1^2 :q :q;:q :q :x2 :q;:q :q :q :x3]
+d=@equ Ten(D,[v,w])=Ten($(M),[v,w]) #D is not mentioned in the texts...
+η=@equ Ten(η,[μ,v])=Ten($(diagm([-1,1,1,1])),[μ,v])
+eq2_11=@equ Ten(Λ,[μ´,μ])=Ten([Cosh(ϕ) -Sinh(ϕ) 0 0;-Sinh(ϕ) Cosh(ϕ) 0 0;0 0 1 0;0 0 0 1], [μ´,μ])
+d´=(eq2_11*(d&@equ(v=μ)))
+d2´=(eq2_11*η*d)
+#print(d´&@equ w=μ´) #should not be invariant
+#print(d2´&@equ w=μ´) #should be invariant
+#should make sense...
 
-η=@equ η=Ten(diagm([-1,1,1,1]),[μ,v])
-a=@equs(Δt=0.91,Δx1=3.5,Δx2=5,Δx3=-1.54,ϕ=1.59)
-#3
+#3 ✓
+a=@equs(Δt=0.91,Δx1=3.5,Δx2=5,Δx3=-1.54,ϕ=1.59,c=1)
 eq2_8=@equ Δs^2=-(c*Δt)^2+(Δx1)^2+(Δx2)^2+(Δx3)^2
-eq2_11=@equ Λ=Ten([Cosh(ϕ) -Sinh(ϕ) 0 0;-Sinh(ϕ) Cosh(ϕ) 0 0;0 0 1 0;0 0 0 1], [μ´,μ])
-#Δs^2 should be invariant under 2_11
-dX=[:Δt, :Δx1, :Δx2, :Δx3]
+#2_8 Δs^2 should be invariant under 2_11
 dX=@equ ΔX=Ten([Δt, Δx1, Δx2, Δx3], v)
-ds´=@equ Δs´^2=Λ*(-(c*Δt)^2+(Δx1)^2+(Δx2)^2+(Δx3)^2)
-#Λ*ΔX
-@assert simplify(η*dX)&@equ(μ=2) == (:η*:ΔX ≖ :Δx1)
+@assert (η*dX)&@equ(μ=2) == (Ten(:η,Any[2,:v])*:ΔX ≖ :Δx1)
 
-simplify(@equ(1=Λ*ΔX)&eq2_11&dX)&@equ(μ´=1)
-@equ(Ten(ΔX´,μ´)=Λ*η*ΔX)&eq2_11&η&dX&@equ(μ´=1)
-@equ(Ten(ΔX´,μ´)=Λ*ΔX)&eq2_11&η&dX&@equ(v=μ)&@equ(μ´=1)
+dX´=@equ(ΔX´=Ten(Λ,[μ´,μ])*Ten([Δt, Δx1, Δx2, Δx3], μ))&eq2_11
+eq2_8´=@equ(Δs^2=-($(dX´.rhs)&@equ(μ´=1))^2+($(dX´.rhs)&@equ(μ´=2))^2+(Δx2)^2+(Δx3)^2)
+@assert isapprox(eq2_8.rhs&a, eq2_8´.rhs&a) #Yay, distance is unchanged!
+#eq2_8´=@equ(Δs^2=-(Δt*Cosh(ϕ)-Δx1*Sinh(ϕ))^2+(-Δt*Sinh(ϕ)+Δx1*Cosh(ϕ))^2+(Δx2)^2+(Δx3)^2) #substituting manually gives this
 
-ds2=@equ(Δs^2=η*Ten([Δt, Δx1, Δx2, Δx3], v)*Ten([Δt, Δx1, Δx2, Δx3], μ))&η
-@assert ds2.rhs&a==(eq2_8.rhs&@equ(c=1))&a
-dX´=@equ(ΔX´=Λ*Ten([Δt, Δx1, Δx2, Δx3], μ))&eq2_11
-ηdX´=@equ(ΔX´=Λ*η*Ten([Δt, Δx1, Δx2, Δx3], v))&η&eq2_11
-ds´=@equ(Δs´^2=η*Λ*η*Ten([Δt, Δx1, Δx2, Δx3], v)*Λ*Ten([Δt, Δx1, Δx2, Δx3], μ))&η&eq2_11
+#4 ✓
+emM=[0 -:E1 -:E2 -:E3;:E1 0 :B3 -:B2;:E2 -:B3 0 :B1;:E3 :B2 -:B1 0]
+eq2_31=@equ Ten(F,[μ,v])=Ten($emM,[μ,v])
+eq2_35=@equ Alt([m,n,o,p])*Ten([∂t,∂1,∂2,∂3],:n)*Ten($emM,[o,p])=0
+print(eq2_35&@equ m=1)
 
-#print(simplify(ηdX´*dX´)) #seems correct
+n1=Ten(diagm([-1,1,1,1]),[:j,:j´])
+n2=Ten(diagm([-1,1,1,1]),[:k,:k´])
+simplify(@equ(2*Delta(i,m)=Alt([i,j,k])*($n1*$n2*Alt([j,k,m]))))
 
-Δt´=@equ(Δt´=Δt*Cosh(ϕ)-Δx1*Sinh(ϕ))
-Δx´=@equ(Δx1´=-Δt*Sinh(ϕ)+Δx1*Cosh(ϕ))
-#eq2_8´=@equ(Δs^2=-(Δt*Cosh(ϕ)-Δx1*Sinh(ϕ))^2+(-Δt*Sinh(ϕ)+Δx1*Cosh(ϕ))^2+(Δx2)^2+(Δx3)^2)
-#eq2_8´=@equ(Δs^2=-(dX´.rhs&@equ(μ´=1))^2+(dX´.rhs&@equ(μ´=2))^2+(Δx2)^2+(Δx3)^2)
-#must enable interpolation...
-
-#@assert round(eq2_8´.rhs&a,3)==round(ds2.rhs&a,3)
-#correct η?
-ds´=@equ(Δs´^2=η*Λ*η*Ten([Δt, Δx1, Δx2, Δx3], v)*Λ*Ten([Δt, Δx1, Δx2, Δx3], μ))&η&eq2_11

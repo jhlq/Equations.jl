@@ -334,6 +334,7 @@ type Alt<:AbstractTensor #Alternating tensor
 	indices::Array{Any}
 end
 Alt(inds::Array)=Alt(maltx(length(inds)),inds)
+Alt(inds...)=Alt(Any[inds...])
 function maltx(r)
 	x=zeros(fill!(zeros(Integer,r),r)...)
 	i=collect(1:r)

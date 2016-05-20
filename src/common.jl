@@ -1,4 +1,4 @@
-import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,.*,==,/, setindex!, Base.replace, Base.start, Base.next, Base.done
+import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,.*,==,/, setindex!,replace,start,next,done,zero
 
 abstract Component
 function ==(c1::Component, c2::Component)
@@ -144,6 +144,7 @@ typealias Factor EX
 show(io::IO,x::Type{Factor})=print(io, "Factor")
 typealias Term Array{Factor,1}
 convert(::Type{Array{Array{Factor,1},1}},a::Array{Any,1})=Term[a]
+zero(f::Factor)=0
 
 macro delegate(source, targets) # by JMW
     typename = esc(source.args[1])
