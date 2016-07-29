@@ -365,6 +365,7 @@ function indsin(array::Array,typ::Type)
 	end
 	return ind
 end
+indsin(n::Number,a)=[]
 terms(ex::Expression)=ex.terms
 terms(x::X)=x #Term[Factor[x]] #hmm
 dcterms(ex::Expression)=terms(deepcopy(ex))

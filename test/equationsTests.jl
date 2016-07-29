@@ -36,6 +36,9 @@ m=matches(ex,quadratic)
 @test evaluate(ex,Dict(:x=>m[1].rhs))<1e-9 && evaluate(ex,Dict(:x=>m[2].rhs))<1e-9
 
 #solve
+x=@equ(x+3=0)&:x
+@test x.lhs==:x
+@test x.rhs==-3
 eq=equation(:x+:z+:t)
 sol=solve(eq)
 for s in sol
