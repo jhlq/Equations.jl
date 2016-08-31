@@ -66,6 +66,7 @@ divbinedify(term::Term)=divbinedify!(deepcopy(term))
 function divify!(term::Array)
 	dis=indsin(term,Div)
 	remove=Int64[]
+	termrem=Integer[]
 	for i in dis
 		if term[i].x==1
 			term[i]=1
@@ -75,7 +76,6 @@ function divify!(term::Array)
 			ap=terms(term[i].x)
 			if length(ap)==1
 				aprem=Integer[]
-				termrem=Integer[]
 				for fac in 1:length(ap[1])
 					if isa(ap[1][fac],Div)
 						push!(term,ap[1][fac].x)
