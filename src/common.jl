@@ -612,6 +612,7 @@ function simplify(ex::Expression)
 			for fac in 1:length(ap[term])
 				ap[term][fac]=simplify(ap[term][fac])
 			end
+			unsqrt!(ap[term])
 			#sort!(ap[term])
 		end
 		ex=extract(expression(ap)) #better to check if res::N before calling expression instead of extracting?

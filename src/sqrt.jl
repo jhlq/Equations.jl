@@ -52,3 +52,19 @@ function matches(s::Sqrt,ex::Expression)
 end
 matches(::Term,::Sqrt)=[]
 matches(::N, ::Sqrt)=[]
+function unsqrt!(term::Term)
+	inds=indsin(term,Sqrt)
+	li=length(inds)
+	if li>1
+		for i in 1:li-1
+			for j in 2:li
+				if i!=j && term[inds[i]].x==term[inds[j]].x
+					push!(term,term[inds[i]].x)
+					deleteat!(term,[inds[i],inds[j]])
+					return term
+				end
+			end
+		end
+	end
+	return term
+end
