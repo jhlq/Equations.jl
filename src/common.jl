@@ -226,7 +226,7 @@ push!(x::X,a)=expression(Factor[x,a])
 -(ex1::Expression,ex2::Expression)=begin;ex=deepcopy(ex1);push!(ex,Factor[-1,ex2]);ex;end
 +(a::X,ex::Expression)=begin;ex=deepcopy(ex);insert!(ex.terms,1,Factor[a]);ex;end
 *(ex1::Expression,ex2::Expression)=expression(Factor[deepcopy(ex1),deepcopy(ex2)])
-.*(a::Array,ex::Ex)=ex.*a
+#.*(a::Array,ex::Ex)=ex.*a
 function .*(ex::Ex,a::Array)
 	na=EX[]
 	for i in 1:length(a)
@@ -234,6 +234,7 @@ function .*(ex::Ex,a::Array)
 	end
 	return na
 end
+.*(n::Number,ex::EX)=*(n,ex)
 /(ex::Ex,n::Number)=*(1/n,ex)
 function *(a::X,ex::Expression)
 	ex=deepcopy(ex)
@@ -615,6 +616,7 @@ function simplify(ex::Expression)
 		ex=extract(expression(ap)) #better to check if res::N before calling expression instead of extracting?
 		nit+=1
 		if has(ex,Ten)
+			#println(ps(ex))
 			ex=simplify(ex,Ten)
 		end
 		if nit>90
