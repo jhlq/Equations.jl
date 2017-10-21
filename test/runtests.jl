@@ -12,4 +12,5 @@ include("plasmaTests.jl")
 include("LogTests.jl")
 include("TenTests.jl")
 include("gravity.jl")
-
+include("readmeTests.jl")
+include("SqrtTests.jl")

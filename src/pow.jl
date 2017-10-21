@@ -1,4 +1,4 @@
-immutable Pow <: Component
+type Pow <: Component
 	x
 	y
 end

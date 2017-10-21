@@ -47,11 +47,11 @@ matches(::N,::Der)=[]
 matches(::Term,::Der)=[]
 function matches(d::Der)
 	ap=addparse(d.x)
-	nap=Array[]
+	nap=Term[]
 	for term in ap
-		push!(nap,Any[Der(Expression(term),d.dy)]) #the Any[] is for convenient construction by calling expression
+		push!(nap,Factor[Der(Expression(term),d.dy)]) 
 	end
-	return expression(nap)
+	return Expression(nap)
 end
 function simplify(d::Der)
 	return Der(simplify(d.x),simplify(d.dy))

@@ -1,28 +1,19 @@
 abstract AbstractTensor<:NonAbelian
-type Tensor<:AbstractTensor
-	x
-	upper
-	lower
-	rank
-end
-Tensor(a,b,c)=Tensor(a,b,c,-1)
-Tensor(a)=Tensor(a,-1,-1,-1)
-function print(io::IO,t::Tensor)
-	print(io,"$(t.x)($(t.upper),$(t.lower))")
-end
-function allnum(a::Array)
-	for n in a
-		if !isa(n,Number)
-			return false
-		end
-	end
-	return true
-end
 type Ten<:AbstractTensor
 	x
 	indices::Array{Any}
 end
-Ten(x,s::N)=Ten(x,[s])
+function Ten(x,i)
+	if isa(x,Array)&&!isa(x,Array{Any})
+		x=convert(Array{Any},x)
+	end
+	if !isa(i,Array)
+		i=Any[i]
+	elseif !isa(i,Array{Any})
+		i=convert(Array{Any},i)
+	end
+	Ten(x,i)
+end
 function print(io::IO,t::Ten)
 	print(io,"$(t.x)(")
 	if isa(t.indices,Array)
@@ -36,6 +27,25 @@ function print(io::IO,t::Ten)
 		print(io,t.indices)
 	end
 	print(io,")")
+end
+function allnum(a::Array)
+	for n in a
+		if !isa(n,Number)
+			return false
+		end
+	end
+	return true
+end
+type Tensor<:AbstractTensor
+	x
+	upper
+	lower
+	rank
+end
+Tensor(a,b,c)=Tensor(a,b,c,-1)
+Tensor(a)=Tensor(a,-1,-1,-1)
+function print(io::IO,t::Tensor)
+	print(io,"$(t.x)($(t.upper),$(t.lower))")
 end
 abstract AbstractIndex<:Component
 type Up<:AbstractIndex
@@ -210,7 +220,6 @@ function sumlify(tt::Array{Term})
 					for n in [tt2[1:tensi2[1]-1];tt2[tensi2[1]+1:end]]
 						nums=nums*n
 					end
-					#println(ti2,num,tt1[tensi[1]],nums,t2.x)
 					nt.x=simplify(nt.x+nums*t2.x)
 					push!(del,ti2)
 				end
@@ -257,7 +266,6 @@ function untensify!(tt::Array{Term})
 			end
 		end
 	end
-	#println(tt)
 	deleteat!(tt,del)
 	tt
 end
@@ -275,7 +283,6 @@ function simplify(ex::Expression,typ=Type{Ten})
 			nnat[n][m]=simplify(nnat[n][m])
 		end
 	end
-	#println(Expression(nnat))
 	untensify!(nnat)
 	nnat=sumlify(nnat)
 	return Expression(nnat)
@@ -308,7 +315,6 @@ function simplify(t::Ten)
 			return t.x[t.indices]
 		elseif isa(t.indices,Array)
 			if allnum(t.indices)#&&length(size(t.x))==length(t.indices)
-				#println(length(t.indices));println(length(size(t.x)))
 				return t.x[t.indices...]
 			end
 			if isa(t.indices[end],Number)
@@ -329,6 +335,7 @@ type Alt<:AbstractTensor #Alternating tensor
 	indices::Array{Any}
 end
 Alt(inds::Array)=Alt(maltx(length(inds)),inds)
+Alt(inds...)=Alt(Any[inds...])
 function maltx(r)
 	x=zeros(fill!(zeros(Integer,r),r)...)
 	i=collect(1:r)
@@ -430,7 +437,7 @@ end
 ⊗(tp::TensorProduct,t)=begin;tp=deepcopy(tp);push!(tp.tensors,t);tp;end
 ⊗(t,tp::TensorProduct)=begin;tp=deepcopy(tp);unshift!(tp.tensors,t);tp;end
 ⊗(t1,t2)=TensorProduct([t1,t2])
-function print(io::IO,tp::TensorProduct) #rewrite with macro
+function print(io::IO,tp::TensorProduct) 
 	print(io,"$(tp.tensors[1]) ⊗")
 	for i in 2:length(tp.tensors)-1
 		print(io," $(tp.tensors[i]) ⊗")

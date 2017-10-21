@@ -13,5 +13,5 @@ function simplify(p::Physical)
 	if isa(u,Array) && length(u)==1 && length(u[1])>1 && isa(u[1][1],Number)
 		shift!(u[1])
 	end
-	return Physical(simplify(p.x),u)
+	return U(simplify(p.x),u)
 end

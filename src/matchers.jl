@@ -247,12 +247,11 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 								continue
 							end
 							@assert 2l==length(xsq)
-							xsqlen=2l#length(xsq)
+							xsqlen=2l
 							matchlen=length(termses[matchi])
 							numshift=matchlen-xsqlen
 							for shif in 0:numshift
 								if xsq==mp[1+shif:2l+shif]
-	#								push!(connections,(ti,p,l,matchi,termses[matchi]))
 									found=Integer[]
 									nomatch=false
 									for termi in 1:length(termses)
@@ -276,9 +275,7 @@ function quadratic(eq::Equation,xlen::Integer=0,notinx::Array=[])
 										end
 										x=p[1:l]
 										c=deleteat!(deepcopy(termses),sort([ti,matchi]))
-										#println("$termses is of the form ax^2+bx+c with a=$a, x^2=$xsq, b=$b, x=$x, c=$c")
 										eq1=Equation(expression(x),(-expression(b)+Sqrt(expression(b)^2-4*expression(a)*expression(c)))/2expression(a))
-#Equation(expression(x),(-expression(b)/(2expression(a))+Sqrt(expression(b)^2/(4*expression(a)^2)-expression(c)/expression(a))))
 										if !in(eq1,matches)
 											push!(matches,eq1)
 										end

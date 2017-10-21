@@ -2,34 +2,31 @@ include("common.jl")
 import Base: &, ctranspose
 
 type Equation
-	lhs#::EX
+	lhs#::EX #relaxed this to allow arbitrary substitution, for example a tensor Ten(A) where A is replaced with an array. Do note that raw arrays should never be present in expressions, unless you are a practitioner of Chaos Magic (ie UNDEFINED results).
 	rhs#::EX
 	divisions
 end
-Equation(ex1,ex2)=Equation(ex1,ex2,Any[]) #or set?
+Equation(ex1,ex2)=Equation(ex1,ex2,Set()) 
+Equation(ex1)=Equation(ex1,0,Set()) 
 function tosym(expr)
-	#println(expr)
 	if isa(expr,Symbol)
 		return QuoteNode(:($expr))
 	elseif isa(expr,Expr)
-		#dump(expr)
-		if expr.head==:vcat
-			#dump(expr)
+		if expr.head==:$
+			expr=esc(expr.args[1])
+		elseif expr.head==:vcat
 			for s in 1:length(expr.args)
-				#println(expr.args[s])
 				for p in 1:length(expr.args[s].args)
 					expr.args[s].args[p]=tosym(expr.args[s].args[p])
 				end
 			end
 		else
 			if expr.head==:vect
-				#dump(expr)
 				s1=1
 			else
 				s1=2
 			end
 			for s in s1:length(expr.args)
-				#println(expr.args[s])
 				expr.args[s]=tosym(expr.args[s])
 			end
 		end
@@ -107,8 +104,10 @@ function (&)(eq::Equation,eqa::Array{Equation})
 	for teq in eqa
 		eq=eq&teq
 	end
-	return eq
+	return simplify(eq)
 end
+(&)(eq::Equation,fun::Function)=fun(eq)
+(&)(ex::EX,fun::Function)=fun(ex)
 function (&)(ex::Expression,eq::Equation)
 	ex=simplify(ex);eq=simplify(eq)
 	if isa(eq.lhs,Symbol)
@@ -161,11 +160,11 @@ function (&)(ex::Symbol,eq::Equation)
 	return ex
 end
 (&)(x::Number,eq::Equation)=x
-function (&)(ex::Ex,eqa::Array{Equation})
+function (&)(ex::Union{Ex,Equation},eqa::Array)
 	for teq in eqa
 		ex=ex&teq
 	end
-	return ex
+	return simplify(ex)
 end
 function (&)(eq::Equation,sym::Symbol)
 	if isa(eq.lhs,Component)
