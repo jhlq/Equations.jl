@@ -3,7 +3,7 @@ type Ten<:AbstractTensor
 	x
 	indices::Array{Any}
 end
-function Ten(x,i)
+function Ten(x,i::Factor)
 	if isa(x,Array)&&!isa(x,Array{Any})
 		x=convert(Array{Any},x)
 	end
@@ -269,7 +269,7 @@ function untensify!(tt::Array{Term})
 	deleteat!(tt,del)
 	tt
 end
-function simplify(ex::Expression,typ=Type{Ten})
+function simplify(ex::Expression,typ::Type{Ten})
 	nat=Term[]
 	for t in ex
 		pushall!(nat,sumconv(t))
@@ -344,9 +344,9 @@ function maltx(r)
 	end
 	x
 end
-function print(io::IO,a::Alt)
-	print(io,"ϵ($(a.indices))")
-end
+#function print(io::IO,a::Alt)
+#	print(io,"ϵ($(a.indices))")
+#end
 function permsign(p)
 	n = length(p)
 	A = zeros(n,n)

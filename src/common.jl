@@ -1,4 +1,5 @@
 import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,.*,==,/, setindex!,replace,start,next,done,zero
+using Combinatorics
 
 abstract Component
 function ==(c1::Component, c2::Component)
@@ -145,6 +146,8 @@ show(io::IO,x::Type{Factor})=print(io, "Factor")
 typealias Term Array{Factor,1}
 convert(::Type{Array{Array{Factor,1},1}},a::Array{Any,1})=Term[a]
 zero(f::Factor)=0
+Expression(x::Factor)=expression(x)
+convert(::Type{Expression},f::Factor)=expression(f)
 
 macro delegate(source, targets) # by JMW
     typename = esc(source.args[1])
@@ -191,7 +194,9 @@ function complexity(a::Array)
 	end
 	return tot
 end
+expression(a::Array)=Expression(Term[a])
 expression(a::Term)=Expression(Term[a])
+expression(a::Expression)=a
 expression(a::Array{Term})=Expression(a)
 function expression(cs::Array{Components})
 	if isempty(cs)
@@ -386,7 +391,7 @@ function has(a::Array,t::EX)
 	end
 	return false
 end
-function has(term1::Term,term2::Term)
+function has(term1::Array,term2::Array)
 	if length(term1)<length(term2)
 		return false
 	end
