@@ -73,7 +73,7 @@ tt=Term[Factor[3,Ten([:a,:b],:i)],Factor[5,Ten([:c,:d],:i)]];stt=Equations.sumli
 #stt==simplify(Term[Factor[Equations.Ten(Any[3*:a+5*:c,3*:b+5*:d],Any[:i])]])
 
 ex=Equations.sumlify(Equations.untensify!(sumconv(Alt([:i,:j])*Ten([10,100],:j)).terms))
-@test ps(ex[1][1])=="Equations.Ten(Any[100.0,-10.0],Any[:i])"
+@test ps(ex[1][1])=="Equations.Ten(Float64[100.0,-10.0],Any[:i])"
 #ex==Term[Factor[Equations.Ten(Any[100.0,-10.0],Any[:i]),10]]
 
 ex=Alt([:i,:j,:k])*Ten([1,0,0],:j)*Ten([0,0,1],:k);ex=sumconv(ex);ex=sumconv(ex);tt=Equations.untensify!(ex.terms);ttt=Equations.sumlify(tt)
