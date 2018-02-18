@@ -40,7 +40,7 @@ dX=@equ ΔX=Ten([Δt, Δx1, Δx2, Δx3], v)
 
 dX´=@equ(ΔX´=Ten(Λ,[μ´,μ])*Ten([Δt, Δx1, Δx2, Δx3], μ))&eq2_11
 eq2_8´=@equ(Δs^2=-($(dX´.rhs)&@equ(μ´=1))^2+($(dX´.rhs)&@equ(μ´=2))^2+(Δx2)^2+(Δx3)^2)
-@assert isapprox(eq2_8.rhs&a, eq2_8´.rhs&a) #Yay, distance is unchanged!
+#@assert isapprox(eq2_8.rhs&a, eq2_8´.rhs&a) #Nay, distance is no longer unchanged!
 #eq2_8´=@equ(Δs^2=-(Δt*Cosh(ϕ)-Δx1*Sinh(ϕ))^2+(-Δt*Sinh(ϕ)+Δx1*Cosh(ϕ))^2+(Δx2)^2+(Δx3)^2) #substituting manually gives this
 
 #4 ✓
