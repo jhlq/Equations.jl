@@ -1,7 +1,7 @@
 import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,.*,==,/, setindex!,replace,start,next,done,zero
 using Combinatorics
 
-abstract Component
+abstract type Component end
 function ==(c1::Component, c2::Component)
 	if isa(c1,typeof(c2))
 		for n in fieldnames(c1)
@@ -13,10 +13,10 @@ function ==(c1::Component, c2::Component)
 	end
 	return false
 end
-abstract SingleArg <: Component
+abstract type SingleArg <: Component end
 ==(sa1::SingleArg,sa2::SingleArg)=isa(sa1,typeof(sa2))&&sa1.x==sa2.x 
-abstract NonAbelian <: Component
-abstract Operator <: Component
+abstract type NonAbelian <: Component end
+abstract type Operator <: Component end
 function getargs(c::Component)
 	n=fieldnames(c)
 	ret=Any[]
@@ -141,9 +141,9 @@ N=Union{Number,Symbol}
 X=Union{Number,Symbol,Component}
 Ex=Union{Symbol,Component,Expression}
 EX=Union{Number,Symbol,Component,Expression}
-typealias Factor EX
+const Factor = EX
 show(io::IO,x::Type{Factor})=print(io, "Factor")
-typealias Term Array{Factor,1}
+const Term = Array{Factor,1}
 convert(::Type{Array{Array{Factor,1},1}},a::Array{Any,1})=Term[a]
 zero(f::Factor)=0
 Expression(x::Factor)=expression(x)
@@ -154,7 +154,7 @@ macro delegate(source, targets) # by JMW
     fieldname = esc(Expr(:quote, source.args[2].args[1]))
     funcnames = targets.args
     n = length(funcnames)
-    fdefs = Array(Any, n)
+    fdefs = Array{Any}(n)
     for i in 1:n
         funcname = esc(funcnames[i])
         fdefs[i] = quote
@@ -233,7 +233,7 @@ push!(x::X,a)=expression(Factor[x,a])
 +(a::X,ex::Expression)=begin;ex=deepcopy(ex);insert!(ex.terms,1,Factor[a]);ex;end
 *(ex1::Expression,ex2::Expression)=expression(Factor[deepcopy(ex1),deepcopy(ex2)])
 #.*(a::Array,ex::Ex)=ex.*a
-function .*(ex::Ex,a::Array)
+function Base.broadcast(::typeof(*),ex::Ex,a::Array)
 	na=EX[]
 	for i in 1:length(a)
 		push!(na,ex*a[i])
@@ -270,7 +270,7 @@ end
 -(ex::Expression)=-1*ex
 *(x1::X,x2::X)=Expression([x1,x2])
 
-abstract Operation <: Component
+abstract type Operation <: Component end
 
 function indin(array,item)
 	ind=0
@@ -708,9 +708,9 @@ sumnum(x::N)=x
 function sumsym(ex::Expression)
 	ap=terms(deepcopy(ex))
 	nap=length(ap)
-	cs=Array(Components,0)
+	cs=Array{Components}(0)
 	for add in 1:nap
-		tcs=Array(Ex,0)
+		tcs=Array{Ex}(0)
 		coef=1
 		for term in ap[add]
 			if isa(term,Ex)

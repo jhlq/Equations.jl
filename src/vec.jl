@@ -5,7 +5,7 @@ type Vec <: NonAbelian
 end
 Vec(a...)=Vec([a...])
 @delegate Vec.v [#=getindex, setindex!,=# start, next, done, length]
-function .*(v::Vec,a::Factor)
+function Base.broadcast(::typeof(*),v::Vec,a::Factor)
 	nv=Any[]
 	for val in v.v
 		push!(nv,val*a)

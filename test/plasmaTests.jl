@@ -11,9 +11,9 @@ wp=:ωp≖sqrt(:ne*:qe^2/(:ε0*:me))
 # particles in a debye cube ND
 ND=:ND≖:ne*:λD^3
 
-@test_approx_eq (lD&variables&constants).rhs 7.433892903446526
-@test_approx_eq (wp&lD&variables&constants).rhs 178400.95597166813
-@test_approx_eq (ND&lD&variables&constants).rhs 4.108174668936227e9
+@test (lD&variables&constants).rhs ≈ 7.433892903446526
+@test (wp&lD&variables&constants).rhs ≈ 178400.95597166813
+@test (ND&lD&variables&constants).rhs ≈ 4.108174668936227e9
 
 # Drifts
 ve=:ve≖Cross(:E⊥,:B)/norm(:B)^2
@@ -25,7 +25,7 @@ dBt=:dBt≖0.3
 Eperp=:E⊥≖-:r/2*:dBt*Vec(ey)
 vars=[B,Bt,Eperp,r,dBt]
 
-@test_approx_eq (ve&vars).rhs[1][1] -0.1
+@test (ve&vars).rhs[1][1] ≈ -0.1
 @test (ve&vars).rhs[1][2]==Vec([1,0,0])
 
 # Temperatures
@@ -45,5 +45,5 @@ Ek3=equ(:Ek3,0.5*:Tpa3+:Tpe3)
 Ekf=[equ(:Ekf,0.5*:Tf+:Tf),equ(:Ekf,:Ek3)]
 Tf=(Ekf[1]&Ekf[2]&Ek3&Tpa3&Tpe3&T2)/1.5
 
-@test_approx_eq T2.rhs[1][1] 1.6666666666666665
-@test_approx_eq Tf.lhs[1][1] 1.111111111111111
+@test T2.rhs[1][1] ≈ 1.6666666666666665
+@test Tf.lhs[1][1] ≈ 1.111111111111111

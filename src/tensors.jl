@@ -1,4 +1,4 @@
-abstract AbstractTensor<:NonAbelian
+abstract type AbstractTensor<:NonAbelian end
 type Ten<:AbstractTensor
 	x
 	indices::Array{Any}
@@ -47,7 +47,7 @@ Tensor(a)=Tensor(a,-1,-1,-1)
 function print(io::IO,t::Tensor)
 	print(io,"$(t.x)($(t.upper),$(t.lower))")
 end
-abstract AbstractIndex<:Component
+abstract type AbstractIndex<:Component end
 type Up<:AbstractIndex
 	x
 end

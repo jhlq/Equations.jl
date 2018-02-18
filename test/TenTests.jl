@@ -40,11 +40,11 @@ r=Ten(:A,[:i,:i])&@equ A=[:a 0;0 :b]
 
 io=IOBuffer()
 print(io,simplify(Ten([1,2],:j)*Ten([3 2;1 -1],[:i,:j]))) 
-str=takebuf_string(io)
+str=String(take!(io))
 #@test str=="Any[3,1](i) + 2 [2,-1](i)"
 io=IOBuffer()
 print(io,simplify(Ten([1,2],:j)*Ten([3 2;1 -1],[:j,:i]))) 
-str=takebuf_string(io)
+str=String(take!(io))
 #@test str=="Any[3 2](i) + 2 [1 (-1)](i)"
 
 @test duplicates([1,2,3,4,2])==[2,5]
