@@ -1,0 +1,14 @@
+Unit simplification
+simplify(3*Ten([1,2,3],:i))
+simplify(Ten([1,2,3],:i)*Ten([1,2,3],:j)+Ten([3,2,1],:i)*Ten([3,2,1],:j))
+Solve the solver!
+simplified flag
+Named<:AbstractNamed;Physical<:AbstractNamed	or	put named flag on equation
+Equations.expandindices(indsh) default
+replace ___ with type
+printm to print expressions in a copyable format
+randeval on arrays, findsyms on arrays
+indsin does not find certain nested types
+Interpolation into @equ
+make Differentiable constructor
+1/z
