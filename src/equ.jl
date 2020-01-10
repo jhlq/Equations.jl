@@ -1,7 +1,7 @@
 include("common.jl")
-import Base: &, ctranspose
+import Base: &, transpose
 
-type Equation
+mutable struct Equation
 	lhs#::EX #relaxed this to allow arbitrary substitution, for example a tensor Ten(A) where A is replaced with an array. Do note that raw arrays should never be present in expressions, unless you are a practitioner of Chaos Magic (ie UNDEFINED results).
 	rhs#::EX
 	divisions
@@ -56,7 +56,7 @@ end
 ≖(a,b)=Equation(a,b)
 complexity(eq::Equation)=complexity(eq.lhs)+complexity(eq.rhs)
 isless(eq1::Equation,eq2::Equation)=complexity(eq1)<complexity(eq2)
-type EquationChain
+mutable struct EquationChain
 	expressions::Vector
 end
 EquationChain(a...)=EquationChain([a...])
@@ -224,7 +224,9 @@ function pushallunique!(a1::Array,d)
 	return a1
 end
 pushallunique!(a1::Array,b::Bool)=Void
-uniquefilter{T}(a::Array{T})=pushallunique!(T[],a)
+function uniquefilter(a::Array{T}) where {T}
+	pushallunique!(T[],a)
+end
 include("matchers.jl")
 matchfuns=Function[]
 push!(matchfuns,quadratic)

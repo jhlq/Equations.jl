@@ -1,4 +1,4 @@
-type Der <: Component
+mutable struct Der <: Component
 	x
 	dy
 end
@@ -10,7 +10,7 @@ function print(io::IO,d::Der)
 	end
 end
 getargs(d::Der)=[d.x,d.dy]
-type DerOp <: NonAbelian
+mutable struct DerOp <: NonAbelian
 	dy
 end
 #*(dop::DerOp,ex::EX)=Der(ex,dop.dy)

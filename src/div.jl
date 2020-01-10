@@ -1,4 +1,4 @@
-type ╱ <: SingleArg #\diagup
+mutable struct ╱ <: SingleArg #\diagup
 	x
 end
 Div=╱

@@ -1,8 +1,8 @@
 import Base.sqrt
-immutable Sqrt <: SingleArg
+mutable struct Sqrt <: SingleArg
 	x
 end
-sqrt(a)=Sqrt(a)
+sqrt(a::Ex)=Sqrt(a::Ex)
 sqrt(eq::Equation)=Equation(simplify(sqrt(eq.lhs)),simplify(sqrt(eq.rhs)))
 function print(io::IO,s::Sqrt)
 	print(io,"√(")

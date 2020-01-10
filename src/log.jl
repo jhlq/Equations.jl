@@ -1,5 +1,5 @@
 import Base: log,exp,cos,sin,cosh,sinh
-type Log <: Component
+mutable struct Log <: Component
 	x
 	y
 end
@@ -21,7 +21,7 @@ function simplify(l::Log)
 	return l
 end
 
-type Exp <: Component
+mutable struct Exp <: Component
 	x
 end
 exp(ex::Ex)=Exp(ex)
@@ -32,7 +32,7 @@ function simplify(l::Exp)
 	end
 	return Exp(x)
 end
-type Cos <: Component
+mutable struct Cos <: Component
 	x
 end
 cos(ex::Ex)=Cos(ex)
@@ -43,7 +43,7 @@ function simplify(l::Cos)
 	end
 	return cos(x)
 end
-type Sin <: Component
+mutable struct Sin <: Component
 	x
 end
 sin(ex::Ex)=Sin(ex)
@@ -54,6 +54,7 @@ function simplify(l::Sin)
 	end
 	return Sin(x)
 end
+#=
 for c=((:Cosh,:cosh),(:Sinh,:sinh))
 	ex1=Expr(:type)
 	ex2=Expr(:<:)
@@ -71,3 +72,4 @@ for c=((:Cosh,:cosh),(:Sinh,:sinh))
 			return $(c[1])(x)
 		end"))
 end
+=#

@@ -17,7 +17,7 @@ function ps(t::Term)
 	end
 	s[1:end-1]
 end
-function ps{T}(ar::Array{T,1})
+function ps(ar::Array{T,1}) where {T}
 	if isempty(ar)
 		return "$T[]"
 	end

@@ -1,6 +1,6 @@
-import Base: norm, dot, cross
+import LinearAlgebra: norm, dot, cross
 
-type Vec <: NonAbelian
+mutable struct Vec <: NonAbelian
 	v
 end
 Vec(a...)=Vec([a...])
@@ -12,7 +12,7 @@ function Base.broadcast(::typeof(*),v::Vec,a::Factor)
 	end
 	return Vec(nv)
 end
-immutable Cross <: Component
+mutable struct Cross <: Component
 	x
 	y
 end
@@ -57,7 +57,7 @@ function simplify(c::Cross)
 	return c
 end
 print(io::IO,c::Cross)=print(io,c.x,'×',c.y)
-type Norm <: Component
+mutable struct Norm <: Component
 	x
 end
 norm(ex::Ex)=Norm(ex)
@@ -79,7 +79,7 @@ function simplify(n::Norm)
 	end
 	norm(n.x)
 end
-type Dot <: Component
+mutable struct Dot <: Component
 	x
 	y
 end

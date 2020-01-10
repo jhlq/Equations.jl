@@ -1,4 +1,4 @@
-type Pow <: Component
+mutable struct Pow <: Component
 	x
 	y
 end

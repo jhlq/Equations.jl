@@ -1,5 +1,5 @@
 abstract type AbstractTensor<:NonAbelian end
-type Ten<:AbstractTensor
+mutable struct Ten<:AbstractTensor
 	x
 	indices::Array{Any}
 end
@@ -36,7 +36,7 @@ function allnum(a::Array)
 	end
 	return true
 end
-type Tensor<:AbstractTensor
+mutable struct Tensor<:AbstractTensor
 	x
 	upper
 	lower
@@ -48,7 +48,7 @@ function print(io::IO,t::Tensor)
 	print(io,"$(t.x)($(t.upper),$(t.lower))")
 end
 abstract type AbstractIndex<:Component end
-type Up<:AbstractIndex
+mutable struct Up<:AbstractIndex
 	x
 end
 function duplicates(arr)
@@ -330,7 +330,7 @@ function simplify(t::Ten)
 	end
 	t
 end
-type Alt<:AbstractTensor #Alternating tensor
+mutable struct Alt<:AbstractTensor #Alternating tensor
 	x
 	indices::Array{Any}
 end
@@ -373,14 +373,14 @@ function simplify(a::Alt)
 	return a
 end
 simplify(a::Alt,t::Type)=simplify(a)
-type Bra<:Component
+mutable struct Bra<:Component
 	x
 end
 
-type Ket<:Component
+mutable struct Ket<:Component
 	x
 end
-type BraKet<:Component
+mutable struct BraKet<:Component
 	x
 	y
 	o #middle element
@@ -397,7 +397,7 @@ function print(io::IO,bk::BraKet)
 	print(io,'⟩')
 end
 
-type Delta<:AbstractTensor
+mutable struct Delta<:AbstractTensor
 	x
 	y
 end
@@ -413,7 +413,7 @@ function print(io::IO,d::Delta)
 	print(io,"δ($(d.x),$(d.y))")
 end
 
-type D<:NonAbelian
+mutable struct D<:NonAbelian
 	x
 end
 function print(io::IO,d::D)
@@ -424,7 +424,7 @@ function print(io::IO,d::D)
 	end
 end
 
-type TensorProduct <: AbstractTensor
+mutable struct TensorProduct <: AbstractTensor
 	tensors
 end
 function ⊗(tp1::TensorProduct,tp2::TensorProduct)
@@ -444,7 +444,7 @@ function print(io::IO,tp::TensorProduct)
 	end
 	print(io," $(tp.tensors[end])")
 end
-type Wedge <: AbstractTensor
+mutable struct Wedge <: AbstractTensor
 	tensors::Term
 end
 function ∧(tp1::Wedge,tp2::Wedge)
@@ -465,20 +465,20 @@ function print(io::IO,tp::Wedge)
 	print(io," $(tp.tensors[end])")
 end
 
-type Form<:Component
+mutable struct Form<:Component
 	x
 	T
 	w
 	p
 end
-type Trace<:Component
+mutable struct Trace<:Component
 	x
 end
-type Commutator<:Component
+mutable struct Commutator<:Component
 	x
 	y
 end
-type Transpose<:Component
+mutable struct Transpose<:Component
 	x
 end
 function simplify(t::Transpose)

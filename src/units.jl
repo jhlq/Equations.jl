@@ -1,4 +1,4 @@
-type U <: Component
+mutable struct U <: Component
 	x
 	units
 end

@@ -1,10 +1,10 @@
-import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,.*,==,/, setindex!,replace,start,next,done,zero
+import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,==,/, setindex!,replace,iterate,zero
 using Combinatorics
 
 abstract type Component end
 function ==(c1::Component, c2::Component)
 	if isa(c1,typeof(c2))
-		for n in fieldnames(c1)
+		for n in fieldnames(typeof(c1))
 			if getfield(c1,n)!=getfield(c2,n)
 				return false
 			end
@@ -18,7 +18,7 @@ abstract type SingleArg <: Component end
 abstract type NonAbelian <: Component end
 abstract type Operator <: Component end
 function getargs(c::Component)
-	n=fieldnames(c)
+	n=fieldnames(typeof(c))
 	ret=Any[]
 	for nam in n
 		push!(ret,getfield(c,nam))
@@ -33,7 +33,7 @@ function setarg!(c::Component,newarg,argn::Integer=1)
 	return c
 end
 setarg(c::Component,newarg,argn::Integer=1)=setarg!(deepcopy(c),newarg,argn)
-type Components <: Component 
+mutable struct Components <: Component 
 	components 
 	coef
 end #maybe this type should be deprecated and sumsym rewritten
@@ -51,7 +51,7 @@ function ==(cs1::Components,cs2::Components)
 	return true
 end
 
-type Expression 
+mutable struct Expression 
 	terms::Array{Array{Union{Number,Symbol,Component,Expression},1},1}
 end
 length(ex::Expression)=length(ex.terms)
@@ -151,10 +151,10 @@ convert(::Type{Expression},f::Factor)=expression(f)
 
 macro delegate(source, targets) # by JMW
     typename = esc(source.args[1])
-    fieldname = esc(Expr(:quote, source.args[2].args[1]))
+    fieldname = esc(Expr(:quote, source.args[2].value))
     funcnames = targets.args
     n = length(funcnames)
-    fdefs = Array{Any}(n)
+    fdefs = Array{Any}(undef,n)
     for i in 1:n
         funcname = esc(funcnames[i])
         fdefs[i] = quote
@@ -240,7 +240,7 @@ function Base.broadcast(::typeof(*),ex::Ex,a::Array)
 	end
 	return na
 end
-.*(n::Number,ex::EX)=*(n,ex)
+#.*(n::Number,ex::EX)=*(n,ex)
 /(ex::Ex,n::Number)=*(1/n,ex)
 function *(a::X,ex::Expression)
 	ex=deepcopy(ex)
@@ -565,7 +565,7 @@ isless(c::Component,s::N)=false
 isless(s::N,c::Component)=true
 isless(s::Symbol,n::Number)=false
 isless(n::Number,s::Symbol)=true
-isless(s::Complex,n::Complex)=real(s)<real(n)?true:imag(s)<imag(n)?true:false
+isless(s::Complex,n::Complex)=real(s)<real(n) ? true : imag(s)<imag(n) ? true : false
 isless(n::Real,s::Complex)=true
 isless(s::Complex,n::Real)=false
 isless(na::NonAbelian,na2::NonAbelian)=false
@@ -577,17 +577,17 @@ function isless(c1::Component,c2::Component)
 	end
 	xi1=complexity(c1)
 	xi2=complexity(c2)
-	xi1==xi2?isless(string(c1),string(c2)):xi1<xi2
+	xi1==xi2 ? isless(string(c1),string(c2)) : xi1<xi2
 end
 function isless(t1::Term,t2::Term)
 	xi1=complexity(t1)
 	xi2=complexity(t2)
-	xi1==xi2?isless(string(t1),string(t2)):xi1<xi2
+	xi1==xi2 ? isless(string(t1),string(t2)) : xi1<xi2
 end
 function isless(ex1::Expression,ex2::Expression)
 	xi1=complexity(ex1)
 	xi2=complexity(ex2)
-	xi1==xi2?isless(string(ex1),string(ex2)):xi1<xi2
+	xi1==xi2 ? isless(string(ex1),string(ex2)) : xi1<xi2
 end
 sort(n::N)=n
 sort(c::Component)=maketype(c,sort)
@@ -687,7 +687,7 @@ function sumnum(ex::Expression)
 			continue
 		else
 			if prod!=1
-				unshift!(nterm,prod)
+				prepend!(nterm,prod)
 			end
 			push!(nterms,nterm)
 		end
@@ -708,9 +708,9 @@ sumnum(x::N)=x
 function sumsym(ex::Expression)
 	ap=terms(deepcopy(ex))
 	nap=length(ap)
-	cs=Array{Components}(0)
+	cs=Array{Components}(undef,0)
 	for add in 1:nap
-		tcs=Array{Ex}(0)
+		tcs=Array{Ex}(undef,0)
 		coef=1
 		for term in ap[add]
 			if isa(term,Ex)
@@ -898,11 +898,15 @@ function randeval(ex::Ex,seed=1)
 	end
 	evaluate(ex,d)
 end
-start(ex::Expression)=(1,terms(ex))
-function next(ex::Expression,state)
-	return (state[2][state[1]],(state[1]+1,state[2]))
+function iterate(ex::Expression,state=(nothing,0))
+	t=terms(ex)
+	i=state[2]
+	i+=1
+	if i>length(t)
+		return nothing
+	end
+	return (t[i],(nothing,i))
 end
-done(ex::Expression,state)=state[1]>length(state[2])
 function matches(ex::Expression,pat::Component)
 	if length(ex)==1
 		return matches(ex[1],pat)

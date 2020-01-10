@@ -1,7 +1,7 @@
-type Oneable <: Component
+mutable struct Oneable <: Component
 	x
 end
-type Named <: Component
+mutable struct Named <: Component
 	x
 end
 
@@ -70,7 +70,7 @@ function facalloc!(termremains::Array,patremains::Array,psremains::Array,dic::Di
 	end
 	return dica
 end
-getcoef(term::Array)=begin;i=indsin(term,Number);isempty(i)?1:sum(term[i]);end
+getcoef(term::Array)=begin;i=indsin(term,Number);isempty(i) ? 1 : sum(term[i]);end
 function whenallequal(term,pat,ps)
 	mda=Dict[]
 	for l in 1:length(ps)
