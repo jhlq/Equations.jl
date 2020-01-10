@@ -10,10 +10,11 @@ ex=:x+:y
 ap=terms(ex)
 @test length(ap)==2
 @test expression(ap)==ex #maybe have isequivalent instead to give addparse some room, maybe have == = isequivalent, equivalent=isequivalent?
-i=1
-for term in ex
-	@test term==ap[i]
-	i+=1
+let i=1
+	for term in ex
+		@test term==ap[i]
+		i+=1
+	end
 end
 
 #componify

@@ -101,7 +101,7 @@ function divify!(term::Array)
 			end
 		else
 			invinds=indsin(term,term[i].x)
-			removed=findin(invinds,remove)
+			removed=findall((in)(remove),invinds)
 			deleteat!(invinds,removed)	
 			if !isempty(invinds)
 				push!(remove,i)

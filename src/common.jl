@@ -496,7 +496,7 @@ function componify(ex::Expression,raw=false)
 			tap=exs[1].terms
 			for x in xs
 				for tterm in tap
-					unshift!(tterm,x)
+					prepend!(tterm,x)
 				end
 			end
 			exs[1]=expression(tap)

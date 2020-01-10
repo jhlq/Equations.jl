@@ -4,7 +4,7 @@ mutable struct Vec <: NonAbelian
 	v
 end
 Vec(a...)=Vec([a...])
-@delegate Vec.v [#=getindex, setindex!,=# start, next, done, length]
+@delegate Vec.v [#=getindex, setindex!,=# iterate, length]
 function Base.broadcast(::typeof(*),v::Vec,a::Factor)
 	nv=Any[]
 	for val in v.v

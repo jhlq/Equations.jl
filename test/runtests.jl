@@ -1,5 +1,5 @@
 using Equations
-using Base.Test
+using Test
 
 include("commonTests.jl")
 include("DivTests.jl")
