@@ -1,3 +1,5 @@
+import LinearAlgebra.det
+
 abstract type AbstractTensor<:NonAbelian end
 mutable struct Ten<:AbstractTensor
 	x
@@ -201,7 +203,7 @@ function sumlify(tt::Array{Term})
 	tt=deepcopy(tt)
 	ntt=Term[]
 	while !isempty(tt)
-		tt1=shift!(tt)
+		tt1=popfirst!(tt)
 		tensi=indsin(tt1,Ten)
 		if length(tensi)==1&&allnum(tt1[1:tensi[1]-1])&&allnum(tt1[tensi[1]+1:end])&&isa(tt1[tensi[1]].x,Array)
 			nt=tt1[tensi[1]]

@@ -21,9 +21,10 @@ println("The pole is rotated about the time axis of the barn. When one object is
 
 
 #2
+using LinearAlgebra
 M=[:t^2 :t*:x1 :q :q;:x1*:t :x1^2 :q :q;:q :q :x2 :q;:q :q :q :x3]
 d=@equ Ten(D,[v,w])=Ten($(M),[v,w]) #D is not mentioned in the texts...
-η=@equ Ten(η,[μ,v])=Ten($(diagm([-1,1,1,1])),[μ,v])
+η=@equ Ten(η,[μ,v])=Ten($(Matrix(Diagonal(([-1,1,1,1])))),[μ,v])
 eq2_11=@equ Ten(Λ,[μ´,μ])=Ten([Cosh(ϕ) -Sinh(ϕ) 0 0;-Sinh(ϕ) Cosh(ϕ) 0 0;0 0 1 0;0 0 0 1], [μ´,μ])
 d´=(eq2_11*(d&@equ(v=μ)))
 d2´=(eq2_11*η*d)

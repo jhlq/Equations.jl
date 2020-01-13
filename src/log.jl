@@ -54,17 +54,10 @@ function simplify(l::Sin)
 	end
 	return Sin(x)
 end
-#=
 for c=((:Cosh,:cosh),(:Sinh,:sinh))
-	ex1=Expr(:type)
-	ex2=Expr(:<:)
-	push!(ex2.args,c[1],Component)
-	ex3=Expr(:block)
-	push!(ex3.args,:x)
-	push!(ex1.args,true,ex2,ex3)
-	eval(ex1)
-	eval(parse("$(c[2])(ex::Ex)=$(c[1])(ex)"))
-	eval(parse("function simplify(l::$(c[1]))
+	eval(Meta.parse("mutable struct $(c[1])<:Component;x;end"))
+	eval(Meta.parse("$(c[2])(ex::Ex)=$(c[1])(ex)"))
+	eval(Meta.parse("function simplify(l::$(c[1]))
 			x=simplify(l.x)
 			if isa(x,Number)
 				return $(c[2])(x)
@@ -72,4 +65,3 @@ for c=((:Cosh,:cosh),(:Sinh,:sinh))
 			return $(c[1])(x)
 		end"))
 end
-=#

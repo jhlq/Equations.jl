@@ -5,7 +5,33 @@ end
 ==(p1::Pow,p2::Pow)=p1.x==p2.x&&p1.y==p2.y
 import Base: ^, hash
 ^(x::EX,y::Ex)=Pow(x,y)
-^(x::Ex,y::Number)=Pow(x,y)
+function ^(x::Ex,y::Integer)
+	if y<0
+		return 1/(x^abs(y))
+	elseif y==0
+		return 1
+	else
+		nx=x
+		for i in 1:y-1
+			nx=nx*x
+		end
+		return nx
+	end
+end
+function ^(x::Ex,y::AbstractFloat)
+	if y==0
+		return 1
+	elseif y>0
+		if y<1
+			return Pow(x,y)
+		else
+			return x^Int(floor(y))*Pow(x,y-floor(y))
+		end
+	else
+		return 1/(x^abs(y))
+	end
+end
+^(x::Ex,y::Complex)=x^real(y)*Pow(x,imag(y)im)
 hash(p::Pow) = hash(p.x) + hash(p.y)
 replace(p::Pow,dic::Dict)=Pow(replace(p.x,dic),replace(p.y,dic))
 sort(p::Pow)=Pow(sort(p.x),sort(p.y))

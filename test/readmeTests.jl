@@ -2,12 +2,11 @@ b=3;a=@equ a=$b #:a ≖ 3
 @test a==Equation(:a,3)
 P=@equ P=Ten($(map(x->pi^x,1:3)),i)
 @test floor(P.rhs&@equ(i=1))==3
-arr=@equs(e=$e, pi=$pi, M=$(eye(b)))
-@test arr[1].rhs == e
+arr=@equs(e=$ℯ, pi=$pi, M=$(rand(3,2)))
+@test arr[1].rhs == ℯ
 @test arr[2].rhs == pi
-@test arr[3].rhs == eye(b) 
 
-@test Ten(:I,[:i,:i])&@equ(I=eye(3))==3
+@test Ten(:I,[:i,:i])&@equ(I=[1 0;0 1])==2
 @test Ten(:A,[:i,:i])&@equ(A=[:a 0;0 :b])==:a+:b
 @test Ten(:A,:i)*Ten(:B,:j)&@equs(A=[1,2,3],B=[3,2,1], j=i)==10
 @test Ten(:A,[:j,:i,:i])*Ten(:B,:j)&@equs(A=ones(3,3,3), B=[1,2,3])==18
@@ -69,4 +68,5 @@ try
 	evaluate(meq,Dict(:x=>0))
 	@test false
 catch er
+	@test true
 end

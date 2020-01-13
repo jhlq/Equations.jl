@@ -5,12 +5,12 @@ New feature! Interpolation with $:
 ```
 b=3;@equ a=$b #:a ≖ 3
 @equ P=Ten($(map(x->pi^x,1:3)),i)
-@equs(e=$e, pi=$pi, M=$(eye(b)))
+@equs(e=$ℯ, pi=$pi, M=$(rand(3,2)))
 ```
 
 Tensors are available! The summation convention applies automatically. See [the tensors file in examples](https://github.com/jhlq/Equations.jl/blob/master/examples/tensors.jl) for usage.
 ```
-Ten(:I,[:i,:i])&@equ I=eye(3) # 3
+Ten(:I,[:i,:i])&@equ I=[1 0;0 1] # 2
 Ten(:A,[:i,:i])&@equ A=[:a 0;0 :b] # a+b
 Ten(:A,:i)*Ten(:B,:j)&@equs(A=[1,2,3],B=[3,2,1], j=i)
 Ten(:A,[:j,:i,:i])*Ten(:B,:j)&@equs(A=ones(3,3,3), B=[1,2,3]) # 18

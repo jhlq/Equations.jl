@@ -1,4 +1,4 @@
-a=rand(Int,3)%9;b=rand(Int,3)%9;c=rand(Int,3)%9
+a=rand(Int,3).%9;b=rand(Int,3).%9;c=rand(Int,3).%9
 abc=[Equation(:a,a),Equation(:b,b),Equation(:c,c)]
 
 #Dot product
@@ -35,12 +35,12 @@ r7=ex7&abc&@equs(i=2, j=3)
 @assert r7==a[2]*b[3]
 
 #Transpose
-ex8=Transpose(Ten(a*b',[:i,:j]))
+ex8=Equations.Transpose(Ten(a*b',[:i,:j]))
 r8=simplify(ex8)
 @assert r8.x==(a*b')'
 
 #Determinant
-A=rand(Int,3,3)%9
+A=rand(Int,3,3).%9
 ex9a=Alt([:i,:j,:k])*Ten(A,[:i,1])*Ten(A,[:j,2])*Ten(A,[:k,3])
 r9a=simplify(ex9a)
 ex9b=Alt([:i,:j,:k])*Alt([:r,:s,:t])*Ten(A,[:i,:r])*Ten(A,[:j,:s])*Ten(A,[:k,:t])/6
@@ -54,7 +54,7 @@ eq3=eq2&eq1&Equation(:A,A)
 @assert abs((eq3&@equs(i=1,j=3)).rhs-inv(A)[1,3])<0.001
 
 #Matrix multiplication
-B=rand(Int,3,3)%9
+B=rand(Int,3,3).%9
 AB=[Equation(:A,A),Equation(:B,B)]
 C=Ten(:A,[:i,:k])*Ten(:B,[:k,:j])
 @assert C&AB&@equs(i=3,j=2) == (A*B)[3,2]

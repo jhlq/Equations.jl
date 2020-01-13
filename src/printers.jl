@@ -13,7 +13,11 @@ end
 function ps(t::Term)
 	s=""
 	for f in t
-		s*=ps(f)*"*"
+		if isa(f,Expression) && length(f)>1
+			s*="("*ps(f)*")"*"*"
+		else
+			s*=ps(f)*"*"
+		end
 	end
 	s[1:end-1]
 end
@@ -25,7 +29,12 @@ function ps(ar::Array{T,1}) where {T}
 	for a in ar
 		s*=ps(a)*","
 	end
-	s[1:end-1]*"]"
+	try 
+		s=s[1:end-1]*"]"
+	catch err
+		s=s[1:end-2]*"]"
+	end
+	return s
 end
 #function ps{T}(a::T)
 #	"$T"
@@ -33,7 +42,7 @@ end
 function ps(a)
 	io=IOBuffer()
 	show(io,a) 
-	str=takebuf_string(io)
+	str=String(take!(io))
 end
 function ps(c::Component)
 	ar=getargs(c)
@@ -41,7 +50,12 @@ function ps(c::Component)
 	for a in ar
 		s*="$(ps(a)),"
 	end
-	s[1:end-1]*")"
+	try
+		s=s[1:end-1]*")"
+	catch err
+		s=s[1:end-2]*")"
+	end
+	return s
 end
 ps(s::Symbol)=":$s"
 ps(n::Number)="$n"

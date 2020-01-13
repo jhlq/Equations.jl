@@ -102,11 +102,11 @@ function matches(term::Array{Factor},pat::Array{Factor})
 		facalloc!(term,pat,ps,Dict(),md)
 	elseif lterm==lpat>lps
 		if getcoef(term)==getcoef(pat)
-			pushallunique!(md,whenallequal(term[2:end],pat[2:end],ps-1))
+			pushallunique!(md,whenallequal(term[2:end],pat[2:end],ps.-1))
 		end
 	elseif lterm>lpat>lps
 		if getcoef(term)==getcoef(pat)
-			facalloc!(term[2:end],pat[2:end],ps-1,Dict(),md)
+			facalloc!(term[2:end],pat[2:end],ps.-1,Dict(),md)
 		end
 	end
 	return md

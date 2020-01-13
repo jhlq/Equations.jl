@@ -6,4 +6,4 @@ ex=sqrt(:a)*sqrt(:b)*sqrt(:a)
 @test length(Equations.unsqrt!(ex[1]))==2
 
 eq=@equ fp=sqrt(a)
-@test (eq^2).rhs==:a
+@test (eq*eq).rhs==:a

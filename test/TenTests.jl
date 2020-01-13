@@ -1,3 +1,5 @@
+using LinearAlgebra
+
 ex=Ten([1,2,3],:i)*Ten([90,80,70],:i)
 @test simplify(ex)==460
 
@@ -32,9 +34,9 @@ r=Alt([:i,:j,:k])*Ten([:a1,:a2,:a3],:j)*Ten([:b1,:b2,:b3],:k)&@equ i=1
 ex=:c+Ten([:a1,:a2,:a3],:i)*Ten([:b1,:b2,:b3],:i)+:c;nex=simplify(ex)
 @test nex==simplify(2*:c+:a1*:b1+:a2*:b2+:a3*:b3)
 
-@test simplify(Ten(eye(3,3),[:i,:i]))==3
-@test simplify(Ten(eye(4,4),[:i,:i]))==4
-@test simplify(Ten(eye(5,5),[:i,:i]))==5
+@test simplify(Ten(zeros(3,3).+I(3),[:i,:i]))==3
+@test simplify(Ten(zeros(4,4).+I(4),[:i,:i]))==4
+@test simplify(Ten(zeros(5,5).+I(5),[:i,:i]))==5
 r=Ten(:A,[:i,:i])&@equ A=[:a 0;0 :b]
 @test r==:a+:b
 
@@ -57,7 +59,7 @@ str=String(take!(io))
 ex=Ten(:A,[:j,:i,:i])*Ten(:B,:j);r=ex&@equs(A=ones(3,3,3), B=[1,2,3])
 @test r==18
 
-ex=Ten(:A,[:i,:i]);eq=@equ A=eye(3,3);r=ex&eq
+ex=Ten(:A,[:i,:i]);eq=@equ A=zeros(3,3).+Main.I(3);r=ex&eq
 @test r==3
 
 
@@ -80,7 +82,7 @@ ex=Alt([:i,:j,:k])*Ten([1,0,0],:j)*Ten([0,0,1],:k);ex=sumconv(ex);ex=sumconv(ex)
 @test ttt[1][1]&(@equ i=2)==-1
 
 
-a=rand(Int,3)%9;b=rand(Int,3)%9
+a=rand(Int,3).%9;b=rand(Int,3).%9
 ab=[Equation(:a,a),Equation(:b,b)]
 ex=Ten(:a,:i)*Ten(:b,:i)
 @test ex&ab==dot(a,b)
@@ -96,7 +98,7 @@ ex=Alt([:i,:j,:k])*Ten(:a,:j)*Ten(:b,:k)*Ten(:a,:m)*Ten(:b,:m)+Ten(:b,:i)
 r=cross(a,b)*dot(a,b)+b
 x=(ex&ab).x
 @test r==x
-c=rand(Int,3)%9;d=rand(Int,3)%9
+c=rand(Int,3).%9;d=rand(Int,3).%9
 abcd=[Equation(:a,a),Equation(:b,b),Equation(:c,c),Equation(:d,d)]
 ex=Alt([:i,:j,:k])*Ten(:a,:j)*Ten(:b,:k)*Alt([:m,:n,:o])*Ten(:c,:n)*Ten(:d,:o)
 r=dot(cross(a,b),cross(c,d))

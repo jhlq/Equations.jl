@@ -1,5 +1,5 @@
 include("common.jl")
-import Base: &, transpose
+import Base: &, adjoint
 
 mutable struct Equation
 	lhs#::EX #relaxed this to allow arbitrary substitution, for example a tensor Ten(A) where A is replaced with an array. Do note that raw arrays should never be present in expressions, unless you are a practitioner of Chaos Magic (ie UNDEFINED results).
@@ -90,7 +90,7 @@ end
 /(eq1::Equation,eq2::Equation)=simplify(eq1.lhs/eq2.lhs≖eq1.rhs/eq2.rhs)
 equation(ex::EX)=Equation(ex,0,Any[])
 equation(ex1::EX,ex2::EX)=Equation(ex1,ex2,Any[])
-ctranspose(eq::Equation)=Equation(eq.rhs,eq.lhs)
+adjoint(eq::Equation)=Equation(eq.rhs,eq.lhs)
 ==(eq1::Equation,eq2::Equation)=eq1.lhs==eq2.lhs&&eq1.rhs==eq2.rhs
 function (&)(eq1::Equation,eq2::Equation)
 	eq1=simplify(eq1);eq2=simplify(eq2)
@@ -118,23 +118,23 @@ function (&)(ex::Expression,eq::Equation)
 		return simplify(m[1])
 	else
 		tms=Tuple[]
-		terms=dcterms(ex)
-		for t in 1:length(terms)
+		_terms=dcterms(ex)
+		for t in 1:length(_terms)
 			tm=matches(simplify(expression(ex[t])),eq)
 			if !isempty(tm)
-				terms[t][:]=tm[1]
+				_terms[t]=tm[1][1]
 			else
-				for f in 1:length(terms[t])
-					if isa(terms[t][f],Component)
-						ttm=matches(terms[t][f],eq)
+				for f in 1:length(_terms[t])
+					if isa(_terms[t][f],Component)
+						ttm=matches(_terms[t][f],eq)
 						if !isempty(ttm)
-							terms[t][f]=ttm[1]
+							_terms[t][f]=ttm[1]
 						end
 					end
 				end
 			end
 		end
-		return simplify(expression(terms))
+		return simplify(expression(_terms))
 	end
 end
 function (&)(ex::Component,eq::Equation)
@@ -172,7 +172,7 @@ function (&)(eq::Equation,sym::Symbol)
 	else
 		s=solve(eq,sym)
 	end
-	if isa(s,Void)
+	if isa(s,Nothing)
 		error("Please implement code to solve $eq for $sym")
 	end
 #	if isa(s.lhs,Component) #how to avoid infinite recursion?

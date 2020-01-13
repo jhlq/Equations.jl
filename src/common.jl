@@ -26,7 +26,7 @@ function getargs(c::Component)
 	return ret
 end
 function getarg(c::Component,n::Integer=1)
-	getfield(c,fieldnames(c)[n])
+	getfield(c,fieldnames(typeof(c))[n])
 end
 function setarg!(c::Component,newarg,argn::Integer=1)
 	setfield!(c,fieldnames(c)[argn],newarg)
@@ -168,7 +168,7 @@ end
 complexity(n::N)=1
 function complexity(c::Component)
 	tot=0
-	for n in fieldnames(c)
+	for n in fieldnames(typeof(c))
 		tot+=complexity(getfield(c,n))
 	end
 	return tot
@@ -496,7 +496,7 @@ function componify(ex::Expression,raw=false)
 			tap=exs[1].terms
 			for x in xs
 				for tterm in tap
-					prepend!(tterm,x)
+					pushfirst!(tterm,x)
 				end
 			end
 			exs[1]=expression(tap)
@@ -889,8 +889,9 @@ function evaluate(ex::Ex,symdic::Dict)
 	return simplify(ex)
 end
 evaluate(x::Number,symdic::Dict)=x
+using Random
 function randeval(ex::Ex,seed=1)
-	srand(seed)
+	Random.seed!(seed)
 	syms=findsyms(ex)
 	d=Dict()
 	for s in syms

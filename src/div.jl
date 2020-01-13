@@ -49,7 +49,7 @@ function divbinedify!(term::Term)
 			deleteat!(term,i)
 		elseif isa(x[fi],Number)
 			push!(remove,fi)
-			unshift!(term,1/x[fi])
+			pushfirst!(term,1/x[fi])
 		end
 	end
 	deleteat!(x,remove)

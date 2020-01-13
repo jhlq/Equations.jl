@@ -50,4 +50,4 @@ seq=eq&:v1
 @test randeval(seq.rhs)==randeval(((eq-:M*:v2)/:m).lhs)
 
 eq=relations["Der"][3]
-@test eval(parse(ps(eq)))==eq
+@test eval(Meta.parse(ps(eq)))==eq
