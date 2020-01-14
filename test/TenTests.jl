@@ -34,9 +34,9 @@ r=Alt([:i,:j,:k])*Ten([:a1,:a2,:a3],:j)*Ten([:b1,:b2,:b3],:k)&@equ i=1
 ex=:c+Ten([:a1,:a2,:a3],:i)*Ten([:b1,:b2,:b3],:i)+:c;nex=simplify(ex)
 @test nex==simplify(2*:c+:a1*:b1+:a2*:b2+:a3*:b3)
 
-@test simplify(Ten(zeros(3,3).+I(3),[:i,:i]))==3
-@test simplify(Ten(zeros(4,4).+I(4),[:i,:i]))==4
-@test simplify(Ten(zeros(5,5).+I(5),[:i,:i]))==5
+@test simplify(Ten(zeros(3,3).+Diagonal([1,1,1]),[:i,:i]))==3
+@test simplify(Ten(zeros(4,4).+Diagonal([1,1,1,1]),[:i,:i]))==4
+@test simplify(Ten(zeros(5,5).+Diagonal([1,1,1,1,1]),[:i,:i]))==5
 r=Ten(:A,[:i,:i])&@equ A=[:a 0;0 :b]
 @test r==:a+:b
 
@@ -59,7 +59,7 @@ str=String(take!(io))
 ex=Ten(:A,[:j,:i,:i])*Ten(:B,:j);r=ex&@equs(A=ones(3,3,3), B=[1,2,3])
 @test r==18
 
-ex=Ten(:A,[:i,:i]);eq=@equ A=zeros(3,3).+Main.I(3);r=ex&eq
+ex=Ten(:A,[:i,:i]);eq=@equ A=zeros(3,3).+Main.Diagonal([1,1,1]);r=ex&eq
 @test r==3
 
 
@@ -104,8 +104,6 @@ ex=Alt([:i,:j,:k])*Ten(:a,:j)*Ten(:b,:k)*Alt([:m,:n,:o])*Ten(:c,:n)*Ten(:d,:o)
 r=dot(cross(a,b),cross(c,d))
 x=ex&abcd&Equation(:m,:i)
 @test r==x
-
-include("../examples/tensors.jl")
 
 B=[:b1 :b2;:b3 :b4];ex=Alt([:i,:j])*Alt([:k,:l])*Ten(B,[:i,:k])*Ten(B,[:j,:l]);r=simplify(ex)
 @test r==simplify(2*:b1*:b4+-2.0*:b2*:b3)

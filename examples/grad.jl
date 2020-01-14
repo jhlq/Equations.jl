@@ -1,36 +1,37 @@
-#example of creating custom types
+#deprecated example of creating custom types
 
-importall Equations
+using Equations
+import Equations: simplify, *, dot #extending * breaks functionality...
 
-type Exp<:Component
+mutable struct Exp<:Component #these are already implemented
 	x
 end
-simplify(c::Exp)=isa(simplify(c.x),Number)?exp(simplify(c.x)):c
-type Cos<:Component
+simplify(c::Exp)=isa(simplify(c.x),Number) ? exp(simplify(c.x)) : c
+mutable struct Cos<:Component
 	x
 end
-simplify(c::Cos)=isa(simplify(c.x),Number)?cos(simplify(c.x)):c
-type Sin<:Component
+simplify(c::Cos)=isa(simplify(c.x),Number) ? cos(simplify(c.x)) : c
+mutable struct Sin<:Component
 	x
 end
-simplify(c::Sin)=isa(simplify(c.x),Number)?sin(simplify(c.x)):c
+simplify(c::Sin)=isa(simplify(c.x),Number) ? sin(simplify(c.x)) : c
 e1=Vec([1,0,0]);e2=Vec([0,1,0]);e3=Vec([0,0,1])
 
-type Differentiable <: Component
+mutable struct Differentiable <: Component
 	fun
 	der::Dict
 end
 #getargs(d::Differentiable)=(d.fun,)
-Equations.maketype(d::Differentiable,fun)=Differentiable(fun(d.fun),d.der)
+#Equations.maketype(d::Differentiable,fun)=Differentiable(fun(d.fun),d.der)
 Differentiable(a,b)=Differentiable(a,[:x=>b])
-ed=Vec(Differentiable(1,0),Differentiable(0,1),0)
-type DerOp #<: Operator
+#ed=Vec(Differentiable(1,0),Differentiable(0,1),0) #this causes infinite recursion...
+mutable struct DerOp #<: Operator
 	dx
 end
 DerOp()=DerOp(:x)
-*(d::DerOp,f::Differentiable)=haskey(f.der,d.dx)?f.der[d.dx]:Der(f,d.dx)
+*(d::DerOp,f::Differentiable)=haskey(f.der,d.dx) ? f.der[d.dx] : Der(f,d.dx)
 *(d::DerOp,ex::Factor)=Der(ex,d.dx)
-type Grad <: Operator
+mutable struct Grad <: Operator
 	v
 end
 Grad()=Grad(Vec([DerOp(:x),DerOp(:y),DerOp(:z)]))
