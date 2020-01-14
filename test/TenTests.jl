@@ -59,7 +59,8 @@ str=String(take!(io))
 ex=Ten(:A,[:j,:i,:i])*Ten(:B,:j);r=ex&@equs(A=ones(3,3,3), B=[1,2,3])
 @test r==18
 
-ex=Ten(:A,[:i,:i]);eq=@equ A=zeros(3,3).+Main.Diagonal([1,1,1]);r=ex&eq
+eye3=zeros(3,3).+Diagonal([1,1,1])
+ex=Ten(:A,[:i,:i]);eq=@equ A=eye3;r=ex&eq
 @test r==3
 
 
