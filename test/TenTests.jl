@@ -60,7 +60,7 @@ ex=Ten(:A,[:j,:i,:i])*Ten(:B,:j);r=ex&@equs(A=ones(3,3,3), B=[1,2,3])
 @test r==18
 
 eye3=zeros(3,3).+Diagonal([1,1,1])
-ex=Ten(:A,[:i,:i]);eq=@equ A=eye3;r=ex&eq
+ex=Ten(:A,[:i,:i]);eq=@equ A=$eye3;r=ex&eq
 @test r==3
 
 
