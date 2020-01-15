@@ -39,7 +39,7 @@ print(sqrt(tri))
 #c = √(a a + b b)
 ``` 
 
-Substitute with & (see http://artai.co/Plasma.html for real usage examples):
+Substitute with & (see [the plasma tests](https://github.com/jhlq/Equations.jl/blob/master/test/plasmaTests.jl) for real usage examples):
 ```
 energy=@equ E=m*c^2
 c=@equ c=299792458
@@ -51,7 +51,7 @@ n=@equ n=9
 & also does pattern matching:
 ```
 print((Der(:x^:n,:x)-Der(-0.1*:x^:m,:x)+1/:a*Der(:a*sqrt(:x),:x))&relations["Der"])
-#n Pow(x,n + (-1)) + 0.1 m Pow(x,m + (-1)) + 0.5 Pow(x,(-0.5))
+#n Pow(x,n + (-1)) + 0.1 m Pow(x,m + (-1)) + 0.5 /(Pow(x,0.5))
 ```
 
 Write your own patterns as equations: 
@@ -114,5 +114,3 @@ If you try to evaluate an equation that has been constructed through division by
 meq=matches(:x^2+:a*:x≖0,Div)[1]
 evaluate(meq,Dict(:x=>0))
 ```
-
-To implement your own type make it descend from Component, you may also have to replace "using Equations" with "importall Equations". The first field of a Component is conventionally named x.
