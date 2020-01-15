@@ -1,29 +1,15 @@
 [![Build Status](https://travis-ci.org/jhlq/Equations.jl.svg?branch=master)](https://travis-ci.org/jhlq/Equations.jl)
 
 # Equations
-New feature! Interpolation with $:
-```
-b=3;@equ a=$b #:a ≖ 3
-@equ P=Ten($(map(x->pi^x,1:3)),i)
-@equs(e=$ℯ, pi=$pi, M=$(rand(3,2)))
-```
-
-Tensors are available! The summation convention applies automatically. See [the tensors file in examples](https://github.com/jhlq/Equations.jl/blob/master/examples/tensors.jl) for usage.
-```
-Ten(:I,[:i,:i])&@equ I=[1 0;0 1] # 2
-Ten(:A,[:i,:i])&@equ A=[:a 0;0 :b] # a+b
-Ten(:A,:i)*Ten(:B,:j)&@equs(A=[1,2,3],B=[3,2,1], j=i)
-Ten(:A,[:j,:i,:i])*Ten(:B,:j)&@equs(A=ones(3,3,3), B=[1,2,3]) # 18
-Alt([:i,:j,:k])*Ten([:a1,:a2,:a3],:j)*Ten([:b1,:b2,:b3],:k)&@equ i=1
-```
-
 Calculate with symbols as numbers:
 ```
 :x+:y
 :x*:y
 :x/:y
 :x^3
-sqrt(:x^2)
+sqrt(:x)&@equ x=y^2 #y
+simplify(:a/:a) #1, so beware of cases where a=0
+print(simplify((:a+:b)^2)) #a a + 2 a b + b b
 ```
 
 Specify equations conveniently with the equ macros:
@@ -38,6 +24,13 @@ tri=@equ c^2=a^2+b^2
 print(sqrt(tri))
 #c = √(a a + b b)
 ``` 
+
+Interpolate with $:
+```
+b=3;@equ a=$b #:a ≖ 3
+@equ P=Ten($(map(x->pi^x,1:3)),i)
+@equs(e=$ℯ, pi=$pi, M=$(rand(3,2)))
+```
 
 Substitute with & (see [the plasma tests](https://github.com/jhlq/Equations.jl/blob/master/test/plasmaTests.jl) for real usage examples):
 ```
@@ -81,6 +74,15 @@ f4(eq::Equation)=sqrt(eq)
 @equ(a=b^2)&[f3,f4]
 ```
 
+Tensors are available! The summation convention applies automatically. See [the tensors file in examples](https://github.com/jhlq/Equations.jl/blob/master/examples/tensors.jl) for usage.
+```
+Ten(:I,[:i,:i])&@equ I=[1 0;0 1] # 2
+Ten(:A,[:i,:i])&@equ A=[:a 0;0 :b] # a+b
+Ten(:A,:i)*Ten(:B,:j)&@equs(A=[1,2,3],B=[3,2,1], j=i)
+Ten(:A,[:j,:i,:i])*Ten(:B,:j)&@equs(A=ones(3,3,3), B=[1,2,3]) # 18
+Alt([:i,:j,:k])*Ten([:a1,:a2,:a3],:j)*Ten([:b1,:b2,:b3],:k)&@equ i=1
+```
+
 To include units use the U type (sensitive to ordering, put unitless stuff last):
 ```
 l=U(:l,:meter);t=U(:t,:second);v=l/t;print(v)
@@ -109,7 +111,7 @@ eq=Equation(:x^2,9)
 matches(eq,Sqrt)
 ```
 
-If you try to evaluate an equation that has been constructed through division by setting one of the divided symbols to zero an error will be thrown:
+If you try to evaluate an equation that has been constructed through division matching by setting one of the divided symbols to zero an error will be thrown:
 ```
 meq=matches(:x^2+:a*:x≖0,Div)[1]
 evaluate(meq,Dict(:x=>0))
