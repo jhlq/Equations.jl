@@ -7,9 +7,9 @@ Calculate with symbols as numbers:
 :x*:y
 :x/:y
 :x^3
-sqrt(:x)&@equ x=y^2 #y
-simplify(:a/:a) #1, so beware of cases where a=0
-print(simplify((:a+:b)^2)) #a a + 2 a b + b b
+sqrt(:x)&@equ x=y^2 # :y
+simplify(:a/:a) # 1, so beware of cases where a=0
+print(simplify((:a+:b)^2)) # a a + 2 a b + b b
 ```
 
 Specify equations conveniently with the equ macros:
@@ -90,9 +90,9 @@ l=U(:l,:meter);t=U(:t,:second);v=l/t;print(v)
 
 Equations can also be constructed without macros (the ≖ is written as \eqcirc+tab) and results derived by checking for matches:
 ```
-rule=Der(:a*:x,:x)≖:a #equivalent to Equation(Der(:a*:x,:x),:a)
+rule=Der(:a*:x,:x)≖:a # equivalent to Equation(Der(:a*:x,:x),:a)
 ex=Der(3*:x,:x)
-m=matches(ex,rule)[1] #equivalent to ex&rule
+m=matches(ex,rule)[1] # equivalent to ex&rule
 ```
 
 Simplification is automatic when using & however sometimes has to be carried out manually:
