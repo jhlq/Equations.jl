@@ -1,29 +1,15 @@
 [![Build Status](https://travis-ci.org/jhlq/Equations.jl.svg?branch=master)](https://travis-ci.org/jhlq/Equations.jl)
 
 # Equations
-New feature! Interpolation with $:
-```
-b=3;@equ a=$b #:a ≖ 3
-@equ P=Ten($(map(x->pi^x,1:3)),i)
-@equs(e=$ℯ, pi=$pi, M=$(rand(3,2)))
-```
-
-Tensors are available! The summation convention applies automatically. See [the tensors file in examples](https://github.com/jhlq/Equations.jl/blob/master/examples/tensors.jl) for usage.
-```
-Ten(:I,[:i,:i])&@equ I=[1 0;0 1] # 2
-Ten(:A,[:i,:i])&@equ A=[:a 0;0 :b] # a+b
-Ten(:A,:i)*Ten(:B,:j)&@equs(A=[1,2,3],B=[3,2,1], j=i)
-Ten(:A,[:j,:i,:i])*Ten(:B,:j)&@equs(A=ones(3,3,3), B=[1,2,3]) # 18
-Alt([:i,:j,:k])*Ten([:a1,:a2,:a3],:j)*Ten([:b1,:b2,:b3],:k)&@equ i=1
-```
-
 Calculate with symbols as numbers:
 ```
 :x+:y
 :x*:y
 :x/:y
 :x^3
-sqrt(:x^2)
+sqrt(:x)&@equ x=y^2 #y
+simplify(:a/:a) #1, so beware of cases where a=0
+print(simplify((:a+:b)^2)) #a a + 2 a b + b b
 ```
 
 Specify equations conveniently with the equ macros:
@@ -39,7 +25,14 @@ print(sqrt(tri))
 #c = √(a a + b b)
 ``` 
 
-Substitute with & (see http://artai.co/Plasma.html for real usage examples):
+Interpolate with $:
+```
+b=3;@equ a=$b #:a ≖ 3
+@equ P=Ten($(map(x->pi^x,1:3)),i)
+@equs(e=$ℯ, pi=$pi, M=$(rand(3,2)))
+```
+
+Substitute with & (see [the plasma tests](https://github.com/jhlq/Equations.jl/blob/master/test/plasmaTests.jl) for real usage examples):
 ```
 energy=@equ E=m*c^2
 c=@equ c=299792458
@@ -51,7 +44,7 @@ n=@equ n=9
 & also does pattern matching:
 ```
 print((Der(:x^:n,:x)-Der(-0.1*:x^:m,:x)+1/:a*Der(:a*sqrt(:x),:x))&relations["Der"])
-#n Pow(x,n + (-1)) + 0.1 m Pow(x,m + (-1)) + 0.5 Pow(x,(-0.5))
+#n Pow(x,n + (-1)) + 0.1 m Pow(x,m + (-1)) + 0.5 /(Pow(x,0.5))
 ```
 
 Write your own patterns as equations: 
@@ -79,6 +72,15 @@ f2(fac::Factor)=3*fac
 f3(eq::Equation)=eq'
 f4(eq::Equation)=sqrt(eq)
 @equ(a=b^2)&[f3,f4]
+```
+
+Tensors are available! The summation convention applies automatically. See [the tensors file in examples](https://github.com/jhlq/Equations.jl/blob/master/examples/tensors.jl) for usage.
+```
+Ten(:I,[:i,:i])&@equ I=[1 0;0 1] # 2
+Ten(:A,[:i,:i])&@equ A=[:a 0;0 :b] # a+b
+Ten(:A,:i)*Ten(:B,:j)&@equs(A=[1,2,3],B=[3,2,1], j=i)
+Ten(:A,[:j,:i,:i])*Ten(:B,:j)&@equs(A=ones(3,3,3), B=[1,2,3]) # 18
+Alt([:i,:j,:k])*Ten([:a1,:a2,:a3],:j)*Ten([:b1,:b2,:b3],:k)&@equ i=1
 ```
 
 To include units use the U type (sensitive to ordering, put unitless stuff last):
@@ -109,10 +111,8 @@ eq=Equation(:x^2,9)
 matches(eq,Sqrt)
 ```
 
-If you try to evaluate an equation that has been constructed through division by setting one of the divided symbols to zero an error will be thrown:
+If you try to evaluate an equation that has been constructed through division matching by setting one of the divided symbols to zero an error will be thrown:
 ```
 meq=matches(:x^2+:a*:x≖0,Div)[1]
 evaluate(meq,Dict(:x=>0))
 ```
-
-To implement your own type make it descend from Component, you may also have to replace "using Equations" with "importall Equations". The first field of a Component is conventionally named x.
