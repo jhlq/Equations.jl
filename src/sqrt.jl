@@ -2,7 +2,7 @@ import Base.sqrt
 mutable struct Sqrt <: SingleArg
 	x
 end
-sqrt(a::Ex)=Sqrt(a::Ex)
+sqrt(a::Ex)=simplify(Sqrt(a))
 sqrt(eq::Equation)=Equation(simplify(sqrt(eq.lhs)),simplify(sqrt(eq.rhs)))
 function print(io::IO,s::Sqrt)
 	print(io,"√(")
