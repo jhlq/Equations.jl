@@ -112,3 +112,10 @@ B=[:b1 :b2;:b3 :b4];ex=Alt([:i,:j])*Alt([:k,:l])*Ten(B,[:i,:k])*Ten(B,[:j,:l]);r
 f=Fun(a->ones(2,2),[:x,:y])
 ex=Ten(f,[:i,:i])
 @test ex&@equs(x=1,y=1)==2
+
+a=inv(:m)
+m=rand(2,2)
+@test a&@equ(m=$m)==inv(m)
+t1=Ten(m,[:i,:j])
+t2=Ten(inv(m),[:i,:j])
+@test a&@equ(m=$t1)==t2

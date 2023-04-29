@@ -1,4 +1,4 @@
-import LinearAlgebra.det
+import LinearAlgebra.det, Base.inv
 
 abstract type AbstractTensor<:NonAbelian end
 mutable struct Ten<:AbstractTensor
@@ -543,6 +543,9 @@ function simplify(t::Transpose)
 	t
 end
 mutable struct Inv<:Component
+	x
+end
+inv(ex::Ex)=Inv(ex)
 function simplify(c::Inv)
 	if isa(c.x,Matrix)
 		for cxc in c.x
@@ -551,6 +554,9 @@ function simplify(c::Inv)
 			end
 		end
 		return inv(c.x)
+	end
+	if isa(c.x,Ten)
+		return Ten(inv(c.x.x),c.x.indices)
 	end
 	return c
 end

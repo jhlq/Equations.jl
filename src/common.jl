@@ -1,4 +1,4 @@
-import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,==,/, setindex!,replace,iterate,zero
+import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,==,/, setindex!,replace,iterate,zero,abs
 using Combinatorics
 
 abstract type Component end
@@ -961,3 +961,19 @@ function pushall!(a::Array,b::Array)
 	a
 end
 pushall!(a::Array,b)=push!(a,b)
+mutable struct Abs <: Component
+	x
+end
+abs(ex::Ex)=Abs(ex)
+function simplify(n::Abs)
+	if isa(n.x,Number)
+		return abs(n.x)
+	end
+	if isa(n.x,Vector)&&allnum(n.x)
+		return norm(n.x)
+	end
+	if isa(n.x,Ten)&&isa(n.x.x,Vector)&&allnum(n.x.x)
+		return norm(n.x.x)
+	end
+	return n
+end

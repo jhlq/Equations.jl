@@ -47,3 +47,9 @@ ex2=Equations.sumsym(-:x+:x*:y+:x)
 #Units
 l=Physical(:l,:m);t=Physical(:t,:s);v=l/t;
 @test v==Physical(:l/:t,:m/:s)
+
+#Abs
+a=abs(:x)
+@test a&@equ(x=-1)==1
+@test a&@equ(x=[1,0,1,0])==sqrt(2)
+@test a&@equ(x=Ten([1,0,1,0],:i))==sqrt(2)

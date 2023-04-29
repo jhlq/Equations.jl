@@ -43,7 +43,7 @@ function simplify(ex::Expression,typ::Type{Fun})
 		ti=indsin(t,Ten)
 		fti=[]
 		for tii in ti
-			if isa(t[tii].x,Fun)
+			if has(t[tii].x,Fun)
 				push!(fti,tii)
 			end
 		end
@@ -71,8 +71,24 @@ function simplify(ex::Expression,typ::Type{Fun})
 					end
 				elseif in(ffi,fti)
 					f=nt[ffi].x
+					for i in 1:9001
+						if isa(f,Fun)
+							break
+						end
+						f=f.x
+						if i==9001
+							error("Either an infinite loop has occured or you have a Fun nested over 9000 deep in a Ten!")
+						end
+					end
 					if pd.d==f.x||(isa(f.x,Array)&&in(pd.d,f.x))
-						nt[ffi].x=pd*f
+						c=nt[ffi]
+						for i in 1:9000
+							if isa(c.x,Fun)
+								c.x=pd*f
+								break
+							end
+							c=c.x
+						end
 						push!(deli,pdiii)
 						break
 					end
@@ -112,15 +128,9 @@ mutable struct PD<:NonAbelian
 	d::Symbol
 end
 function *(d::PD,f::Fun)
-	#h=1e-9
-	#if isa(f.pds,Symbol)
-	#	npds=[f.pds]
-	#else
-		npds=deepcopy(f.pds)
-	#end
+	npds=deepcopy(f.pds)
 	push!(npds,d.d)
 	if isa(f.x,Symbol)&&f.x==d.d
-		#fp(a)=(f.y(a+h)-f.y(a))/h
 		fp=x->ForwardDiff.derivative(f.y,x)
 		return Fun(fp,f.x,npds)
 	else
@@ -129,9 +139,6 @@ function *(d::PD,f::Fun)
 		if isa(f.x,Array)&&isa(tf,Number)
 			for i in 1:l
 				if f.x[i]==d.d
-					#ha=zeros(l)
-					#ha[i]+=h
-					#fpa(a)=(f.y(a+ha)-f.y(a))/h
 					fp=a->ForwardDiff.gradient(f.y,a)[i]
 					return Fun(fp,f.x,npds)
 				end
@@ -145,7 +152,7 @@ function *(d::PD,f::Fun)
 			end
 		end
 	end
-	return Factor[d,f]
+	return expression(Factor[d,f])
 end
 function *(d::PD,t::Ten)
 	if isa(t.x,Fun)
@@ -153,7 +160,7 @@ function *(d::PD,t::Ten)
 		t2.x=d*t2.x
 		return t2
 	end
-	return Factor[d,t]
+	return expression(Factor[d,t])
 end
 replace(c::PD,symdic::Dict)=c
 
