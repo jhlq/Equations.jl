@@ -335,16 +335,20 @@ function simplify(ex::Expression,typ::Type{Ten})
 	return Expression(nnat)
 end
 function simplify(t::Ten)
+	t=deepcopy(t)
 	if isa(t.x,Equations.Component)
-		t=deepcopy(t)
 		t.x=simplify(t.x)
 	end
 	if isa(t.x,Array)
 		if t.x==zeros(size(t.x))
 			return 0
 		end
+		for si in 1:length(t.x)
+			t.x[si]=simplify(t.x[si])
+		end
+		
 	end	
-	if duplicates(t.indices)!=0&&isa(t.x,Array) #or Fun, TODO
+	if duplicates(t.indices)!=0&&isa(t.x,Array) #or Fun, TODO. Is it really necessary? Might just convoliute the expression
 		nt=sumconv(t)
 		for i in 1:30
 			if nt==t
@@ -538,4 +542,15 @@ function simplify(t::Transpose)
 	end
 	t
 end
-
+mutable struct Inv<:Component
+function simplify(c::Inv)
+	if isa(c.x,Matrix)
+		for cxc in c.x
+			if !isa(cxc,Number)
+				return c
+			end
+		end
+		return inv(c.x)
+	end
+	return c
+end

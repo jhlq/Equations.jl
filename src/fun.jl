@@ -14,7 +14,14 @@ function *(f1::Fun,f2::Fun)
 	f(a)=f1.y(a)*f2.y(a)
 	return Fun(f,f1.x)
 end
-==(f1::Fun,f2::Fun)=f1.x==f2.x&&f1.pds==f2.pds #evaluate randomly y1==y2?
+function ==(f1::Fun,f2::Fun)
+	for i in 1:3
+		if sample(f1,i)!=sample(f2,i)
+			return false
+		end
+	end
+	return true
+end
 function simplify(f::Fun)
 	if isa(f.x,Number)
 		return f.y(f.x)
@@ -90,7 +97,10 @@ end
 componify(f::Function)=f
 has(f::Function,a)=false
 maketype(c::Fun,fun)=typeof(c)(c.y,fun(c.x),c.pds)
-function sample(f::Fun)
+function sample(f::Fun,seed=0)
+	if seed!=0
+		Random.seed!(seed)
+	end
 	if isa(f.x,Array)
 		return f.y(rand(length(f.x)))
 	else
