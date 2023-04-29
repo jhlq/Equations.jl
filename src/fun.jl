@@ -89,3 +89,41 @@ componify(f::Function)=f
 has(f::Function,a)=false
 maketype(c::Fun,fun)=typeof(c)(c.y,fun(c.x),c.pds)
 
+mutable struct PD<:NonAbelian
+  d::Symbol
+end
+function *(d::PD,f::Fun)
+  h=1e-9
+  if isa(f.pds,Symbol)
+    npds=[f.pds]
+  else
+    npds=deepcopy(f.pds)
+  end
+  push!(npds,d.d)
+  if isa(f.x,Symbol)&&f.x==d.d
+    fp(a)=(f.y(a+h)-f.y(a))/h
+    return Fun(fp,f.x,npds)
+  end
+  if isa(f.x,Array)
+    l=length(f.x)
+    for i in 1:l
+      if f.x[i]==d.d
+        ha=zeros(l)
+        ha[i]+=h
+        fpa(a)=(f.y(a+ha)-f.y(a))/h
+        return Fun(fpa,f.x,npds)
+      end
+    end
+  end
+  return Term[d,f]
+end
+function *(d::PD,t::Ten)
+  if isa(t.x,Fun)
+    t2=deepcopy(t)
+    t2.x=d*t2.x
+    return t2
+  end
+  return Term[d,t]
+end
+replace(c::PD,symdic::Dict)=c
+
