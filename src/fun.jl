@@ -4,7 +4,7 @@ mutable struct Fun <: Component
 	pds::Array{Symbol}
 end
 Fun(y,x)=Fun(y,x,Symbol[])
-:*(f1::Fun,f2::Fun)=begin
+function *(f1::Fun,f2::Fun)
 	if f1.x!=f2.x
 		#error("Different arguments not yet supported")
 		return expression(Factor[f1,f2])
@@ -27,7 +27,7 @@ function simplify(f::Fun)
 	end
 	return f
 end 
-simplify(ex::Expression,typ::Type{Fun})=begin
+function simplify(ex::Expression,typ::Type{Fun})
 	next=Term[]
 	for t in ex
 		fi=indsin(t,Fun)
@@ -75,7 +75,7 @@ simplify(ex::Expression,typ::Type{Fun})=begin
 	end
 	return Expression(next)
 end
-replace(c::Fun,symdic::Dict)=begin
+function replace(c::Fun,symdic::Dict)
 	if isa(c.x,Array{Symbol})
 		c.x=convert(Array{Any},c.x)
 	end

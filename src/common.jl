@@ -600,6 +600,7 @@ function sort!(ex::Expression)
 end
 sort(ex::Expression)=sort!(deepcopy(ex))
 include("tensors.jl")
+include("fun.jl")
 function simplify(ex::Expression)
 	tex=0
 	nit=0
@@ -625,8 +626,11 @@ function simplify(ex::Expression)
 		if has(ex,Ten)
 			ex=simplify(ex,Ten)
 		end
+		if has(ex,Fun)
+			ex=simplify(ex,Fun)
+		end
 		if nit>90
-			warn("Stuck in simplify! Iteration $nit: $ex")
+			@warn("Stuck in simplify! Iteration $nit: $ex")
 			break
 		end
 	end
