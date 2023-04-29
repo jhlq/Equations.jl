@@ -49,12 +49,12 @@ print(io,simplify(Ten([1,2],:j)*Ten([3 2;1 -1],[:j,:i])))
 str=String(take!(io))
 #@test str=="Any[3 2](i) + 2 [1 (-1)](i)"
 
-@test duplicates([1,2,3,4,2])==[2,5]
-@test duplicates([1,2,3,4,2,2])==[5,6]
-@test duplicates([1,2,3],[0,3,0])==[3,2]
-@test duplicates([1,3,3],[3,3,3])==[3,3]
-@test Equations.arrduplicates([1,3,5],[12,241,13,3],[3,1,1])==([1,2],[2,4])
-@test Equations.arrduplicates([1,3,55],[12,241,13],[33,1324,5,6,1])==([1,3],[1,5])
+@test duplicates([:a,:b,:c,:d,:b])==[2,5]
+@test duplicates([:a,:b,:c,:d,:b,:b])==[5,6]
+@test duplicates([:a,:b,:c],[:z,:c,:z])==[3,2]
+@test duplicates([:a,:c,:c],[:c,:c,:c])==[3,3]
+@test Equations.arrduplicates([:a,:c,:e],[:ab,:bda,:ac,:c],[:c,:a,:a])==([1,2],[2,4])
+@test Equations.arrduplicates([:a,:c,:ee],[:ab,:bda,:ac],[:cc,:acbd,:e,:f,:a])==([1,3],[1,5])
 
 ex=Ten(:A,[:j,:i,:i])*Ten(:B,:j);r=ex&@equs(A=ones(3,3,3), B=[1,2,3])
 @test r==18
@@ -108,3 +108,7 @@ x=ex&abcd&Equation(:m,:i)
 
 B=[:b1 :b2;:b3 :b4];ex=Alt([:i,:j])*Alt([:k,:l])*Ten(B,[:i,:k])*Ten(B,[:j,:l]);r=simplify(ex)
 @test r==simplify(2*:b1*:b4+-2.0*:b2*:b3)
+
+f=Fun(a->ones(2,2),[:x,:y])
+ex=Ten(f,[:i,:i])
+@test ex&@equs(x=1,y=1)==2

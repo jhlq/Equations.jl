@@ -1,6 +1,7 @@
+using ForwardDiff
 mutable struct Fun <: Component
 	y::Function
-	x::Any
+	x#::Union{Array,Number,Symbol}
 	pds::Array{Symbol}
 end
 Fun(y,x)=Fun(y,x,Symbol[])
@@ -23,7 +24,7 @@ function simplify(f::Fun)
 				return f
 			end
 		end
-		return f.y(f.x)
+		return f.y(convert(Array{Float64},f.x))
 	end
 	return f
 end 
@@ -70,7 +71,7 @@ function simplify(ex::Expression,typ::Type{Fun})
 				end
 			end
 		end
-		deleteat!(nt,deli)
+		deleteat!(nt,sort!(deli))
 		push!(next,nt)
 	end
 	return Expression(next)
@@ -90,40 +91,51 @@ has(f::Function,a)=false
 maketype(c::Fun,fun)=typeof(c)(c.y,fun(c.x),c.pds)
 
 mutable struct PD<:NonAbelian
-  d::Symbol
+	d::Symbol
 end
 function *(d::PD,f::Fun)
-  h=1e-9
-  if isa(f.pds,Symbol)
-    npds=[f.pds]
-  else
-    npds=deepcopy(f.pds)
-  end
-  push!(npds,d.d)
-  if isa(f.x,Symbol)&&f.x==d.d
-    fp(a)=(f.y(a+h)-f.y(a))/h
-    return Fun(fp,f.x,npds)
-  end
-  if isa(f.x,Array)
-    l=length(f.x)
-    for i in 1:l
-      if f.x[i]==d.d
-        ha=zeros(l)
-        ha[i]+=h
-        fpa(a)=(f.y(a+ha)-f.y(a))/h
-        return Fun(fpa,f.x,npds)
-      end
-    end
-  end
-  return Term[d,f]
+	#h=1e-9
+	#if isa(f.pds,Symbol)
+	#	npds=[f.pds]
+	#else
+		npds=deepcopy(f.pds)
+	#end
+	push!(npds,d.d)
+	if isa(f.x,Symbol)&&f.x==d.d
+		#fp(a)=(f.y(a+h)-f.y(a))/h
+		fp=x->ForwardDiff.derivative(f.y,x)
+		return Fun(fp,f.x,npds)
+	else
+		tf=f.y(rand(length(f.x)))
+		l=length(f.x)
+		if isa(f.x,Array)&&isa(tf,Number)
+			for i in 1:l
+				if f.x[i]==d.d
+					#ha=zeros(l)
+					#ha[i]+=h
+					#fpa(a)=(f.y(a+ha)-f.y(a))/h
+					fp=a->ForwardDiff.gradient(f.y,a)[i]
+					return Fun(fp,f.x,npds)
+				end
+			end
+		elseif isa(f.x,Array)&&isa(tf,Array)
+			for i in 1:l
+				if f.x[i]==d.d
+					fp=a->reshape(ForwardDiff.jacobian(f.y,a)[:,i],size(tf))
+					return Fun(fp,f.x,npds)
+				end
+			end
+		end
+	end
+	return Factor[d,f]
 end
 function *(d::PD,t::Ten)
-  if isa(t.x,Fun)
-    t2=deepcopy(t)
-    t2.x=d*t2.x
-    return t2
-  end
-  return Term[d,t]
+	if isa(t.x,Fun)
+		t2=deepcopy(t)
+		t2.x=d*t2.x
+		return t2
+	end
+	return Factor[d,t]
 end
 replace(c::PD,symdic::Dict)=c
 

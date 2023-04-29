@@ -2,3 +2,4 @@
 include("../examples/gravity.jl")
 include("../examples/LQG.jl")
 include("../examples/tensors.jl")
+include("../examples/funexs.jl")

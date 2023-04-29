@@ -1,6 +1,6 @@
 f=Fun(x->x,:x)
-f2=f*f
-y=f2&@equ x=3
+ff=f*f
+y=ff&@equ x=3
 @assert y==3^2
 fp=PD(:x)*f
 yp=fp&@equ x=3
@@ -8,13 +8,11 @@ yp=fp&@equ x=3
 fxy=Fun(a->a[1]+a[2]^2,[:x,:y])
 fxyp=PD(:y)*fxy
 fxypp=PD(:x)*PD(:y)*fxy
-#fxypps=simplify(fxypp) fix this
-#fxypp=PD(:x)*(PD(:y)*fxy)
 xy=@equs(x=1,y=1)
 @assert isapprox(fxyp&xy,2,atol=1e-5)
 @assert fxypp&xy==0
 T=Ten([PD(:x),PD(:y)],:i)*Ten([fxy,fxy],:i)
-ts&xy
+@assert isapprox(T&xy,3,atol=1e-5)
 
 function cchr(gf::Fun) #construct Christoffel symbol
 	igf=Fun(a->inv(gf.y(a)),gf.x)
