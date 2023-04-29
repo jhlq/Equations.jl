@@ -117,10 +117,31 @@ function sumconv!(t::Term)
 		ti2=inds[iiii[1][2]]
 		iii=iiii[2]
 		t1=t[ti1];t2=t[ti2]
-		if !(isa(t1.x,Array)&&isa(t2.x,Array))
+		if !(isa(t1.x,Union{Array,Fun})&&isa(t2.x,Union{Array,Fun}))
 			return Term[t]
 		end
-		st1=size(t1.x);st2=size(t2.x)
+		t1f=isa(t1.x,Fun)
+		t2f=isa(t2.x,Fun)
+		if t1f
+			if isa(t1.x.x,Symbol)
+				ra=rand(1)[1]
+			else
+				ra=rand(length(t1.x.x))
+			end
+			st1=size(t1.x.y(ra))
+		else
+			st1=size(t1.x)
+		end
+		if t2f
+			if isa(t2.x.x,Symbol)
+				ra=rand(1)[1]
+			else
+				ra=rand(length(t2.x.x))
+			end
+			st2=size(t2.x.y(ra))
+		else
+			st2=size(t2.x)
+		end
 		lst1=length(st1);lst2=length(st2)
 		iti1=Any[];iti2=Any[]
 		for l in 1:lst1
@@ -133,16 +154,40 @@ function sumconv!(t::Term)
 		iti1[end-lit1+iii[1]]=1
 		iti2[end-lit2+iii[2]]=1
 		newterm=deepcopy(t)
-		nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]))
-		nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]))
+		if t1f
+			newinds=deepcopy(t1.indices)
+			newinds[iii[1]]=1
+			nt1=Ten(t1.x,newinds)
+		else
+			nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]))
+		end
+		if t2f
+			newinds=deepcopy(t2.indices)
+			newinds[iii[2]]=1
+			nt2=Ten(t2.x,newinds)
+		else
+			 nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]))
+		end
 		newterm[ti1]=nt1;newterm[ti2]=nt2
 		at=Term[newterm]
 		for di1 in 1:st1[end-lit1+iii[1]]-1
 			iti1[end-lit1+iii[1]]+=1
 			iti2[end-lit2+iii[2]]+=1
-			newnewterm=deepcopy(t) 
-			nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]))
-			nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]))
+			newnewterm=deepcopy(t)
+			if t1f
+				newinds=deepcopy(t1.indices)
+				newinds[iii[1]]=iti1[end-lit1+iii[1]]
+				nt1=Ten(t1.x,newinds)
+			else
+				nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]))
+			end
+			if t2f
+				newinds=deepcopy(t2.indices)
+				newinds[iii[2]]=iti2[end-lit2+iii[2]]
+				nt2=Ten(t2.x,newinds)
+			else
+				nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]))
+			end
 			newnewterm[ti1]=nt1;newnewterm[ti2]=nt2
 			push!(at,newnewterm)
 		end
