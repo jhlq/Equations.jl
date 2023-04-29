@@ -534,7 +534,7 @@ mutable struct Transpose<:Component
 end
 function simplify(t::Transpose)
 	if isa(t.x,Ten)&&isa(t.x.x,Matrix)&&length(t.x.indices)==2
-		return Ten(t.x.x',[t.x.indices[2],t.x.indices[1]])
+		return Ten(t.x.x',t.x.indices) #[t.x.indices[2],t.x.indices[1]]) #switching indices is inverse of transposing
 	end
 	t
 end

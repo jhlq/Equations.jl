@@ -4,6 +4,7 @@ mutable struct Fun <: Component
 	x#::Union{Array,Number,Symbol}
 	pds::Array{Symbol}
 end
+show(io::IO,f::Fun)=print(io,"Fun(func,$(f.x),$(f.pds))")
 Fun(y,x)=Fun(y,x,Symbol[])
 function *(f1::Fun,f2::Fun)
 	if f1.x!=f2.x
@@ -89,6 +90,13 @@ end
 componify(f::Function)=f
 has(f::Function,a)=false
 maketype(c::Fun,fun)=typeof(c)(c.y,fun(c.x),c.pds)
+function sample(f::Fun)
+	if isa(f.x,Array)
+		return f.y(rand(length(f.x)))
+	else
+		return f.y(rand())
+	end
+end
 
 mutable struct PD<:NonAbelian
 	d::Symbol
