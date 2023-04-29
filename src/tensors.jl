@@ -61,7 +61,7 @@ function duplicates(arr)
 			bb=larr-b+1
 			if a==b
 				continue
-			elseif arr[aa]==arr[bb]
+			elseif arr[aa]==arr[bb]&&!isa(arr[aa],Number)
 				return [bb,aa]
 			end
 		end
@@ -75,7 +75,7 @@ function duplicates(arr1,arr2)
 		larr2=length(arr2)
 		for b in 1:larr2
 			bb=larr2-b+1
-			if arr1[aa]==arr2[bb]
+			if arr1[aa]==arr2[bb]&&!isa(arr1[aa],Number)
 				return [aa,bb]
 			end
 		end
@@ -290,12 +290,16 @@ function simplify(ex::Expression,typ::Type{Ten})
 	return Expression(nnat)
 end
 function simplify(t::Ten)
+	if isa(t.x,Equations.Component)
+		t=deepcopy(t)
+		t.x=simplify(t.x)
+	end
 	if isa(t.x,Array)
 		if t.x==zeros(size(t.x))
 			return 0
 		end
 	end	
-	if duplicates(t.indices)!=0&&isa(t.x,Array)
+	if duplicates(t.indices)!=0&&isa(t.x,Array) #or Fun, TODO
 		nt=sumconv(t)
 		for i in 1:30
 			if nt==t
