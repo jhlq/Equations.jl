@@ -136,3 +136,18 @@ r2=rand(3,2,2)
 ex=Ten(r1,[:i,:j,:k,:l])*Ten(r2,[:a,:b,:c])
 sex=simplify(ex)
 @test sex.x[1,1,1,1,1,1,1]==r1[1,1,1,1]*r2[1,1,1]&&sex.x[2,1,2,3,3,1,2]==r1[2,1,2,3]*r2[3,1,2]&&sex.x[1,2,2,1,3,2,2]==r1[1,2,2,1]*r2[3,2,2]
+
+t=Ten([Fun(x->x,:x),Fun(x->-x,:x)],:i)
+@test t&@equ(x=2)==Ten(Any[2,-2],Any[:i])
+
+t=Ten([Fun(x->[x,-x],:x),Fun(x->[-x,x],:x)],[:i,:j])
+@test t&@equ(x=1)==Ten(Any[1 -1; -1 1],Any[:i,:j])
+t&@equ(x=1)&@equs(i=1,j=1)
+tn=Ten(Any[Int64[1,-1],Int64[-1,1]],Any[1,1])
+
+r1=rand(2,3,2)
+r2=rand(2,3,2)
+r3=rand(2,3,2)
+t=Ten([Fun(x->r1,:x),Fun(x->r2,:x),Fun(x->r3,:x)],[:i,:j,:k,:l])
+st=t&@equ x=1
+@test st.x[3,2,3,2]==r3[2,3,2]&&st.x[2,2,2,1]==r2[2,2,1]&&st.x[1,1,1,1]==r1[1,1,1]

@@ -5,7 +5,7 @@ mutable struct Ten<:AbstractTensor
 	x
 	indices::Array{Any}
 end
-function Ten(x,i::Factor)
+function Ten(x,i::Union{Array,Factor})
 	if isa(x,Array)&&!isa(x,Array{Any})
 		x=convert(Array{Any},x)
 	end
@@ -304,7 +304,7 @@ function untensify!(tt::Array{Term})
 						t.x=reshape(t.x,ns...)
 					end
 					s=size(t.x)
-					if length(s)==1&&isa(t.indices[1],Number)
+					if length(s)==1&&length(t.indices)==1&&isa(t.indices[1],Number)
 						tt[ti][fi]=t.x[t.indices[1]]
 					elseif length(s)==length(t.indices)&&allnum(t.indices)
 						tt[ti][fi]=t.x[t.indices...]
@@ -444,20 +444,48 @@ function simplify(t::Ten)
 	elseif isempty(t.indices)&&!isa(t.x,Array)
 		return t.x
 	elseif isa(t.x,Array)
-		if isa(t.indices,Number)&&length(size(t.x))==1
-			return t.x[t.indices]
-		elseif isa(t.indices,Array)
-			if allnum(t.indices)#&&length(size(t.x))==length(t.indices)
-				return t.x[t.indices...]
-			end
-			if isa(t.indices[end],Number)
-				s=size(t.x)
-				i=Any[]
-				for l in 1:length(s)-1
-					push!(i,:)
+		if length(size(t.x))==length(t.indices)
+			if length(t.indices)==1&&isa(t.indices[1],Number)
+				return t.x[t.indices]
+			elseif isa(t.indices,Array)
+				if allnum(t.indices)
+					return t.x[t.indices...]
 				end
-				push!(i,t.indices[end])
-				return Ten(t.x[i...],t.indices[1:end-1])
+				if isa(t.indices[end],Number)
+					s=size(t.x)
+					i=Any[]
+					for l in 1:length(s)-1
+						push!(i,:)
+					end
+					push!(i,t.indices[end])
+					return Ten(t.x[i...],t.indices[1:end-1])
+				end
+			end
+		elseif isa(t.x,Vector)
+			if isa(t.indices[1],Number)
+				t.x=t.x[t.indices[1]]
+				popfirst!(t.indices)
+			elseif isa(t.x[1],Array)
+				sp=size(t.x[1])
+				samesize=true
+				nelem=length(t.x)
+				for i in 2:nelem
+					if sp!=size(t.x[i])
+						samesize=false
+					end
+				end
+				if samesize
+					spl=length(sp)
+					td=Int64[nelem]
+					for i in sp
+						push!(td,i)
+					end
+					newm=Array{Any}(undef,td...)
+					for k in Iterators.product(Base.OneTo.(td)...)
+						newm[k...]=t.x[k[1]][k[2:end]...]
+					end
+					t.x=newm
+				end
 			end
 		end
 	end
