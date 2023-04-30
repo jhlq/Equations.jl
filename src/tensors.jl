@@ -335,6 +335,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 	#check each tensor, stride and break on nonabelian, then do tensor multiplication
 	nnnat=nnat
 	dofirst=true
+	nit=0
 	while nnnat!=nnat||dofirst
 		dofirst=false
 		nnat=nnnat
@@ -342,22 +343,24 @@ function simplify(ex::Expression,typ::Type{Ten})
 		for ter in nnat
 			foundT1=false
 			foundT2=false
+			tenprodded=false
 			nfacs=Factor[]
 			T1i=0
 			for faci in 1:length(ter)
 				skipfac=false
 				fac=ter[faci]
 				if !foundT1
-					if isa(fac,Ten)&&isa(fac.x,Vector) #generalize for any array
+					if isa(fac,Ten)&&isa(fac.x,Array)
 						foundT1=true
 						T1i=faci
 						skipfac=true
 					end
-				elseif !foundT2&&
-					if isa(fac,Ten)&&isa(fac.x,Vector)
+				elseif !foundT2
+					if isa(fac,Ten)&&isa(fac.x,Array)
 						foundT2=true
 						skipfac=true
 						T1=ter[T1i]
+						#=
 						T1l=length(T1.x)
 						T2l=length(fac.x)
 						newm=Array{Any,2}(undef,T1l,T2l)
@@ -367,8 +370,27 @@ function simplify(ex::Expression,typ::Type{Ten})
 							end
 						end
 						push!(nfacs,Ten(newm,[T1.indices[1],fac.indices[1]]))
+						=#
+						nind=Any[]
+						pushall!(nind,T1.indices)
+						pushall!(nind,fac.indices)
+						sr1=size(T1.x)
+						sr1l=length(sr1)
+						sr2=size(fac.x)
+						td=Int64[]
+						for i in sr1
+							push!(td,i)
+						end
+						for i in sr2
+							push!(td,i)
+						end
+						newm=Array{Any}(undef,td...)
+						for k in Iterators.product(Base.OneTo.(td)...)
+							newm[k...]=T1.x[k[1:sr1l]...]*fac.x[k[sr1l+1:end]...]
+						end
+						push!(nfacs,Ten(newm,nind))
+						tenprodded=true
 					elseif isa(fac,NonAbelian)
-						push!(nnnat,ter)
 						break
 					end
 				end
@@ -376,7 +398,16 @@ function simplify(ex::Expression,typ::Type{Ten})
 					push!(nfacs,fac)
 				end
 			end
-			push!(nnnat,nfacs)
+			if tenprodded
+				push!(nnnat,nfacs)
+			else
+				push!(nnnat,ter)
+			end
+		end
+		nit+=1
+		if nit>90
+			@warn("Stuck in Tensor multiplication loop")
+			break
 		end
 	end
 	return Expression(nnat)

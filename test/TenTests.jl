@@ -121,4 +121,18 @@ t2=Ten(inv(m),[:i,:j])
 @test a&@equ(m=$t1)==t2
 
 ex=Ten([:a,:b],:i)*Ten([:c,:d,:e],:j)
+sex=simplify(ex)
 @test ex&@equs(i=1,j=1)==:a*:c&&ex&@equs(i=2,j=1)==:b*:c&&ex&@equs(i=1,j=2)==:a*:d
+@test sex.x[1,1]==:a*:c&&sex.x[2,1]==:b*:c&&sex.x[1,2]==:a*:d
+
+r1=rand(2)
+r2=rand(3,2)
+ex=Ten(r1,[:i])*Ten(r2,[:a,:b])
+sex=simplify(ex)
+@test sex.x[1,1,1]==r1[1]*r2[1,1]&&sex.x[2,1,2]==r1[2]*r2[1,2]&&sex.x[1,2,2]==r1[1]*r2[2,2]
+
+r1=rand(2,3,2,3)
+r2=rand(3,2,2)
+ex=Ten(r1,[:i,:j,:k,:l])*Ten(r2,[:a,:b,:c])
+sex=simplify(ex)
+@test sex.x[1,1,1,1,1,1,1]==r1[1,1,1,1]*r2[1,1,1]&&sex.x[2,1,2,3,3,1,2]==r1[2,1,2,3]*r2[3,1,2]&&sex.x[1,2,2,1,3,2,2]==r1[1,2,2,1]*r2[3,2,2]
