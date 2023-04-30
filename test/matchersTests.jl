@@ -6,28 +6,28 @@ pattern=:a*:b
 mds=matches(ex,pattern)
 @test !isempty(mds)
 for md in mds
-	@test randeval(replace(pattern,md))==randeval(ex)
+	@test randeval(replace(pattern,md),1)==randeval(ex,1)
 end
 ex=3*:x*:y
 pattern=:a*:b
 mds=matches(ex,pattern)
 @test !isempty(mds)
 for md in mds
-	@test randeval(replace(pattern,md))==randeval(ex)
+	@test randeval(replace(pattern,md),1)==randeval(ex,1)
 end
 ex=3*:x*:y*:z
 pattern=:a*:b
 mds=matches(ex,pattern)
 @test !isempty(mds)
 for md in mds
-	@test randeval(replace(pattern,md))==randeval(ex)
+	@test randeval(replace(pattern,md),1)==randeval(ex,1)
 end
 ex=3*:x*:y*:z
 pattern=:a*:b*:c
 mds=matches(ex,pattern)
 @test !isempty(mds)
 for md in mds
-	@test randeval(replace(pattern,md))==randeval(ex)
+	@test randeval(replace(pattern,md),1)==randeval(ex,1)
 end
 ex=:x*3*:y
 pattern=:a*3*:b

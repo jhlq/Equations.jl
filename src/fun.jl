@@ -71,14 +71,21 @@ function simplify(ex::Expression,typ::Type{Fun})
 					end
 				elseif in(ffi,fti)
 					f=nt[ffi].x
+					cont=true
 					for i in 1:9001
 						if isa(f,Fun)
+							break
+						elseif isa(f,Array)
+							cont=false #can't be certain if the array contains something differentiable, maybe jump into the array and differentiate every element?
 							break
 						end
 						f=f.x
 						if i==9001
 							error("Either an infinite loop has occured or you have a Fun nested over 9000 deep in a Ten!")
 						end
+					end
+					if !cont
+						break
 					end
 					if pd.d==f.x||(isa(f.x,Array)&&in(pd.d,f.x))
 						c=nt[ffi]
@@ -118,10 +125,14 @@ function sample(f::Fun,seed=0)
 		Random.seed!(seed)
 	end
 	if isa(f.x,Array)
-		return f.y(rand(length(f.x)))
+		r=f.y(rand(length(f.x)))
 	else
-		return f.y(rand())
+		r=f.y(rand())
 	end
+	if seed!=0
+		Random.seed!(Int(round(time())))
+	end
+	return r
 end
 
 mutable struct PD<:NonAbelian

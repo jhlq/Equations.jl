@@ -13,7 +13,7 @@ n=@equ n=9
 @test (energy&c&m&n).rhs==2426638982589407628
 
 tri=@equ c^2=a^2+b^2
-@test randeval(sqrt(tri).rhs)==randeval(sqrt(:a^2+:b^2))
+@test randeval(sqrt(tri).rhs,1)==randeval(sqrt(:a^2+:b^2),1)
 
 rel=@equ Oneable(a)*x*z=y
 @test (:q*:t)&rel==:y
@@ -47,7 +47,7 @@ for s in sol
 end
 eq=simplify(@equ m*V=m*v1+M*v2);
 seq=eq&:v1
-@test randeval(seq.rhs)==randeval(((eq-:M*:v2)/:m).lhs)
+@test randeval(seq.rhs,1)==randeval(((eq-:M*:v2)/:m).lhs,1)
 
 eq=relations["Der"][3]
 @test eval(Meta.parse(ps(eq)))==eq

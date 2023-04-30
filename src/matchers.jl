@@ -34,7 +34,7 @@ end
 function validfilter(c1,c2,mda::Array{Dict})
 	filtered=Dict[]
 	for md in mda
-		if randeval(replace(c2,md))==randeval(c1)
+		if randeval(replace(c2,md),1)==randeval(c1,1)
 			push!(filtered,md)
 		end
 	end

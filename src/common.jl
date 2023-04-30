@@ -894,12 +894,17 @@ function evaluate(ex::Ex,symdic::Dict)
 end
 evaluate(x::Number,symdic::Dict)=x
 using Random
-function randeval(ex::Ex,seed=1)
-	Random.seed!(seed)
+function randeval(ex::Ex,seed=0)
+	if seed!=0
+		Random.seed!(seed)
+	end
 	syms=findsyms(ex)
 	d=Dict()
 	for s in syms
 		d[s]=rand()
+	end
+	if seed!=0
+		Random.seed!(Int(round(time())))
 	end
 	evaluate(ex,d)
 end
