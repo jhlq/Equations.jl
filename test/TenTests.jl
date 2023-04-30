@@ -119,3 +119,6 @@ m=rand(2,2)
 t1=Ten(m,[:i,:j])
 t2=Ten(inv(m),[:i,:j])
 @test a&@equ(m=$t1)==t2
+
+ex=Ten([:a,:b],:i)*Ten([:c,:d,:e],:j)
+@test ex&@equs(i=1,j=1)==:a*:c&&ex&@equs(i=2,j=1)==:b*:c&&ex&@equs(i=1,j=2)==:a*:d

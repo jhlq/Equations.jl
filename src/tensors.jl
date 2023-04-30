@@ -332,6 +332,53 @@ function simplify(ex::Expression,typ::Type{Ten})
 	end
 	untensify!(nnat)
 	nnat=sumlify(nnat)
+	#check each tensor, stride and break on nonabelian, then do tensor multiplication
+	nnnat=nnat
+	dofirst=true
+	while nnnat!=nnat||dofirst
+		dofirst=false
+		nnat=nnnat
+		nnnat=Term[]
+		for ter in nnat
+			foundT1=false
+			foundT2=false
+			nfacs=Factor[]
+			T1i=0
+			for faci in 1:length(ter)
+				skipfac=false
+				fac=ter[faci]
+				if !foundT1
+					if isa(fac,Ten)&&isa(fac.x,Vector) #generalize for any array
+						foundT1=true
+						T1i=faci
+						skipfac=true
+					end
+				elseif !foundT2&&
+					if isa(fac,Ten)&&isa(fac.x,Vector)
+						foundT2=true
+						skipfac=true
+						T1=ter[T1i]
+						T1l=length(T1.x)
+						T2l=length(fac.x)
+						newm=Array{Any,2}(undef,T1l,T2l)
+						for i in 1:T1l
+							for j in 1:T2l
+								newm[i,j]=T1.x[i]*fac.x[j]
+							end
+						end
+						push!(nfacs,Ten(newm,[T1.indices[1],fac.indices[1]]))
+					elseif isa(fac,NonAbelian)
+						push!(nnnat,ter)
+						break
+					end
+				end
+				if !skipfac
+					push!(nfacs,fac)
+				end
+			end
+			push!(nnnat,nfacs)
+		end
+	end
 	return Expression(nnat)
 end
 function simplify(t::Ten)
