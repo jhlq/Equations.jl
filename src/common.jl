@@ -980,5 +980,5 @@ function simplify(n::Abs)
 	if isa(n.x,Ten)&&isa(n.x.x,Vector)&&allnum(n.x.x)
 		return norm(n.x.x)
 	end
-	return n
+	return Abs(simplify(n.x))
 end

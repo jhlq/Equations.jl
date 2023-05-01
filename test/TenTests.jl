@@ -163,3 +163,33 @@ sex=simplify(ex)
 ex=Ten([PD(:x),PD(:y)],:i)*Ten([Fun(a->a[1]^2+a[2]^3,[:x,:y]),Fun(a->a[2]^2+a[1]^3,[:x,:y])],:j)
 sex=simplify(ex)
 @test sex&@equs(x=1,y=2)==Ten(Any[2.0 3.0; 12.0 4.0],Any[:i,:j])
+
+ex=Ten([PD(:x),PD(:y)],:i)*Ten(Fun(a->[a[1]^2,a[2]^3],[:x,:y]),:j)
+sex=simplify(ex)
+@test sex&@equs(x=1,y=2)==Ten(Any[2.0 0.0; 0.0 12.0],Any[:i,:j])
+
+t=Ten(Inv(:m),[:i,:j])
+m=rand(2,2)
+ts=t&@equ m=$m
+@test ts.x==inv(m)
+tf=Ten(Inv(Fun(a->[a[1] 0;0 a[2]],[:x,:y])),[:i,:j])
+@test tf&@equs(x=1,y=2)==Ten([1.0 0.0; 0.0 0.5],Any[:i,:j])
+ex=PD(:x)*Ten(Inv(Fun(a->[a[1] 0;0 a[1]*a[2]],[:x,:y])),[:i,:j])
+sex=simplify(ex)
+@test sex&@equs(x=1,y=2)==Ten([1.0 0.0; 0.0 0.5],Any[:i,:j])
+
+ex=PD(:x)*Ten(Transpose(Inv(Fun(a->[a[1] 0;0 a[1]*a[2]],[:x,:y]))),:j)
+sex=simplify(ex)
+sex&@equs(x=1,y=2)
+
+ex=Ten([PD(:x),PD(:y)],:i)*Ten(Inv(Fun(a->[a[1]^2 a[2]^3;-a[1]^2 -a[2]^3],[:x,:y])),:j)
+sex=simplify(ex)
+
+ex=Ten([PD(:x),PD(:y)],:i)*Ten(Transpose(Inv(Fun(a->[a[1]^2 a[2]^3;-a[1]^2 -a[2]^3],[:x,:y]))),:j)
+sex=simplify(ex)
+
+ex=PD(:x)*Ten([Transpose(Inv(Fun(a->[a[1]^2 a[2]^3;-a[1]^2 -a[2]^3],[:x,:y]))),Transpose(Inv(Fun(a->[a[1]^2 -a[2]^3;-a[1]^2 a[2]^3],[:x,:y]))],:j)
+sex=simplify(ex)
+
+ex=PD(:x)*Ten(Transpose(Inv([Fun(a->a],[:x]) Fun(a->a],[:x]);Fun(a->a],[:x]) Fun(a->a],[:x])])),:j)
+sex=simplify(ex)

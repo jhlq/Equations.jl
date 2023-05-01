@@ -108,7 +108,36 @@ function simplify(ex::Expression,typ::Type{Fun})
 					#if !cont
 					#	break
 					#end
-					if isa(f,Array)||(pd.d==f.x||(isa(f.x,Array)&&in(pd.d,f.x)))
+					if isa(pd,Ten)
+						if !isa(f,Array)
+							deone=false
+							for pdx in pd.x
+								if pdx.d==f.x||(isa(f.x,Array)&&in(pdx.d,f.x))
+									deone=true
+								end
+							end
+							if deone
+								for pdxi in 1:length(pd.x)
+									pd.x[pdxi]=pd.x[pdxi]*f
+									if !isa(nt[ffi].x,Fun)
+										npdx=nt[ffi].x
+										c=npdx.x
+										for i in 1:9000
+											if isa(c.x,Fun)
+												c.x=pd.x[pdxi]
+												pd.x[pdxi]=npdx
+												break
+											end
+											c=c.x
+										end
+									end
+								end
+								push!(deli,ffi)
+								pushall!(pd.indices,nt[ffi].indices)
+								break
+							end
+						end
+					elseif isa(f,Array)||(pd.d==f.x||(isa(f.x,Array)&&in(pd.d,f.x)))
 						c=nt[ffi]
 						for i in 1:9000
 							if isa(c.x,Fun)

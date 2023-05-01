@@ -659,7 +659,7 @@ function simplify(t::Transpose)
 	if isa(t.x,Ten)&&isa(t.x.x,Matrix)&&length(t.x.indices)==2
 		return Ten(t.x.x',t.x.indices) #[t.x.indices[2],t.x.indices[1]]) #switching indices is inverse of transposing
 	end
-	t
+	return Transpose(simplify(t,x))
 end
 mutable struct Inv<:Component
 	x
@@ -677,5 +677,5 @@ function simplify(c::Inv)
 	if isa(c.x,Ten)
 		return Ten(inv(c.x.x),c.x.indices)
 	end
-	return c
+	return Inv(simplify(c.x))
 end
