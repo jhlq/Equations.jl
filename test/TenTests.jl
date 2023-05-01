@@ -151,3 +151,15 @@ r3=rand(2,3,2)
 t=Ten([Fun(x->r1,:x),Fun(x->r2,:x),Fun(x->r3,:x)],[:i,:j,:k,:l])
 st=t&@equ x=1
 @test st.x[3,2,3,2]==r3[2,3,2]&&st.x[2,2,2,1]==r2[2,2,1]&&st.x[1,1,1,1]==r1[1,1,1]
+
+ex=Ten([PD(:x),PD(:y)],:i)*Fun(a->a[1]^2+a[2]^3,[:x,:y])
+sex=simplify(ex)
+@test sex&@equs(x=1,y=2)==Ten(Any[2.0,12.0],Any[:i])
+
+ex=PD(:x)*Ten([Fun(a->a[1]^2+a[2]^3,[:x,:y]),Fun(a->a[2]^2+a[1]^3,[:x,:y])],:j)
+sex=simplify(ex)
+@test sex&@equs(x=1,y=2)==Ten(Any[2.0,3.0],Any[:j])
+
+ex=Ten([PD(:x),PD(:y)],:i)*Ten([Fun(a->a[1]^2+a[2]^3,[:x,:y]),Fun(a->a[2]^2+a[1]^3,[:x,:y])],:j)
+sex=simplify(ex)
+@test sex&@equs(x=1,y=2)==Ten(Any[2.0 3.0; 12.0 4.0],Any[:i,:j])

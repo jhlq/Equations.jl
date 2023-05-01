@@ -41,13 +41,16 @@ function simplify(ex::Expression,typ::Type{Fun})
 	for t in ex
 		fi=indsin(t,Fun)
 		ti=indsin(t,Ten)
+		pdi=indsin(t,PD)
 		fti=[]
 		for tii in ti
 			if has(t[tii].x,Fun)
 				push!(fti,tii)
+			elseif alltyp(t[tii].x,PD)
+				push!(pdi,tii)
 			end
 		end
-		pdi=indsin(t,PD)
+		sort!(pdi)
 		fil=length(fi)
 		pdil=length(pdi)
 		ftil=length(fti)
@@ -64,19 +67,37 @@ function simplify(ex::Expression,typ::Type{Fun})
 			for ffi in pdiii+1:tl
 				if in(ffi,fi)
 					f=nt[ffi]
-					if pd.d==f.x||(isa(f.x,Array)&&in(pd.d,f.x))
+					if isa(pd,Ten)
+						deone=false
+						for pdx in pd.x
+							if pdx.d==f.x||(isa(f.x,Array)&&in(pdx.d,f.x))
+								deone=true
+							end
+						end
+						if deone
+							for pdxi in 1:length(pd.x)
+								pd.x[pdxi]=pd.x[pdxi]*f
+							end
+							push!(deli,ffi)
+							break
+						end
+					end
+					if !in(ffi,deli)&&(pd.d==f.x||(isa(f.x,Array)&&in(pd.d,f.x)))
 						nt[ffi]=pd*f
 						push!(deli,pdiii)
 						break
 					end
 				elseif in(ffi,fti)
 					f=nt[ffi].x
-					cont=true
-					for i in 1:9001
+					#cont=true
+					for i in 1:9001 #is this loop really necessary?
 						if isa(f,Fun)
 							break
 						elseif isa(f,Array)
-							cont=false #can't be certain if the array contains something differentiable, maybe jump into the array and differentiate every element?
+						#	cont=false #can't be certain if the array contains something differentiable, maybe jump into the array and differentiate every element? #has Fun
+						#	if has(f,Fun)
+						#		cont=true
+						#	end
 							break
 						end
 						f=f.x
@@ -84,14 +105,19 @@ function simplify(ex::Expression,typ::Type{Fun})
 							error("Either an infinite loop has occured or you have a Fun nested over 9000 deep in a Ten!")
 						end
 					end
-					if !cont
-						break
-					end
-					if pd.d==f.x||(isa(f.x,Array)&&in(pd.d,f.x))
+					#if !cont
+					#	break
+					#end
+					if isa(f,Array)||(pd.d==f.x||(isa(f.x,Array)&&in(pd.d,f.x)))
 						c=nt[ffi]
 						for i in 1:9000
 							if isa(c.x,Fun)
 								c.x=pd*f
+								break
+							elseif isa(c.x,Array)
+								for cxi in 1:length(c.x)
+									c.x[cxi]=pd*c.x[cxi]
+								end
 								break
 							end
 							c=c.x

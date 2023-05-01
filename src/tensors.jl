@@ -5,6 +5,7 @@ mutable struct Ten<:AbstractTensor
 	x
 	indices::Array{Any}
 end
+#@delegate Ten.x [getindex, setindex!, iterate, length, size]
 function Ten(x,i::Union{Array,Factor})
 	if isa(x,Array)&&!isa(x,Array{Any})
 		x=convert(Array{Any},x)
@@ -33,6 +34,14 @@ end
 function allnum(a::Array)
 	for n in a
 		if !isa(n,Number)
+			return false
+		end
+	end
+	return true
+end
+function alltyp(a::Array,typ)
+	for n in a
+		if !isa(n,typ)
 			return false
 		end
 	end
