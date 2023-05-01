@@ -697,6 +697,43 @@ function simplify(t::Transp)
 	end
 	return t
 end
+mutable struct GenTrans<:Component
+	x
+	i1::Symbol
+	i2::Symbol
+end
+function simplify(t::GenTrans)
+	t=GenTrans(simplify(t.x),t.i1,t.i2)
+	if isa(t.x,Ten)&&isa(t.x.x,Array)&&length(t.x.indices)==length(size(t.x.x))&&in(t.i1,t.x.indices)&&in(t.i2,t.x.indices)
+		i1=indin(t.x.indices,t.i1)
+		i2=indin(t.x.indices,t.i2)
+		ninds=deepcopy(t.x.indices)
+		ninds[i1]=t.x.indices[i2]
+		ninds[i2]=t.x.indices[i1]
+		oldsize=size(t.x.x)
+		newsize=Int64[]
+		for o in oldsize
+			push!(newsize,o)
+		end
+		newsize[i1]=oldsize[i2]
+		newsize[i2]=oldsize[i1]
+		newm=Array{Any}(undef,newsize...)
+		for k in Iterators.product(Base.OneTo.(newsize)...)
+			oldk=Int64[]
+			for ki in k
+				push!(oldk,ki)
+			end
+			oldk[i1]=k[i2]
+			oldk[i2]=k[i1]
+			newm[k...]=t.x.x[oldk...]
+		end
+		return Ten(newm,ninds)
+	end
+	if isa(t.x,Array)
+		#TODO
+	end
+	return t
+end
 mutable struct Inv<:Component
 	x
 end
