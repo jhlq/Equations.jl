@@ -609,7 +609,7 @@ function simplify(ex::Expression)
 		ex=sumsym(sumnum(componify(ex)))
 		ap=terms(ex)
 		if isa(ap,X)
-			return ap
+			return simplify(ap)
 		end
 		for term in 1:length(ap)
 			ap[term]=divify!(ap[term])

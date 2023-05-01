@@ -172,7 +172,8 @@ end
 (&)(x::Number,eq::Equation)=x
 function (&)(ex::Union{Ex,Equation},eqa::Array)
 	for teq in eqa
-		ex=applyamp(ex,teq,false)
+		#ex=applyamp(ex,teq,true)
+		ex=ex&teq
 	end
 	return simplify(ex)
 end

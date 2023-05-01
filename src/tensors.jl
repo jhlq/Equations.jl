@@ -431,12 +431,15 @@ function simplify(ex::Expression,typ::Type{Ten})
 end
 function simplify(t::Ten)
 	t=deepcopy(t)
-	if isa(t.x,Equations.Component)
+	if isa(t.x,Union{Component,Expression})
 		t.x=simplify(t.x)
 	end
 	if isa(t.x,Array)
 		if t.x==zeros(size(t.x))
 			return 0
+		end
+		if !isa(t.x,Array{Any})
+			t.x=convert(Array{Any},t.x)
 		end
 		for si in 1:length(t.x)
 			t.x[si]=simplify(t.x[si])
@@ -687,7 +690,7 @@ end
 function simplify(t::Transp)
 	t=Transp(simplify(t.x))
 	if isa(t.x,Ten)&&isa(t.x.x,Matrix)&&length(t.x.indices)==2
-		return Ten(t.x.x',t.x.indices) #[t.x.indices[2],t.x.indices[1]]) #switching indices is inverse of transposing
+		return Ten(t.x.x',[t.x.indices[2],t.x.indices[1]]) #t.x.indices) #[t.x.indices[2],t.x.indices[1]]) #switching indices is inverse of transposing. But if we switch the indices we can sum transposed matrix with its equivalent
 	end
 	if isa(t.x,Matrix)
 		return t.x'
