@@ -308,7 +308,9 @@ function untensify!(tt::Array{Term})
 					tt[ti][fi]=t.x
 				elseif isa(t.x,Array)
 					if t.x==zeros(size(t.x))
-						push!(del,ti)
+						if !in(ti,del)
+							push!(del,ti)
+						end
 					end
 					s=size(t.x)
 					if in(1,s)&&length(s)>length(t.indices)
