@@ -455,19 +455,23 @@ function simplify(t::Ten)
 	elseif isa(t.x,Array)
 		if length(size(t.x))==length(t.indices)
 			if length(t.indices)==1&&isa(t.indices[1],Number)
-				return t.x[t.indices]
+				return t.x[t.indices[1]]
 			elseif isa(t.indices,Array)
 				if allnum(t.indices)
 					return t.x[t.indices...]
 				end
 				if isa(t.indices[end],Number)
-					s=size(t.x)
-					i=Any[]
-					for l in 1:length(s)-1
-						push!(i,:)
+					if length(t.indices)>1
+						s=size(t.x)
+						i=Any[]
+						for l in 1:length(s)-1
+							push!(i,:)
+						end
+						push!(i,t.indices[end])
+						return Ten(t.x[i...],t.indices[1:end-1])
+					elseif !isa(t.x[t.indices[end]],Array)&&!isa(t.x[t.indices[end]],Fun)
+						return t.x[t.indices[end]]
 					end
-					push!(i,t.indices[end])
-					return Ten(t.x[i...],t.indices[1:end-1])
 				end
 			end
 		elseif isa(t.x,Vector)
