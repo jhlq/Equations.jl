@@ -153,20 +153,17 @@ st=t&@equ x=1
 @test st.x[3,2,3,2]==r3[2,3,2]&&st.x[2,2,2,1]==r2[2,2,1]&&st.x[1,1,1,1]==r1[1,1,1]
 
 ex=Ten([PD(:x),PD(:y)],:i)*Fun(a->a[1]^2+a[2]^3,[:x,:y])
-sex=simplify(ex)
-@test sex&@equs(x=1,y=2)==Ten(Any[2.0,12.0],Any[:i])
+@test ex&@equs(x=1,y=2)==Ten(Any[2.0,12.0],Any[:i])
 
 ex=PD(:x)*Ten([Fun(a->a[1]^2+a[2]^3,[:x,:y]),Fun(a->a[2]^2+a[1]^3,[:x,:y])],:j)
-sex=simplify(ex)
-@test sex&@equs(x=1,y=2)==Ten(Any[2.0,3.0],Any[:j])
+@test ex&@equs(x=1,y=2)==Ten(Any[2.0,3.0],Any[:j])
 
 ex=Ten([PD(:x),PD(:y)],:i)*Ten([Fun(a->a[1]^2+a[2]^3,[:x,:y]),Fun(a->a[2]^2+a[1]^3,[:x,:y])],:j)
-sex=simplify(ex)
-@test sex&@equs(x=1,y=2)==Ten(Any[2.0 3.0; 12.0 4.0],Any[:i,:j])
+@test ex&@equs(x=1,y=2)==Ten(Any[2.0 3.0; 12.0 4.0],Any[:i,:j])
 
 ex=Ten([PD(:x),PD(:y)],:i)*Ten(Fun(a->[a[1]^2,a[2]^3],[:x,:y]),:j)
 sex=simplify(ex)
-@test sex&@equs(x=1,y=2)==Ten(Any[2.0 0.0; 0.0 12.0],Any[:i,:j])
+@test ex&@equs(x=1,y=2)==Ten(Any[2.0 0.0; 0.0 12.0],Any[:i,:j])
 
 t=Ten(Inv(:m),[:i,:j])
 m=rand(2,2)
@@ -175,21 +172,23 @@ ts=t&@equ m=$m
 tf=Ten(Inv(Fun(a->[a[1] 0;0 a[2]],[:x,:y])),[:i,:j])
 @test tf&@equs(x=1,y=2)==Ten([1.0 0.0; 0.0 0.5],Any[:i,:j])
 ex=PD(:x)*Ten(Inv(Fun(a->[a[1] 0;0 a[1]*a[2]],[:x,:y])),[:i,:j])
-sex=simplify(ex)
-@test sex&@equs(x=1,y=2)==Ten([1.0 0.0; 0.0 0.5],Any[:i,:j])
+@test ex&@equs(x=1,y=2)==Ten([1.0 0.0; 0.0 0.5],Any[:i,:j])
 
-ex=PD(:x)*Ten(Transpose(Inv(Fun(a->[a[1] 0;0 a[1]*a[2]],[:x,:y]))),:j)
-sex=simplify(ex)
-sex&@equs(x=1,y=2)
+ex=PD(:x)*Ten(Transp(Inv(Fun(a->[a[1] 0;0 a[1]*a[2]],[:x,:y]))),[:i,:j])
+@test ex&@equs(x=1,y=2)==Ten([1.0 0.0; 0.0 0.5],Any[:i,:j])
 
-ex=Ten([PD(:x),PD(:y)],:i)*Ten(Inv(Fun(a->[a[1]^2 a[2]^3;-a[1]^2 -a[2]^3],[:x,:y])),:j)
-sex=simplify(ex)
-
-ex=Ten([PD(:x),PD(:y)],:i)*Ten(Transpose(Inv(Fun(a->[a[1]^2 a[2]^3;-a[1]^2 -a[2]^3],[:x,:y]))),:j)
+#=
+ex=Ten([PD(:x),PD(:y)],:i)*Ten(Inv(Fun(a->[a[1] 0;0 a[1]*a[2]],[:x,:y])),[:i,:j])
+ex&@equs(x=1,y=2)
 sex=simplify(ex)
 
-ex=PD(:x)*Ten([Transpose(Inv(Fun(a->[a[1]^2 a[2]^3;-a[1]^2 -a[2]^3],[:x,:y]))),Transpose(Inv(Fun(a->[a[1]^2 -a[2]^3;-a[1]^2 a[2]^3],[:x,:y]))],:j)
+ex=Ten([PD(:x),PD(:y)],:i)*Ten(Transpose(Inv(Fun(a->[a[1] 0;0 a[1]*a[2]],[:x,:y]))),[:i,:j])
+ex&@equs(x=1,y=2)
 sex=simplify(ex)
 
-ex=PD(:x)*Ten(Transpose(Inv([Fun(a->a],[:x]) Fun(a->a],[:x]);Fun(a->a],[:x]) Fun(a->a],[:x])])),:j)
+ex=PD(:x)*Ten([Transpose(Inv(Fun(a->[a[1] 0;0 a[1]*a[2]],[:x,:y]))),Transpose(Inv(Fun(a->[-a[1] 0;0 a[1]*a[2]],[:x,:y]))],[:i,:j])
 sex=simplify(ex)
+
+ex=PD(:x)*Ten(Transpose(Inv([Fun(a->a],[:x]) Fun(a->-a],[:x]);Fun(a->-a],[:x]) Fun(a->-a,[:x])])),[:i,:j])
+sex=simplify(ex)
+=#

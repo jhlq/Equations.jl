@@ -35,7 +35,7 @@ r7=ex7&abc&@equs(i=2, j=3)
 @assert r7==a[2]*b[3]
 
 #Transpose
-ex8=Equations.Transpose(Ten(a*b',[:i,:j]))
+ex8=Equations.Transp(Ten(a*b',[:i,:j]))
 r8=simplify(ex8)
 @assert r8.x==(a*b')'
 

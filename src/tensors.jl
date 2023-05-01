@@ -111,6 +111,14 @@ function sumconv(ex::Expression)
 	end
 	Expression(nat)
 end
+function dimsmatch(t::Ten)
+	dims=length(t.indices)
+	if isa(t.x,Array)
+		return dims==length(size(t.x))
+	elseif isa(t.x,Fun)
+		return dims==length(size(sample(t.x)))
+	end
+end
 function sumconv!(t::Term)
 	inds=indsin(t,AbstractTensor)
 	for i in inds
@@ -124,9 +132,9 @@ function sumconv!(t::Term)
 	if iiii!=0
 		ti1=inds[iiii[1][1]]
 		ti2=inds[iiii[1][2]]
-		iii=iiii[2]
 		t1=t[ti1];t2=t[ti2]
-		if !(isa(t1.x,Union{Array,Fun})&&isa(t2.x,Union{Array,Fun}))
+		iii=iiii[2]
+		if !(isa(t1.x,Union{Array,Fun})&&isa(t2.x,Union{Array,Fun}))||!dimsmatch(t1)||!dimsmatch(t2)
 			return Term[t]
 		end
 		t1f=isa(t1.x,Fun)
@@ -213,7 +221,7 @@ function sumconv(tt::Array{Term})
 	nat
 end
 function sumconv(t::Ten)
-	if isa(t.indices,Array)&&isa(t.x,Array)
+	if isa(t.indices,Array)&&isa(t.x,Array)&&length(t.indices)==length(size(t.x))
 		iii=duplicates(t.indices)
 		if iii!=0
 			ni=length(t.indices)
@@ -435,7 +443,7 @@ function simplify(t::Ten)
 		end
 		
 	end	
-	if duplicates(t.indices)!=0&&isa(t.x,Array) #or Fun, TODO. Is it really necessary? Might just convoliute the expression
+	if duplicates(t.indices)!=0&&isa(t.x,Array)&&length(t.indices)==length(size(t.x)) #or Fun, TODO. Is it really necessary? Might just convoliute the expression
 		nt=sumconv(t)
 		for i in 1:30
 			if nt==t
@@ -456,11 +464,31 @@ function simplify(t::Ten)
 		if length(size(t.x))==length(t.indices)
 			if length(t.indices)==1&&isa(t.indices[1],Number)
 				return t.x[t.indices[1]]
-			elseif isa(t.indices,Array)
-				if allnum(t.indices)
+			else#if isa(t.indices,Array)
+				if allnum(t.indices)&&dimsmatch(t)
 					return t.x[t.indices...]
 				end
-				if isa(t.indices[end],Number)
+				for tindi in 1:length(t.indices)
+					if isa(t.indices[tindi],Number)
+						s=size(t.x)
+						i=Any[]
+						for l in 1:length(s)
+							if l==tindi
+								push!(i,t.indices[tindi])
+							else
+								push!(i,:)
+							end
+						end
+						ninds=Any[]
+						for tindii in 1:length(t.indices)
+							if tindii!=tindi
+								push!(ninds,t.indices[tindii])
+							end
+						end
+						return Ten(t.x[i...],ninds)
+					end
+				end
+				#=if isa(t.indices[end],Number)
 					if length(t.indices)>1
 						s=size(t.x)
 						i=Any[]
@@ -472,7 +500,7 @@ function simplify(t::Ten)
 					elseif !isa(t.x[t.indices[end]],Array)&&!isa(t.x[t.indices[end]],Fun)
 						return t.x[t.indices[end]]
 					end
-				end
+				end=#
 			end
 		elseif isa(t.x,Vector)
 			if isa(t.indices[1],Number)
@@ -510,6 +538,7 @@ mutable struct Alt<:AbstractTensor #Alternating tensor
 end
 Alt(inds::Array)=Alt(maltx(length(inds)),inds)
 Alt(inds...)=Alt(Any[inds...])
+dimsmatch(a::Alt)=true
 function maltx(r)
 	x=zeros(fill!(zeros(Integer,r),r)...)
 	i=collect(1:r)
@@ -652,20 +681,25 @@ mutable struct Commutator<:Component
 	x
 	y
 end
-mutable struct Transpose<:Component
+mutable struct Transp<:Component
 	x
 end
-function simplify(t::Transpose)
+function simplify(t::Transp)
+	t=Transp(simplify(t.x))
 	if isa(t.x,Ten)&&isa(t.x.x,Matrix)&&length(t.x.indices)==2
 		return Ten(t.x.x',t.x.indices) #[t.x.indices[2],t.x.indices[1]]) #switching indices is inverse of transposing
 	end
-	return Transpose(simplify(t,x))
+	if isa(t.x,Matrix)
+		return t.x'
+	end
+	return t
 end
 mutable struct Inv<:Component
 	x
 end
 inv(ex::Ex)=Inv(ex)
 function simplify(c::Inv)
+	c=Inv(simplify(c.x))
 	if isa(c.x,Matrix)
 		for cxc in c.x
 			if !isa(cxc,Number)
@@ -675,7 +709,9 @@ function simplify(c::Inv)
 		return inv(c.x)
 	end
 	if isa(c.x,Ten)
-		return Ten(inv(c.x.x),c.x.indices)
+		if isa(c.x.x,Matrix)&&allnum(c.x.x)
+			return Ten(inv(convert(Array{Number},c.x.x)),c.x.indices)
+		end
 	end
-	return Inv(simplify(c.x))
+	return c
 end

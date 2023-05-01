@@ -971,6 +971,7 @@ mutable struct Abs <: Component
 end
 abs(ex::Ex)=Abs(ex)
 function simplify(n::Abs)
+	n=Abs(simplify(n.x))
 	if isa(n.x,Number)
 		return abs(n.x)
 	end
@@ -980,5 +981,5 @@ function simplify(n::Abs)
 	if isa(n.x,Ten)&&isa(n.x.x,Vector)&&allnum(n.x.x)
 		return norm(n.x.x)
 	end
-	return Abs(simplify(n.x))
+	return n
 end
