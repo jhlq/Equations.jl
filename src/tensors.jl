@@ -689,11 +689,11 @@ mutable struct Transp<:Component
 end
 function simplify(t::Transp)
 	t=Transp(simplify(t.x))
-	if isa(t.x,Ten)&&isa(t.x.x,Matrix)&&length(t.x.indices)==2
-		return Ten(t.x.x',[t.x.indices[2],t.x.indices[1]]) #t.x.indices) #[t.x.indices[2],t.x.indices[1]]) #switching indices is inverse of transposing. But if we switch the indices we can sum transposed matrix with its equivalent
+	if isa(t.x,Ten)&&isa(t.x.x,Matrix)&&length(t.x.indices)==2&&allnum(t.x.x)
+		return Ten(convert(Array{Any},t.x.x'),[t.x.indices[2],t.x.indices[1]]) #t.x.indices) #[t.x.indices[2],t.x.indices[1]]) #switching indices is inverse of transposing. But if we switch the indices we can sum transposed matrix with its equivalent
 	end
-	if isa(t.x,Matrix)
-		return t.x'
+	if isa(t.x,Matrix)&&allnum(t.x)
+		return convert(Array{Any},t.x')
 	end
 	return t
 end

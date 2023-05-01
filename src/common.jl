@@ -477,26 +477,42 @@ function componify(ex::Expression,raw=false)
 	for term in 1:lap
 		exs=Expression[]
 		xs=X[]
-		for fac in ap[term]
+		firstex=0
+		xsis=Int64[]
+		for faci in 1:length(ap[term])
+			fac=ap[term][faci]
 			if isa(fac,Array)
 				#warn("How did the array $fac end up in $ex?") #through replace!
 				push!(exs,componify(Expression(fac)))
+				if firstex==0
+					firstex=faci
+				end
 			elseif isa(fac,Expression)
 				push!(exs,componify(fac))
+				if firstex==0
+					firstex=faci
+				end
 			elseif isa(fac,Component)
 				fac=maketype(fac,componify)
 				push!(xs,fac)
+				push!(xsis,faci)
 			else
 				push!(xs,fac)
+				push!(xsis,faci)
 			end
 		end
 		if isempty(exs)
 			continue
 		else
 			tap=exs[1].terms
-			for x in xs
+			for xi in 1:length(xs)
+				x=xs[xi]
 				for tterm in tap
-					pushfirst!(tterm,x)
+					if xsis[xi]<firstex
+						pushfirst!(tterm,x)
+					else
+						push!(tterm,x)
+					end
 				end
 			end
 			exs[1]=expression(tap)
