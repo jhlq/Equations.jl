@@ -108,10 +108,17 @@ function (&)(eq::Equation,eqa::Array{Equation})
 end
 (&)(eq::Equation,fun::Function)=fun(eq)
 (&)(ex::EX,fun::Function)=fun(ex)
-function (&)(ex::Expression,eq::Equation)
-	ex=simplify(ex);eq=simplify(eq)
+function applyamp(ex::Expression,eq::Equation,simp=true)
+	if simp
+		ex=simplify(ex)
+	end
+	eq=simplify(eq)
 	if isa(eq.lhs,Symbol)
-		return simplify(replace(ex,Dict(eq.lhs=>eq.rhs)))
+		if simp
+			return simplify(replace(ex,Dict(eq.lhs=>eq.rhs)))
+		else
+			return replace(ex,Dict(eq.lhs=>eq.rhs))
+		end
 	end
 	m=matches(ex,eq)
 	if !isempty(m)
@@ -136,6 +143,9 @@ function (&)(ex::Expression,eq::Equation)
 		end
 		return simplify(expression(_terms))
 	end
+end
+function (&)(ex::Expression,eq::Equation)
+	return applyamp(ex,eq)
 end
 function (&)(ex::Component,eq::Equation)
 	ex=simplify(ex);eq=simplify(eq)
@@ -162,7 +172,7 @@ end
 (&)(x::Number,eq::Equation)=x
 function (&)(ex::Union{Ex,Equation},eqa::Array)
 	for teq in eqa
-		ex=ex&teq
+		ex=applyamp(ex,teq,false)
 	end
 	return simplify(ex)
 end
