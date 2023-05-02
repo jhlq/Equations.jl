@@ -267,14 +267,15 @@ function sumlify(tt::Array{Term})
 	while !isempty(tt)
 		tt1=popfirst!(tt)
 		tensi=indsin(tt1,Ten)
-		if length(tensi)==1&&alltyp(tt1[1:tensi[1]-1],Number)&&alltyp(tt1[tensi[1]+1:end],Number)&&isa(tt1[tensi[1]].x,Array)
+		typ=N
+		if length(tensi)==1&&alltyp(tt1[1:tensi[1]-1],typ)&&alltyp(tt1[tensi[1]+1:end],typ)&&isa(tt1[tensi[1]].x,Array)
 			nt=tt1[tensi[1]]
-			num=1
+			#=num=1
 			for n in [tt1[1:tensi[1]-1];tt1[tensi[1]+1:end]]
 				num=num*n
 			end
-			nt.x=simplify(num*convert(Array{Any},nt.x))
-			#=for n in tt1[1:tensi[1]-1]
+			nt.x=simplify(num*convert(Array{Any},nt.x))=#
+			#==#for n in tt1[1:tensi[1]-1]
 				for txi in 1:length(nt.x)
 					nt.x[txi]=simplify(n*nt.x[txi])
 				end
@@ -283,7 +284,7 @@ function sumlify(tt::Array{Term})
 				for txi in 1:length(nt.x)
 					nt.x[txi]=simplify(nt.x[txi]*n)
 				end
-			end=#
+			end#==#
 			del=Integer[]
 			for ti2 in 1:length(tt)
 				tt2=tt[ti2]
@@ -323,23 +324,24 @@ function sumlify(tt::Array{Term})
 						end	
 					end
 				end
-				if length(tensi2)==1&&isa(tt2[tensi2[1]].x,Array)&&size(nt.x)==size(tt[ti2][tensi2[1]].x)&&nt.indices==tt[ti2][tensi2[1]].indices&&alltyp(tt2[1:tensi2[1]-1],Number)&&alltyp(tt2[tensi2[1]+1:end],Number)
+				if length(tensi2)==1&&isa(tt2[tensi2[1]].x,Array)&&size(nt.x)==size(tt[ti2][tensi2[1]].x)&&nt.indices==tt[ti2][tensi2[1]].indices&&alltyp(tt2[1:tensi2[1]-1],typ)&&alltyp(tt2[tensi2[1]+1:end],typ)
 					t2=tt[ti2][tensi2[1]]
-					#nums=1
-					#for n in [tt2[1:tensi2[1]-1];tt2[tensi2[1]+1:end]]
-					#	nums=nums*n
-					#end
-					#=for n in tt2[1:tensi[1]-1]
+					#=nums=1
+					for n in [tt2[1:tensi2[1]-1];tt2[tensi2[1]+1:end]]
+						nums=nums*n
+					end
+					nt.x=simplify(nt.x+nums*t2.x)=#
+					#==#for n in tt2[1:tensi2[1]-1]
 						for txi in 1:length(t2.x)
 							t2.x[txi]=simplify(n*t2.x[txi])
 						end
 					end
-					for n in tt2[tensi[1]+1:end]
+					for n in tt2[tensi2[1]+1:end]
 						for txi in 1:length(nt.x)
 							t2.x[txi]=simplify(t2.x[txi]*n)
 						end
-					end=#
-					nt.x=simplify(nt.x+num*t2.x)
+					end
+					nt.x=simplify(nt.x+t2.x)#==#
 					push!(del,ti2)
 				end
 			end
