@@ -546,7 +546,7 @@ function simplify(t::Ten)
 					end
 				end=#
 			end
-		elseif isa(t.x,Vector)
+		#=elseif isa(t.x,Vector)
 			if isa(t.indices[1],Number)
 				t.x=t.x[t.indices[1]]
 				popfirst!(t.indices)
@@ -560,7 +560,7 @@ function simplify(t::Ten)
 					end
 				end
 				if samesize
-					spl=length(sp)
+					#spl=length(sp)
 					td=Int64[nelem]
 					for i in sp
 						push!(td,i)
@@ -571,7 +571,20 @@ function simplify(t::Ten)
 					end
 					t.x=newm
 				end
+			end=#
+		elseif isa(t.x[1],Array)
+			dims1=size(t.x)
+			dims2=size(t.x[1]) #assume all arrays are same size
+			td=Int64[dims1...]
+			for i in dims2
+				push!(td,i)
 			end
+			d1l=length(dims1)
+			newm=Array{Any}(undef,td...)
+			for k in Iterators.product(Base.OneTo.(td)...)
+				newm[k...]=t.x[k[1:d1l]...][k[d1l+1:end]...]
+			end
+			t.x=newm
 		end
 	end
 	t
