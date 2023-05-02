@@ -1,4 +1,5 @@
 import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,==,/, setindex!,replace,iterate,zero,abs
+import LinearAlgebra.Adjoint
 using Combinatorics
 
 abstract type Component end
@@ -450,6 +451,9 @@ has(::N, ::Type)=false
 function maketype(c::Component,fun) 
 	args=getargs(c)
 	for argi in 1:length(args)
+		if isa(args[argi],Adjoint)
+			args[argi]=convert(Array,args[argi])
+		end
 		args[argi]=fun(args[argi])
 	end
 	return typeof(c)(args...)

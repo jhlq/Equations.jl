@@ -278,6 +278,41 @@ function sumlify(tt::Array{Term})
 			for ti2 in 1:length(tt)
 				tt2=tt[ti2]
 				tensi2=indsin(tt2,Ten)
+				if length(tensi2)==1
+					nt2=tt[ti2][tensi2[1]]
+					if isa(nt2.x,Array)&&length(nt2.indices)==length(nt.indices)&&nt2.indices!=nt.indices&&dimsmatch(nt2)&&dimsmatch(nt)
+						allin=true
+						for i in nt.indices
+							if !isa(i,Symbol)
+								continue
+							end
+							if !in(i,nt2.indices)
+								allin=false
+								break
+							end
+						end
+						if allin
+							transis=Symbol[]
+							for nti in 1:length(nt.indices)
+								i=nt.indices[nti]
+								if !isa(i,Symbol)
+									continue
+								end
+								j=nt2.indices[nti]
+								if !isa(j,Symbol)
+									continue
+								end
+								if i!=j
+									push!(transis,i)
+								end
+								if length(transis)>1
+									nt=trans(nt,transis[1],transis[2])
+									break
+								end
+							end
+						end	
+					end
+				end
 				if length(tensi2)==1&&isa(tt2[tensi2[1]].x,Array)&&size(nt.x)==size(tt[ti2][tensi2[1]].x)&&nt.indices==tt[ti2][tensi2[1]].indices&&allnum(tt2[1:tensi2[1]-1])&&allnum(tt2[tensi2[1]+1:end])
 					t2=tt[ti2][tensi2[1]]
 					nums=1
@@ -308,9 +343,10 @@ function untensify!(tt::Array{Term})
 					tt[ti][fi]=t.x
 				elseif isa(t.x,Array)
 					if t.x==zeros(size(t.x))
-						if !in(ti,del)
+						#if !in(ti,del)
 							push!(del,ti)
-						end
+						#end
+						break
 					end
 					s=size(t.x)
 					if in(1,s)&&length(s)>length(t.indices)
@@ -433,6 +469,9 @@ function simplify(ex::Expression,typ::Type{Ten})
 end
 function simplify(t::Ten)
 	t=deepcopy(t)
+	if isa(t.x,Adjoint)
+		t.x=convert(Array,t.x)
+	end
 	if isa(t.x,Union{Component,Expression})
 		t.x=simplify(t.x)
 	end
@@ -736,6 +775,7 @@ function simplify(t::GenTrans)
 	end
 	return t
 end
+trans(t::Ten,i::Symbol,j::Symbol)=simplify(GenTrans(t,i,j))
 mutable struct Inv<:Component
 	x
 end

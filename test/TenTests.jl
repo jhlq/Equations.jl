@@ -192,3 +192,10 @@ sex=simplify(ex)
 ex=PD(:x)*Ten(Transpose(Inv([Fun(a->a],[:x]) Fun(a->-a],[:x]);Fun(a->-a],[:x]) Fun(a->-a,[:x])])),[:i,:j])
 sex=simplify(ex)
 =#
+
+ra=rand(2,2)
+te=Ten(ra,[:i,:j])+Ten(ra,[:i,:j])
+@test simplify(te).x==2ra
+
+te=Ten(ra',[:j,:i])+Ten(ra,[:i,:j])
+@test simplify(te).x==2ra
