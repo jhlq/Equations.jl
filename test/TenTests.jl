@@ -199,3 +199,7 @@ te=Ten(ra,[:i,:j])+Ten(ra,[:i,:j])
 
 te=Ten(ra',[:j,:i])+Ten(ra,[:i,:j])
 @test simplify(te).x==2ra
+
+@test simplify(:a*Ten(ones(2),:i))==Ten(Any[:a,:a],Any[:i])
+dV=Ten([1 0;0 :r^2],[:a,:b])*Ten([:Vr,:Vth],[:a])
+@test simplify(dV)==Ten(Any[:Vr,:r*:r*:Vth],Any[:b])
