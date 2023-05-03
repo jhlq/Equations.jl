@@ -71,8 +71,8 @@ r=simplify(Ten([:c,:d],:i)+Ten([:a,:b],:i))
 r=simplify(Alt([:i,:j,:k])*Ten([:a1,:a2,:a3],:j)*Ten([:b1,:b2,:b3],:k))
 
 tt=Term[Factor[3,Ten([:a,:b],:i)],Factor[5,Ten([:c,:d],:i)]];stt=Equations.sumlify(tt)
-@test stt[1][1].x[1]==simplify(Any[3*:a+5*:c,3*:b+5*:d][1]) 
-@test stt[1][1].x[2]==simplify(Any[3*:a+5*:c,3*:b+5*:d][2]) 
+@test componify(stt[1][1].x[1])==simplify(Any[3*:a+5*:c,3*:b+5*:d][1]) 
+@test componify(stt[1][1].x[2])==simplify(Any[3*:a+5*:c,3*:b+5*:d][2]) 
 #stt==simplify(Term[Factor[Equations.Ten(Any[3*:a+5*:c,3*:b+5*:d],Any[:i])]])
 
 ex=Equations.sumlify(Equations.untensify!(sumconv(Alt([:i,:j])*Ten([10,100],:j)).terms))
@@ -202,4 +202,4 @@ te=Ten(ra',[:j,:i])+Ten(ra,[:i,:j])
 
 @test simplify(:a*Ten(ones(2),:i))==Ten(Any[:a,:a],Any[:i])
 dV=Ten([1 0;0 :r^2],[:a,:b])*Ten([:Vr,:Vth],[:a])
-@test simplify(dV)==Ten(Any[:Vr,:r*:r*:Vth],Any[:b])
+@test simplify(dV)==Ten(Any[:Vr,:Vth*:r*:r],Any[:b])

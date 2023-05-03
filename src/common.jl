@@ -626,6 +626,7 @@ function simplify(ex::Expression)
 	tex=0
 	nit=0
 	while tex!=ex
+		nit+=1
 		tex=ex
 		ex=sumsym(sumnum(componify(ex)))
 		ap=terms(ex)
@@ -643,7 +644,6 @@ function simplify(ex::Expression)
 			#sort!(ap[term])
 		end
 		ex=extract(expression(ap)) #better to check if res::N before calling expression instead of extracting?
-		nit+=1
 		if has(ex,Ten)
 			ex=simplify(ex,Ten)
 		end

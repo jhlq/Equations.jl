@@ -127,13 +127,14 @@ function sumconv(ex::Expression)
 	end
 	Expression(nat)
 end
-function dimsmatch(t::Ten)
+function dimsmatch(t::Ten,allowfun=true)
 	dims=length(t.indices)
 	if isa(t.x,Array)
 		return dims==length(size(t.x))
-	elseif isa(t.x,Fun)
+	elseif isa(t.x,Fun)&&allowfun
 		return dims==length(size(sample(t.x)))
 	end
+	return false
 end
 function sumconv!(t::Term)
 	inds=indsin(t,Union{Ten,Alt})
@@ -292,16 +293,29 @@ function sumlify(tt::Array{Term})
 				num=num*n
 			end
 			nt.x=simplify(num*convert(Array{Any},nt.x))=#
-			#==#for n in tt1[1:tensi[1]-1]
-				for txi in 1:length(nt.x)
+			#==#
+			#if !has(nt.x,Fun)
+			for n in tt1[1:tensi[1]-1]
+				#=for txi in 1:length(nt.x)
 					nt.x[txi]=simplify(n*nt.x[txi])
+				end=#
+				if isa(nt.td,Array)
+					nt.td=n .* nt.td
+				else
+					nt.td=n * nt.td
 				end
 			end
 			for n in tt1[tensi[1]+1:end]
-				for txi in 1:length(nt.x)
+				#=for txi in 1:length(nt.x)
 					nt.x[txi]=simplify(nt.x[txi]*n)
+				end=#
+				if isa(nt.td,Array)
+					nt.td=nt.td .* n
+				else
+					nt.td=nt.td * n
 				end
 			end#==#
+			nt.td=simplify(nt.td)
 			del=Integer[]
 			for ti2 in 1:length(tt)
 				tt2=tt[ti2]
@@ -349,23 +363,42 @@ function sumlify(tt::Array{Term})
 					end
 					nt.x=simplify(nt.x+nums*t2.x)=#
 					#==#for n in tt2[1:tensi2[1]-1]
-						for txi in 1:length(t2.x)
+						#=for txi in 1:length(t2.x)
 							t2.x[txi]=simplify(n*t2.x[txi])
+						end=#
+						if isa(t2.td,Array)
+							t2.td=n .* t2.td
+						else
+							t2.td=n * t2.td
 						end
 					end
 					for n in tt2[tensi2[1]+1:end]
-						for txi in 1:length(nt.x)
+						#=for txi in 1:length(nt.x)
 							t2.x[txi]=simplify(t2.x[txi]*n)
+						end=#
+						if isa(t2.td,Array)
+							t2.td=t2.td .* n
+						else
+							t2.td=t2.td * n
 						end
 					end
-					nt.x=simplify(nt.x+t2.x)#==#
+					if dimsmatch(nt,false)&&dimsmatch(t2,false)
+						for xi in 1:length(nt.x)
+							nt.x[xi]=nt.td*nt.x[xi]+t2.td*t2.x[xi]
+						end
+						nt.td=1
+						t2.td=1
+					else
+						nt.x=simplify(nt.x+t2.x)#==#
+						nt.td=simplify(nt.td + t2.td)
+					end
 					push!(del,ti2)
 				end
 			end
 			deleteat!(tt,del)
 			push!(ntt,Factor[nt])
-#		elseif length(tensi)>1
-#
+	#		elseif length(tensi)>1
+			#end
 		else
 			push!(ntt,tt1)
 		end
@@ -536,9 +569,16 @@ function simplify(ex::Expression,typ::Type{Ten})
 	return Expression(nnat)
 end
 function simplify(t::Ten)
+	if t.td==0
+		return 0
+	end
 	t=deepcopy(t)
 	if isa(t.x,Adjoint)
 		t.x=convert(Array,t.x)
+	end
+	if t.td!=1&&dimsmatch(t,false)
+		t.x=t.td .* t.x
+		t.td=1
 	end
 	if isa(t.x,Union{Component,Expression})
 		t.x=simplify(t.x)
@@ -692,7 +732,12 @@ function simplify(t::Ten)
 			for k in Iterators.product(Base.OneTo.(td)...)
 				newm[k...]=t.x[k[1:d1l]...][k[d1l+1:end]...]
 			end
-			t.x=newm
+			if !isa(newm[1],Union{Array,Fun})
+				t.x=t.td .* newm
+				t.td=1
+			else
+				t.x=newm
+			end
 		end
 	end
 	t
@@ -839,14 +884,14 @@ mutable struct Form<:Component
 	w
 	p
 end
-mutable struct Trace<:Component
+mutable struct Trace<:SingleArg
 	x
 end
 mutable struct Commutator<:Component
 	x
 	y
 end
-mutable struct Transp<:Component
+mutable struct Transp<:SingleArg
 	x
 end
 function simplify(t::Transp)
@@ -897,7 +942,7 @@ function simplify(t::GenTrans)
 	return t
 end
 trans(t::Ten,i::Symbol,j::Symbol)=simplify(GenTrans(t,i,j))
-mutable struct Inv<:Component
+mutable struct Inv<:SingleArg
 	x
 end
 inv(ex::Ex)=Inv(ex)
@@ -918,7 +963,7 @@ function simplify(c::Inv)
 	end
 	return c
 end
-mutable struct Det<:Component
+mutable struct Det<:SingleArg
 	x
 end
 det(ex::Ex)=Det(ex)
