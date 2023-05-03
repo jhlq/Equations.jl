@@ -1,6 +1,6 @@
 using ForwardDiff
 mutable struct Fun <: Component
-	y::Function
+	y#::Function
 	x#::Union{Array,Number,Symbol}
 	pds::Array{Symbol}
 end
@@ -15,12 +15,22 @@ function *(f1::Fun,f2::Fun)
 	return Fun(f,f1.x)
 end
 function ==(f1::Fun,f2::Fun)
+	if !isa(f1.y,Function)||!isa(f2.y,Function)
+		return f1.y==f2.y&&f1.x==f2.x&&f1.pds==f2.pds
+	end
 	for i in 1:3
 		if sample(f1,i)!=sample(f2,i)
 			return false
 		end
 	end
 	return true
+end
+function inv(f::Fun)
+	if isa(f.y,Function)
+		return Fun(a->inv(f.y(a)),f.x,f.pds)
+	else
+		return Fun(Inv(f.y),f.x,f.pds)
+	end
 end
 function simplify(f::Fun)
 	if isa(f.x,Number)
