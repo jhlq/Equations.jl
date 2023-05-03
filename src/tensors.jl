@@ -4,9 +4,10 @@ abstract type AbstractTensor<:NonAbelian end
 mutable struct Ten<:AbstractTensor
 	x
 	indices::Array{Any}
+	td
 end
 @delegate Ten.x [getindex, setindex!, iterate, length, size]
-function Ten(x,i::Union{Array,Factor})
+function Ten(x,i::Union{Array,Factor},td=1)
 	if isa(x,Array)&&!isa(x,Array{Any})
 		x=convert(Array{Any},x)
 	end
@@ -15,9 +16,24 @@ function Ten(x,i::Union{Array,Factor})
 	elseif !isa(i,Array{Any})
 		i=convert(Array{Any},i)
 	end
-	Ten(x,i)
+	Ten(x,i,td)
 end
-function print(io::IO,t::Ten)
+#=mutable struct TenDot<:AbstractTensor #tendot.*ten
+	x
+	indices::Array{Any}
+end
+function TenDot(x,i::Union{Array,Factor})
+	if isa(x,Array)&&!isa(x,Array{Any})
+		x=convert(Array{Any},x)
+	end
+	if !isa(i,Array)
+		i=Any[i]
+	elseif !isa(i,Array{Any})
+		i=convert(Array{Any},i)
+	end
+	TenDot(x,i)
+end=#
+#=function print(io::IO,t::Ten)
 	print(io,"$(t.x)(")
 	if isa(t.indices,Array)
 		if !isempty(t.indices)
@@ -30,7 +46,7 @@ function print(io::IO,t::Ten)
 		print(io,t.indices)
 	end
 	print(io,")")
-end
+end=#
 function allnum(a::Array)
 	for n in a
 		if !isa(n,Number)
@@ -103,7 +119,7 @@ function arrduplicates(arrs...)
 	end
 	return 0
 end
-sumconv(a)=simplify(a,Ten)
+sumconv(a)=simplify(a)#,Ten)
 function sumconv(ex::Expression)
 	nat=Term[]
 	for t in ex
@@ -120,11 +136,11 @@ function dimsmatch(t::Ten)
 	end
 end
 function sumconv!(t::Term)
-	inds=indsin(t,AbstractTensor)
+	inds=indsin(t,Union{Ten,Alt})
 	for i in inds
 		t[i]=sumconv(t[i])
 	end
-	inds=indsin(t,AbstractTensor)
+	inds=indsin(t,Union{Ten,Alt})
 	indsa=Array[]
 	for i in inds
 		push!(indsa,t[i].indices)
@@ -488,6 +504,35 @@ function simplify(ex::Expression,typ::Type{Ten})
 			break
 		end
 	end
+	#=
+	for termi in 1:length(nnat)
+		deli=Int64[]
+		for faci in 1:length(nnat[termi])-1
+			if isa(nnat[termi][faci],TenDot)
+				td=nnat[termi][faci]
+				for facii in faci+1:length(nnat[termi])
+					if isa(nnat[termi][facii],Ten)
+						t=nnat[termi][facii]
+						if td.indices==t.indices&&isa(t.x,Array)&&dimsmatch(t)
+							tddims=length(size(td.x))
+							ts=size(t.x)
+							its=Int64[]
+							for i in ts
+								push!(its,i)
+							end
+							for k in Iterators.product(Base.OneTo.(its)...)
+								t[k...]=td[k[1:tddims]...]*t[k...]
+							end
+							push!(deli,faci)
+						end
+					elseif isa(nnat[termi][facii],NonAbelian)
+						break
+					end
+				end
+			end
+		end
+		deleteat!(nnat[termi],deli)
+	end=#
 	return Expression(nnat)
 end
 function simplify(t::Ten)
@@ -499,6 +544,35 @@ function simplify(t::Ten)
 		t.x=simplify(t.x)
 	end
 	if isa(t.x,Array)
+		funmat=similar(t.x)
+		for ltxi in 1:length(t.x)
+			funmat[ltxi]=1
+			if isa(t.x[ltxi],Expression)
+				t.x[ltxi]=simplify(t.x[ltxi])
+				if isa(t.x[ltxi],Expression)&&length(t.x[ltxi])==1 #matrixmulting should never add a second term. Unless it has such an expression already...
+					delfis=Int64[]
+					for exi in 1:length(t.x[ltxi][1])
+						if isa(t.x[ltxi][1][exi],Fun)&&length(size(sample(t.x[ltxi][1][exi])))>0 #components containing functions causes undefined behaviour
+							push!(delfis,exi)
+						end
+					end
+					if length(delfis)>0
+						fun=t.x[ltxi][1][delfis[1]]
+						for funi in 2:length(delfis)
+							fun=fun*t.x[ltxi][1][delfis[1]]
+						end
+						funmat[ltxi]=fun
+						deleteat!(t.x[ltxi][1],delfis)
+					end
+				end
+			end
+		end
+		for funa in funmat
+			if funa!=1
+				#return TenDot(t.x,t.indices)*Ten(funmat,t.indices)
+				t=Ten(funmat,t.indices,t.x)
+			end
+		end	
 		if t.x==zeros(size(t.x))
 			return 0
 		end

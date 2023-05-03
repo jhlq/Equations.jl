@@ -1,4 +1,3 @@
-import Base.sqrt
 mutable struct Sqrt <: SingleArg
 	x
 end
