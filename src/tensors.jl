@@ -124,6 +124,7 @@ function sumconv!(t::Term)
 	for i in inds
 		t[i]=sumconv(t[i])
 	end
+	inds=indsin(t,AbstractTensor)
 	indsa=Array[]
 	for i in inds
 		push!(indsa,t[i].indices)

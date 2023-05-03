@@ -4,7 +4,7 @@ mutable struct Fun <: Component
 	x#::Union{Array,Number,Symbol}
 	pds::Array{Symbol}
 end
-show(io::IO,f::Fun)=print(io,"Fun(func,$(f.x),$(f.pds))")
+#show(io::IO,f::Fun)=print(io,"Fun(func,$(f.x),$(f.pds))")
 Fun(y,x)=Fun(deepcopy(y),x,Symbol[])
 function *(f1::Fun,f2::Fun)
 	if f1.x!=f2.x
