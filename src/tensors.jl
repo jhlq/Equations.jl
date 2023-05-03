@@ -5,7 +5,7 @@ mutable struct Ten<:AbstractTensor
 	x
 	indices::Array{Any}
 end
-#@delegate Ten.x [getindex, setindex!, iterate, length, size]
+@delegate Ten.x [getindex, setindex!, iterate, length, size]
 function Ten(x,i::Union{Array,Factor})
 	if isa(x,Array)&&!isa(x,Array{Any})
 		x=convert(Array{Any},x)
