@@ -11,8 +11,7 @@ function *(f1::Fun,f2::Fun)
 		#error("Different arguments not yet supported")
 		return expression(Factor[f1,f2])
 	end
-	f(a)=f1.y(a)*f2.y(a)
-	return Fun(f,f1.x)
+	return Fun(a->f1.y(a)*f2.y(a),f1.x)
 end
 function ==(f1::Fun,f2::Fun)
 	if !isa(f1.y,Function)||!isa(f2.y,Function)
@@ -37,6 +36,20 @@ function det(f::Fun)
 		return Fun(a->det(f.y(a)),f.x,f.pds)
 	else
 		return Fun(Det(f.y),f.x,f.pds)
+	end
+end
+function abs(f::Fun)
+	if isa(f.y,Function)
+		return Fun(a->abs(f.y(a)),f.x,f.pds)
+	else
+		return Fun(Abs(f.y),f.x,f.pds)
+	end
+end
+function sqrt(f::Fun)
+	if isa(f.y,Function)
+		return Fun(a->sqrt(f.y(a)),f.x,f.pds)
+	else
+		return Fun(Sqrt(f.y),f.x,f.pds)
 	end
 end
 function simplify(f::Fun)
