@@ -1,4 +1,4 @@
-import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,==,/, setindex!,replace,iterate,zero,abs
+import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,==,/, setindex!,replace,iterate,zero,abs,size
 import LinearAlgebra.Adjoint
 using Combinatorics
 
