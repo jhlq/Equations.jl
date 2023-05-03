@@ -106,7 +106,7 @@ function simplify(ex::Expression,typ::Type{Fun})
 					end
 				elseif in(ffi,fti)
 					f=nt[ffi].x
-					#cont=true
+					cont=true
 					for i in 1:9001 #is this loop really necessary?
 						if isa(f,Fun)
 							break
@@ -117,14 +117,18 @@ function simplify(ex::Expression,typ::Type{Fun})
 						#	end
 							break
 						end
+						if !hasfield(typeof(f),:x)
+							cont=false
+							break
+						end
 						f=f.x
 						if i==9001
 							error("Either an infinite loop has occured or you have a Fun nested over 9000 deep in a Ten!")
 						end
 					end
-					#if !cont
-					#	break
-					#end
+					if !cont
+						break
+					end
 					if isa(pd,Ten)
 						if !isa(f,Array)
 							deone=false
