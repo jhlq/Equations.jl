@@ -832,3 +832,24 @@ function simplify(c::Inv)
 	end
 	return c
 end
+mutable struct Det<:Component
+	x
+end
+det(ex::Ex)=Det(ex)
+function simplify(c::Det)
+	c=Det(simplify(c.x))
+	if isa(c.x,Matrix)
+		for cxc in c.x
+			if !isa(cxc,Number)
+				return c
+			end
+		end
+		return det(c.x)
+	end
+	if isa(c.x,Ten)
+		if isa(c.x.x,Matrix)&&allnum(c.x.x)
+			return Ten(Det(convert(Array{Number},c.x.x)),c.x.indices)
+		end
+	end
+	return c
+end

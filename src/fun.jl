@@ -32,6 +32,13 @@ function inv(f::Fun)
 		return Fun(Inv(f.y),f.x,f.pds)
 	end
 end
+function det(f::Fun)
+	if isa(f.y,Function)
+		return Fun(a->det(f.y(a)),f.x,f.pds)
+	else
+		return Fun(Det(f.y),f.x,f.pds)
+	end
+end
 function simplify(f::Fun)
 	if isa(f.x,Number)
 		return f.y(f.x)
