@@ -544,9 +544,8 @@ function simplify(t::Ten)
 		t.x=simplify(t.x)
 	end
 	if isa(t.x,Array)
-		funmat=similar(t.x)
+		funmat=convert(Array{Any},ones(size(t.x)))
 		for ltxi in 1:length(t.x)
-			funmat[ltxi]=1
 			if isa(t.x[ltxi],Expression)
 				t.x[ltxi]=simplify(t.x[ltxi])
 				if isa(t.x[ltxi],Expression)&&length(t.x[ltxi])==1 #matrixmulting should never add a second term. Unless it has such an expression already...
@@ -569,8 +568,20 @@ function simplify(t::Ten)
 		end
 		for funa in funmat
 			if funa!=1
+				allequal=true
+				tx1=t.x[1]
+				for tx in t.x
+					if tx!=tx1
+						allequal=false
+						break
+					end
+				end
+				if allequal
+					return tx1*Ten(funmat,t.indices)
+				end
 				#return TenDot(t.x,t.indices)*Ten(funmat,t.indices)
 				t=Ten(funmat,t.indices,t.x)
+				break
 			end
 		end	
 		if t.x==zeros(size(t.x))
