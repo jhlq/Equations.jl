@@ -130,6 +130,9 @@ end
 function dimsmatch(t::Ten,allowfun=true)
 	dims=length(t.indices)
 	if isa(t.x,Array)
+		if isa(t.x[1],Fun)&&allowfun
+			return dims==length(size(t.x))+length(size(sample(t.x[1])))
+		end
 		return dims==length(size(t.x))
 	elseif isa(t.x,Fun)&&allowfun
 		return dims==length(size(sample(t.x)))
@@ -152,28 +155,24 @@ function sumconv!(t::Term)
 		ti2=inds[iiii[1][2]]
 		t1=t[ti1];t2=t[ti2]
 		iii=iiii[2]
-		if !(isa(t1.x,Union{Array,Fun})&&isa(t2.x,Union{Array,Fun}))||!dimsmatch(t1)||!dimsmatch(t2)
+		arrhasfun=false
+		if !isa(t1.x,Fun)&&has(t1.x,Fun)
+			arrhasfun=true
+		elseif !isa(t2.x,Fun)&&has(t2.x,Fun)
+			arrhasfun=true
+		end
+		if !(isa(t1.x,Union{Array,Fun})&&isa(t2.x,Union{Array,Fun}))||!dimsmatch(t1)||!dimsmatch(t2)||arrhasfun
 			return Term[t]
 		end
 		t1f=isa(t1.x,Fun)
 		t2f=isa(t2.x,Fun)
 		if t1f
-			if isa(t1.x.x,Symbol)
-				ra=rand(1)[1]
-			else
-				ra=rand(length(t1.x.x))
-			end
-			st1=size(t1.x.y(ra))
+			st1=size(sample(t1.x))
 		else
 			st1=size(t1.x)
 		end
 		if t2f
-			if isa(t2.x.x,Symbol)
-				ra=rand(1)[1]
-			else
-				ra=rand(length(t2.x.x))
-			end
-			st2=size(t2.x.y(ra))
+			st2=size(sample(t2.x))
 		else
 			st2=size(t2.x)
 		end
@@ -478,12 +477,18 @@ function simplify(ex::Expression,typ::Type{Ten})
 				fac=ter[faci]
 				if !foundT1
 					if isa(fac,Ten)&&isa(fac.x,Array)
+						if !alltyp(fac.indices,Symbol)
+							break
+						end
 						foundT1=true
 						T1i=faci
 						skipfac=true
 					end
 				elseif !foundT2
 					if isa(fac,Ten)&&isa(fac.x,Array)
+						if !alltyp(fac.indices,Symbol)
+							break
+						end
 						foundT2=true
 						skipfac=true
 						T1=ter[T1i]
@@ -515,7 +520,8 @@ function simplify(ex::Expression,typ::Type{Ten})
 						for k in Iterators.product(Base.OneTo.(td)...)
 							newm[k...]=T1.x[k[1:sr1l]...]*fac.x[k[sr1l+1:end]...]
 						end
-						push!(nfacs,Ten(newm,nind,T1.td*fac.td))
+						tpt=Ten(newm,nind,T1.td*fac.td)
+						push!(nfacs,tpt)
 						tenprodded=true
 					elseif isa(fac,NonAbelian)
 						break
