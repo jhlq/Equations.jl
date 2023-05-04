@@ -73,12 +73,16 @@ function simplify(ex::Expression,typ::Type{Fun})
 		if length(fi)>1
 			delf=Int64[]
 			nf=t[fi[1]]
-			for fit in 2:length(fi)
-				nnf=nf*t[fi[fit]]
-				if isa(nnf,Fun)
-					push!(delf,fi[fit])
-					nf=nnf
-				else
+			for tit in fi[1]+1:length(t)
+				if in(tit,fi)
+					nnf=nf*t[tit]
+					if isa(nnf,Fun)
+						push!(delf,tit)
+						nf=nnf
+					else
+						break
+					end
+				elseif isa(t[tit],NonAbelian)
 					break
 				end
 			end
