@@ -70,6 +70,24 @@ function simplify(ex::Expression,typ::Type{Fun})
 	next=Term[]
 	for t in ex
 		fi=indsin(t,Fun)
+		if length(fi)>1
+			delf=Int64[]
+			nf=t[fi[1]]
+			for fit in 2:length(fi)
+				nnf=nf*t[fi[fit]]
+				if isa(nnf,Fun)
+					push!(delf,fi[fit])
+					nf=nnf
+				else
+					break
+				end
+			end
+			if !ismepty(delf)
+				t[fi[1]]=nf
+				deleteat!(t,delf)
+				fi=indsin(t,Fun)
+			end
+		end
 		ti=indsin(t,Ten)
 		pdi=indsin(t,PD)
 		fti=[]
@@ -214,9 +232,9 @@ function sample(f::Fun,seed=0)
 		Random.seed!(seed)
 	end
 	if isa(f.x,Array)
-		r=f.y(rand(length(f.x)))
+		r=f.y(rand(length(f.x))*10)
 	else
-		r=f.y(rand())
+		r=f.y(rand()*10)
 	end
 	if seed!=0
 		Random.seed!(Int(round(time())))
