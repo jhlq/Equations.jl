@@ -148,8 +148,7 @@ function simplify(ex::Expression,typ::Type{Fun})
 							push!(deli,ffi)
 							break
 						end
-					end
-					if !in(ffi,deli)&&(pd.d==f.x||(isa(f.x,Array)&&in(pd.d,f.x)))
+					elseif !in(ffi,deli)&&(pd.d==f.x||(isa(f.x,Array)&&in(pd.d,f.x)))
 						nt[ffi]=pd*f
 						push!(deli,pdiii)
 						break
@@ -208,13 +207,18 @@ function simplify(ex::Expression,typ::Type{Fun})
 								break
 							end
 						end
-					elseif isa(f,Array)||(pd.d==f.x||(isa(f.x,Array)&&in(pd.d,f.x)))
+					else#if isa(f,Array)||(pd.d==f.x||(isa(f.x,Array)&&in(pd.d,f.x)))
+						funfetched=fetch(f,Fun)
+						if !(pd.d==funfetched.x||(isa(funfetched.x,Array)&&in(pd.d,funfetched.x)))
+							break
+						end
 						c=nt[ffi]
 						for i in 1:9000
 							if isa(c.x,Fun)
 								c.x=pd*f
 								break
 							elseif isa(c.x,Array)
+								
 								for cxi in 1:length(c.x)
 									c.x[cxi]=pd*c.x[cxi]
 								end
@@ -267,9 +271,11 @@ end
 function *(d::PD,f::Fun)
 	npds=deepcopy(f.pds)
 	push!(npds,d.d)
-	if isa(f.x,Symbol)&&f.x==d.d
-		fp=x->ForwardDiff.derivative(f.y,x)
-		return Fun(fp,f.x,npds)
+	if isa(f.x,Symbol)
+		if f.x==d.d
+			fp=x->ForwardDiff.derivative(f.y,x)
+			return Fun(fp,f.x,npds)
+		end
 	else
 		tf=f.y(rand(length(f.x)))
 		l=length(f.x)

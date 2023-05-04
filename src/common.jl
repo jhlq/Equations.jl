@@ -473,7 +473,23 @@ function fetch(c::Component,bfun::Function)
 	end
 	return false
 end
+function fetch(c::Array,bfun::Function)
+	if bfun(c)
+		return c
+	end
+	for a in c
+		if bfun(a)
+			return a
+		end
+		fet=fetch(a,bfun)
+		if fet!=false
+			return fet
+		end
+	end
+	return false
+end
 fetch(a,bfun::Function)=false
+fetch(a,typ::Type)=fetch(a,t->isa(t,typ))
 hasnan(x)=fetch(x,n->isa(n,AbstractFloat)&&isnan(n) ? true : false)!=false
 has(n::N,x::Symbol)=n==x
 has(::N, ::Type)=false
