@@ -670,7 +670,9 @@ function simplify(ex::Expression)
 			ap[term]=divbine!(ap[term])
 			ap[term]=divbinedify!(ap[term])
 			for fac in 1:length(ap[term])
-				ap[term][fac]=simplify(ap[term][fac])
+				saptf=simplify(ap[term][fac])
+				if !isa(saptf,Factor);println(ap[term][fac]);end
+				ap[term][fac]=saptf
 			end
 			unsqrt!(ap[term])
 			#sort!(ap[term])
@@ -829,6 +831,7 @@ function findsyms(ex::Expression)
 	return syms
 end
 findsyms(c::Component)=findsyms(getarg(c))
+findsyms(c::Fun)=findsyms(c.x)
 findsyms(s::Symbol)=Set([s])
 findsyms(n::Number)=Set()
 function findsyms(ex::Expression,symdic::Dict)

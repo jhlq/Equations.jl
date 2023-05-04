@@ -57,12 +57,29 @@ function simplify(f::Fun)
 		return f.y(f.x)
 	end
 	if isa(f.x,Array)
+		hascomplex=false
 		for a in f.x
 			if !isa(a,Number)
 				return f
 			end
+			if isa(a,Complex)
+				hascomplex=true
+			end
 		end
-		return f.y(convert(Array{Float64},f.x))
+		typ=Float64
+		if hascomplex;typ=ComplexF64;end
+		if !isa(f.x[1],ForwardDiff.Dual)
+			fx=convert(Array{typ},f.x)
+		else
+			#fx=convert(Array{ForwardDiff.Dual{ForwardDiff.Tag,Float64,1},1},f.x)
+			fx=[f.x[1]]
+			for i in 2:length(f.x)
+				push!(fx,f.x[i])
+			end
+			println(typeof(fx))
+			println(fx)
+		end
+		return f.y(fx)
 	end
 	return f
 end 
