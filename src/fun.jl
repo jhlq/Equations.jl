@@ -82,7 +82,7 @@ function simplify(ex::Expression,typ::Type{Fun})
 					break
 				end
 			end
-			if !ismepty(delf)
+			if !isempty(delf)
 				t[fi[1]]=nf
 				deleteat!(t,delf)
 				fi=indsin(t,Fun)
