@@ -18,6 +18,15 @@ function Ten(x,i::Union{Array,Factor},td=1)
 	end
 	Ten(x,i,td)
 end
+function applytd!(t::Ten)
+	if t.td!=1&&dimsmatch(t,false)
+		for txi in 1:length(t.x)
+			t.x[txi]=t.td*t,x[txi]
+		end
+		t.td=1
+	end
+	t
+end
 #=mutable struct TenDot<:AbstractTensor #tendot.*ten
 	x
 	indices::Array{Any}
@@ -600,10 +609,11 @@ function simplify(t::Ten)
 	if isa(t.x,Adjoint)
 		t.x=convert(Array,t.x)
 	end
-	if t.td!=1&&dimsmatch(t,false)
+	#=if t.td!=1&&dimsmatch(t,false)
 		t.x=t.td .* t.x
 		t.td=1
-	end
+	end=#
+	applytd!(t)
 	if isa(t.x,Union{Component,Expression})
 		t.x=simplify(t.x)
 	end
