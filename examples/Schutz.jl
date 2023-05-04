@@ -20,7 +20,7 @@ end
 v1=[PD(:x),PD(:y)]
 v2=Fun(a->[a[1],1],[:x,:y])
 detex=cdet(v1,v2) #The matrix becomes transposed as to what it appears in the book.
-@assert detex&@equs(x=2,y=3)==0
+@assert detex==0#&@equs(x=2,y=3)==0
 
 #5.4
 function cdet(m) #m is a square matrix
