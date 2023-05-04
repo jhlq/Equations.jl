@@ -447,13 +447,27 @@ function untensify!(tt::Array{Term})
 	tt
 end
 function simplify(ex::Expression,typ::Type{Ten})
+	#=if hasnan(ex)
+		return NaN
+	end=#
 	nat=Term[]
 	for t in ex
 		pushall!(nat,sumconv(t))
 	end
 	nnat=sumconv(nat)
+	#=for n in 1:length(nnat)
+		for m in 1:length(nnat[n])
+			nnat[n][m]=simplify(nnat[n][m])
+		end
+	end=#
+	nit=0
 	while nnat!=nat
+		nit+=1
 		nat=nnat;nnat=sumconv(nnat)
+		if nit>90
+			@warn "Stuck in sumconv loop, breaking."
+			break
+		end
 	end
 	for n in 1:length(nnat)
 		for m in 1:length(nnat[n])
@@ -755,9 +769,10 @@ end
 mutable struct Alt<:AbstractTensor #Alternating tensor
 	x
 	indices::Array{Any}
+	td
 end
-Alt(inds::Array)=Alt(maltx(length(inds)),inds)
-Alt(inds...)=Alt(Any[inds...])
+Alt(inds::Array)=Alt(maltx(length(inds)),inds,1)
+Alt(inds...)=Alt(Any[inds...],1)
 dimsmatch(a::Alt)=true
 function maltx(r)
 	x=zeros(fill!(zeros(Integer,r),r)...)

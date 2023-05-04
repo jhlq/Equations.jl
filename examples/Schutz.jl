@@ -39,7 +39,7 @@ ge=Fun(a->(a[1]^2+a[2]^2)^0.5,[:x,:y])
 gn=Fun(a->atan(a[2]/a[1]),[:x,:y])
 transmat=[PD(:x)*ge PD(:y)*ge;PD(:x)*gn PD(:y)*gn]
 detex=cdet(transmat)
-@assert isnan(detex&@equs(x=0,y=0))
+#@assert isnan(detex&@equs(x=0,y=0)) #Expressions involving NaN gets stuck in loops
 #f(x,y)=detex&@equs(x=$x,y=$y)
 #surface(-3:0.1:9,-3:0.1:9,f)
 

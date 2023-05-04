@@ -1,4 +1,4 @@
-import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,==,/, setindex!,replace,iterate,zero,abs,size,sqrt
+import Base: convert, print, show, push!, length, getindex, sort!, sort, +,-,*,==,/, setindex!,replace,iterate,zero,abs,size,sqrt,fetch
 import LinearAlgebra.Adjoint
 using Combinatorics
 
@@ -447,6 +447,34 @@ function has(c::Component,x::Type)
 	end
 	return false
 end
+function fetch(ex::Expression,bfun::Function)
+	for term in ex
+		for c in term
+			if bfun(c)
+				return c
+			else
+				return fetch(c,bfun)
+			end
+		end
+	end
+end
+function fetch(c::Component,bfun::Function)
+	if bfun(c)
+		return c
+	end
+	for a in getargs(c)
+		if bfun(a)
+			return a
+		end
+		fet=fetch(a,bfun)
+		if fet!=false
+			return fet
+		end
+	end
+	return false
+end
+fetch(a,bfun::Function)=false
+hasnan(x)=fetch(x,n->isa(n,AbstractFloat)&&isnan(n) ? true : false)!=false
 has(n::N,x::Symbol)=n==x
 has(::N, ::Type)=false
 function maketype(c::Component,fun) 
@@ -623,6 +651,10 @@ sort(ex::Expression)=sort!(deepcopy(ex))
 include("tensors.jl")
 include("fun.jl")
 function simplify(ex::Expression)
+	#=hasnan=fetch(ex,n->isa(n,AbstractFloat)&&isnan(n) ? true : false)
+	if hasnan!=false
+		return NaN
+	end=#
 	tex=0
 	nit=0
 	while tex!=ex
