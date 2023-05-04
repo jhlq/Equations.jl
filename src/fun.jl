@@ -76,8 +76,6 @@ function simplify(f::Fun)
 			for i in 2:length(f.x)
 				push!(fx,f.x[i])
 			end
-			println(typeof(fx))
-			println(fx)
 		end
 		return f.y(fx)
 	end
