@@ -195,6 +195,7 @@ function sumconv!(t::Term)
 		else
 			nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]))
 		end
+		nt1.td=t1.td
 		if t2f
 			newinds=deepcopy(t2.indices)
 			newinds[iii[2]]=1
@@ -202,6 +203,7 @@ function sumconv!(t::Term)
 		else
 			 nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]))
 		end
+		nt2.td=t2.td
 		newterm[ti1]=nt1;newterm[ti2]=nt2
 		at=Term[newterm]
 		for di1 in 1:st1[end-lit1+iii[1]]-1
@@ -215,6 +217,7 @@ function sumconv!(t::Term)
 			else
 				nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]))
 			end
+			nt1.td=t1.td
 			if t2f
 				newinds=deepcopy(t2.indices)
 				newinds[iii[2]]=iti2[end-lit2+iii[2]]
@@ -222,6 +225,7 @@ function sumconv!(t::Term)
 			else
 				nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]))
 			end
+			nt2.td=t2.td
 			newnewterm[ti1]=nt1;newnewterm[ti2]=nt2
 			push!(at,newnewterm)
 		end
@@ -258,7 +262,7 @@ function sumconv(t::Ten)
 			for s1 in 1:si[iii[1]+idif]-1
 				slind[iii[1]+idif]+=1
 				slind[iii[2]+idif]+=1
-				nex=nex+Ten(t.x[slind...],deleteat!(deepcopy(t.indices),iii))
+				nex=nex+Ten(t.x[slind...],deleteat!(deepcopy(t.indices),iii),t.td)
 			end
 			return nex
 		end
