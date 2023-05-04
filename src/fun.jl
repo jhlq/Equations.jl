@@ -6,6 +6,14 @@ mutable struct Fun <: Component
 end
 #show(io::IO,f::Fun)=print(io,"Fun(func,$(f.x),$(f.pds))")
 Fun(y,x)=Fun(deepcopy(y),x,Symbol[])
+function fun(ex::Factor,x::Union{Array{Symbol},Symbol})
+	ex=simplify(ex)
+	if isa(x,Symbol)
+		return Fun(a->ex&Equation(x,a),x)
+	else
+		return Fun(a->begin;tex=ex;for xi in 1:length(x);tex=tex&Equation(x[xi],a[xi]);end;return tex;end,x)
+	end
+end
 function *(f1::Fun,f2::Fun)
 	if f1.x!=f2.x
 		#error("Different arguments not yet supported")
