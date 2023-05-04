@@ -515,7 +515,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 						for k in Iterators.product(Base.OneTo.(td)...)
 							newm[k...]=T1.x[k[1:sr1l]...]*fac.x[k[sr1l+1:end]...]
 						end
-						push!(nfacs,Ten(newm,nind))
+						push!(nfacs,Ten(newm,nind,T1.td*fac.td))
 						tenprodded=true
 					elseif isa(fac,NonAbelian)
 						break
