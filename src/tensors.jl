@@ -21,7 +21,7 @@ end
 function applytd!(t::Ten)
 	if t.td!=1&&dimsmatch(t,false)
 		for txi in 1:length(t.x)
-			t.x[txi]=t.td*t,x[txi]
+			t.x[txi]=t.td*t.x[txi]
 		end
 		t.td=1
 	end
@@ -616,6 +616,11 @@ function simplify(t::Ten)
 	applytd!(t)
 	if isa(t.x,Union{Component,Expression})
 		t.x=simplify(t.x)
+	end
+	if isa(t.x,Fun)&&allnum(t.indices)
+		nf=deepcopy(t.x)
+		nf.y=a->t.x.y(a)[t.indices...]
+		return nf
 	end
 	if isa(t.x,Array)
 		funmat=convert(Array{Any},ones(size(t.x)))
