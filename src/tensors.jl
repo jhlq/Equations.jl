@@ -725,7 +725,7 @@ function simplify(t::Ten)
 								push!(ninds,t.indices[tindii])
 							end
 						end
-						return Ten(t.x[i...],ninds)
+						return simplify(Ten(t.x[i...],ninds,t.td))
 					end
 				end
 				#=if isa(t.indices[end],Number)
@@ -785,6 +785,27 @@ function simplify(t::Ten)
 				t.td=1
 			else
 				t.x=newm
+			end
+		else
+			s=size(t.x)
+			for tindi in 1:length(s)
+				if isa(t.indices[tindi],Number)
+					i=Any[]
+					for l in 1:length(s)
+						if l==tindi
+							push!(i,t.indices[tindi])
+						else
+							push!(i,:)
+						end
+					end
+					ninds=Any[]
+					for tindii in 1:length(t.indices)
+						if tindii!=tindi
+							push!(ninds,t.indices[tindii])
+						end
+					end
+					return simplify(Ten(t.x[i...],ninds,t.td))
+				end
 			end
 		end
 	end
