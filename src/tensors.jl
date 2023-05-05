@@ -23,7 +23,7 @@ function applytd!(t::Ten)
 		if isa(t.td,Array)
 			println(t)
 			println(t.td)
-			println("!")
+			@warn("td is an array! Not implemented")
 		else 
 			for txi in 1:length(t.x)
 				t.x[txi]=t.td*t.x[txi]
@@ -310,7 +310,7 @@ function sumlify(tt::Array{Term})
 		tt1=popfirst!(tt)
 		tensi=indsin(tt1,Ten)
 		typ=N
-		if length(tensi)==1&&alltyp(tt1[1:tensi[1]-1],typ)&&alltyp(tt1[tensi[1]+1:end],typ)&&isa(tt1[tensi[1]].x,Array)
+		if length(tensi)==1&&(isempty(tt1[1:tensi1[1]-1])||alltyp(tt1[1:tensi[1]-1],typ))&&(isempty(tt1[tensi1[1]+1:end])||alltyp(tt1[tensi[1]+1:end],typ))&&isa(tt1[tensi[1]].x,Array)
 			nt=tt1[tensi[1]]
 			#=num=1
 			for n in [tt1[1:tensi[1]-1];tt1[tensi[1]+1:end]]
@@ -379,7 +379,7 @@ function sumlify(tt::Array{Term})
 						end	
 					end
 				end
-				if length(tensi2)==1&&isa(tt2[tensi2[1]].x,Array)&&size(nt.x)==size(tt[ti2][tensi2[1]].x)&&nt.indices==tt[ti2][tensi2[1]].indices&&alltyp(tt2[1:tensi2[1]-1],typ)&&alltyp(tt2[tensi2[1]+1:end],typ)
+				if length(tensi2)==1&&isa(tt2[tensi2[1]].x,Array)&&size(nt.x)==size(tt[ti2][tensi2[1]].x)&&nt.indices==tt[ti2][tensi2[1]].indices&&(isempty(tt2[1:tensi2[1]-1])||alltyp(tt2[1:tensi2[1]-1],typ))&&(isempty(tt2[tensi2[1]+1:end])||alltyp(tt2[tensi2[1]+1:end],typ))
 					t2=tt[ti2][tensi2[1]]
 					#=nums=1
 					for n in [tt2[1:tensi2[1]-1];tt2[tensi2[1]+1:end]]
