@@ -142,7 +142,7 @@ function sumconv(ex::Expression)
 	end
 	Expression(nat)
 end
-function dimsmatch(t::Ten,allowfun=true)
+function dimsmatch(t::Ten,allowfun=false)
 	dims=length(t.indices)
 	if isa(t.x,Array)
 		if isa(t.x[1],Fun)&&allowfun
@@ -176,7 +176,7 @@ function sumconv!(t::Term)
 		elseif !isa(t2.x,Fun)&&has(t2.x,Fun)
 			arrhasfun=true
 		end
-		if !(isa(t1.x,Union{Array,Fun})&&isa(t2.x,Union{Array,Fun}))||!dimsmatch(t1)||!dimsmatch(t2)||arrhasfun
+		if !(isa(t1.x,Union{Array,Fun})&&isa(t2.x,Union{Array,Fun}))||!dimsmatch(t1,true)||!dimsmatch(t2,true)||arrhasfun
 			return Term[t]
 		end
 		t1f=isa(t1.x,Fun)
@@ -585,7 +585,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 				for facii in faci+1:length(nnat[termi])
 					if isa(nnat[termi][facii],Ten)
 						t=nnat[termi][facii]
-						if td.indices==t.indices&&isa(t.x,Array)&&dimsmatch(t)
+						if td.indices==t.indices&&isa(t.x,Array)&&dimsmatch(t,true)
 							tddims=length(size(td.x))
 							ts=size(t.x)
 							its=Int64[]
@@ -698,11 +698,14 @@ function simplify(t::Ten)
 	elseif isempty(t.indices)&&!isa(t.x,Array)
 		return t.x
 	elseif isa(t.x,Array)
+		#if isa(t.x[1],Fun)&&allnum(t.indices)
+		#	
+		#end
 		if length(size(t.x))==length(t.indices)
 			if length(t.indices)==1&&isa(t.indices[1],Number)
 				return t.x[t.indices[1]]
 			else#if isa(t.indices,Array)
-				if allnum(t.indices)&&dimsmatch(t)
+				if allnum(t.indices)#&&dimsmatch(t)
 					return t.x[t.indices...]
 				end
 				for tindi in 1:length(t.indices)
@@ -957,6 +960,9 @@ mutable struct GenTrans<:Component
 end
 function simplify(t::GenTrans)
 	t=GenTrans(simplify(t.x),t.i1,t.i2)
+	if t.x==0
+		return 0
+	end
 	if isa(t.x,Ten)&&isa(t.x.x,Array)&&length(t.x.indices)==length(size(t.x.x))&&in(t.i1,t.x.indices)&&in(t.i2,t.x.indices)
 		i1=indin(t.x.indices,t.i1)
 		i2=indin(t.x.indices,t.i2)
