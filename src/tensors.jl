@@ -20,8 +20,14 @@ function Ten(x,i::Union{Array,Factor},td=1)
 end
 function applytd!(t::Ten)
 	if t.td!=1&&dimsmatch(t,false)
-		for txi in 1:length(t.x)
-			t.x[txi]=t.td*t.x[txi]
+		if isa(t.td,Array)
+			println(t)
+			println(t.td)
+			println("!")
+		else 
+			for txi in 1:length(t.x)
+				t.x[txi]=t.td*t.x[txi]
+			end
 		end
 		t.td=1
 	end
@@ -334,7 +340,7 @@ function sumlify(tt::Array{Term})
 				tensi2=indsin(tt2,Ten)
 				if length(tensi2)==1
 					nt2=tt[ti2][tensi2[1]]
-					if isa(nt2.x,Array)&&length(nt2.indices)==length(nt.indices)&&nt2.indices!=nt.indices&&dimsmatch(nt2)&&dimsmatch(nt)
+					if isa(nt2.x,Array)&&length(nt2.indices)==length(nt.indices)&&nt2.indices!=nt.indices&&dimsmatch(nt2,false)&&dimsmatch(nt,false)
 						allin=true
 						for i in nt.indices
 							if !isa(i,Symbol)
