@@ -413,8 +413,11 @@ function sumlify(tt::Array{Term})
 						nt.td=1
 						t2.td=1
 					else
+						if nt.td!=1||t2.td!=1
+							error("td+td undefined")
+						end
 						nt.x=simplify(nt.x+t2.x)#==#
-						nt.td=simplify(nt.td + t2.td)
+						nt.td=1 #simplify(nt.td + t2.td)
 					end
 					push!(del,ti2)
 				end
@@ -818,7 +821,7 @@ function simplify(t::Ten)
 			if allnum(t.indices[length(s)+1:end])&&alltyp(t.x,Fun)
 				for txi in 1:length(t.x)
 					nf=deepcopy(t.x[txi])
-					nf.y=a->t.x[txi].y(a)[t.indices...]
+					nf.y=a->t.x[txi].y(a)[t.indices[length(s)+1:end]...]
 					t.x[txi]=nf
 				end
 				t.indices=t.indices[1:length(s)]
@@ -834,7 +837,7 @@ mutable struct Alt<:AbstractTensor #Alternating tensor
 end
 Alt(inds::Array)=Alt(maltx(length(inds)),inds,1)
 Alt(inds...)=Alt(Any[inds...],1)
-dimsmatch(a::Alt)=true
+dimsmatch(a::Alt,b=false)=true
 function maltx(r)
 	x=zeros(fill!(zeros(Integer,r),r)...)
 	i=collect(1:r)
