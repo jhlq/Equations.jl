@@ -453,10 +453,14 @@ function fetch(ex::Expression,bfun::Function)
 			if bfun(c)
 				return c
 			else
-				return fetch(c,bfun)
+				fet=fetch(c,bfun)
+				if fet!=false
+					return fet
+				end
 			end
 		end
 	end
+	return false
 end
 function fetch(c::Component,bfun::Function)
 	if bfun(c)

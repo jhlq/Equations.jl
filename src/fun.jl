@@ -19,6 +19,9 @@ function *(f1::Fun,f2::Fun)
 		#error("Different arguments not yet supported")
 		return expression(Factor[f1,f2])
 	end
+	if length(size(sample(f1)))>0&&length(size(sample(f2)))>0
+		return Fun(a->tenprod(f1.y(a),f2.y(a)),f1.x)
+	end
 	return Fun(a->f1.y(a)*f2.y(a),f1.x)
 end
 function ==(f1::Fun,f2::Fun)

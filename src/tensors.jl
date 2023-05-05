@@ -572,10 +572,22 @@ function simplify(ex::Expression,typ::Type{Ten})
 						push!(nfacs,Ten(newm,[T1.indices[1],fac.indices[1]]),T1.td)
 						=#
 						nind=Any[]
-						pushall!(nind,T1.indices)
-						pushall!(nind,fac.indices)
+						#pushall!(nind,T1.indices)
+						#pushall!(nind,fac.indices)
 						sr1=size(T1.x)
 						sr1l=length(sr1)
+						for i in 1:sril
+							push!(nind,T1.indices[i])
+						end
+						for i in 1:sril
+							push!(nind,fac.indices[i])
+						end
+						for i in sril+1:length(T1.indices)
+							push!(nind,T1.indices[i])
+						end
+						for i in sril+1:length(T1.indices)
+							push!(nind,fac.indices[i])
+						end
 						sr2=size(fac.x)
 						td=Int64[]
 						for i in sr1
@@ -586,7 +598,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 						end
 						newm=Array{Any}(undef,td...)
 						for k in Iterators.product(Base.OneTo.(td)...)
-							newm[k...]=T1.x[k[1:sr1l]...]*fac.x[k[sr1l+1:end]...]
+							newm[k...]=simplify(T1.x[k[1:sr1l]...]*fac.x[k[sr1l+1:end]...])
 						end
 						if isa(T1.td,Factor)
 							if isa(fac.td,Factor)
@@ -1158,4 +1170,21 @@ function simplify(c::Det)
 		end
 	end
 	return c
+end
+function tenprod(a1::Array,a2::Array)
+	sr1=size(a1)
+	sr1l=length(sr1)
+	sr2=size(a2)
+	td=Int64[]
+	for i in sr1
+		push!(td,i)
+	end
+	for i in sr2
+		push!(td,i)
+	end
+	newa=Array{Any}(undef,td...)
+	for k in Iterators.product(Base.OneTo.(td)...)
+		newa[k...]=a1[k[1:sr1l]...]*a2[k[sr1l+1:end]...]
+	end
+	return newa
 end

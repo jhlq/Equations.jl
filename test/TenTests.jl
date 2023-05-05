@@ -212,9 +212,36 @@ t=simplify(Ten([0.5*Fun(a->[a,-a],:b),Fun(a->[a^2,a],:b)],[:c,:d]))
 @test t.td==Any[0.5,1]
 tb=t&@equ b=3
 @test tb==Ten(Any[1.5 -1.5; 9 3],Any[:c,:d],1)
-
+t=simplify(Ten([2*Fun(a->[-a,a],:b) Fun(a->[a,a^2],:b);0.5*Fun(a->[a,-a],:b) Fun(a->[a^2,a],:b)],[:c,:d,:e]))
+@test t.td==Any[2 1; 0.5 1]
+ts=simplify(Ten([:a1*Fun(a->[:f1,:f2],:b) :a2*Fun(a->[:f3,:f4],:b);:a3*Fun(a->[:f5,:f6],:b) :a4*Fun(a->[:f7,:f8],:b)],[:c,:d,:e]))
+t2s=Ten([:b1*Fun(a->[:g1,:g2],:b) :b2*Fun(a->[:g3,:g4],:b);:b3*Fun(a->[:g5,:g6],:b) :b4*Fun(a->[:g7,:g8],:b)],[:f,:g,:h])
+tss=simplify(ts*t2s)
+tsb=(ts*t2s)&@equ b=2
+@test tsb[2,1,1,2,1,2]==:a3*:b2*:f5*:g4
 
 #=
+t=simplify(Ten([:a1*Fun(a->[a,-a],:b),:a2*Fun(a->[a^2,a],:b)],[:c,:d]))
+
+ts=simplify(Ten([Fun(a->[:f1,:f2],:b) Fun(a->[:f3,:f4],:b);Fun(a->[:f5,:f6],:b) Fun(a->[:f7,:f8],:b)],[:c,:d,:e]))
+t2s=Ten([Fun(a->[:g1,:g2],:b) Fun(a->[:g3,:g4],:b);Fun(a->[:g5,:g6],:b) Fun(a->[:g7,:g8],:b)],[:f,:g,:h])
+tss=simplify(ts*t2s)
+tsb=(ts*t2s)&@equ b=2
+
+t=simplify(Ten([2*Fun(a->[-a,a],:b) Fun(a->[a,a^2],:b);0.5*Fun(a->[a,-a],:b) Fun(a->[a^2,a],:b)],[:c,:d,:e]))
+t2=Ten([3*Fun(a->[-a,a],:b) 2*Fun(a->[a,a^2],:b);Fun(a->[a,-a],:b) 0.5*Fun(a->[a^2,a],:b)],[:f,:g,:h])
+t3=simplify(t*t2)
+t3b=t3&@equ b=3
+@test t3b[1,1,1,1,1,1]==54
+@test t3b[2,1,2,2,1,2]==4.5 #2.25
+t3b[2,1,2,2,1,1]==-4.5 #6.75
+ts=simplify(Ten([:a1*Fun(a->[:f1,:f2],:b) :a2*Fun(a->[:f3,:f4],:b);:a3*Fun(a->[:f5,:f6],:b) :a4*Fun(a->[:f7,:f8],:b)],[:c,:d,:e]))
+t2s=Ten([:b1*Fun(a->[:g1,:g2],:b) :b2*Fun(a->[:g3,:g4],:b);:b3*Fun(a->[:g5,:g6],:b) :b4*Fun(a->[:g7,:g8],:b)],[:f,:g,:h])
+tss=simplify(ts*t2s)
+tsb=(ts*t2s)&@equ b=2
+@test tsb[2,1,1,2,1,2]==:a3*:b2*:f5*:g4
+
+Fun(a->[-a,a],:b)*Fun(a->[-a,a],:b)
 t=simplify(Ten([0.5*Fun(a->[a,-a],:b),Fun(a->[a^2,a],:b)],[:c,:d]))
 tb=t&@equ b=3
 t=Ten([0.5*Fun(a->a,:b),Fun(a->a^2,:b)],:c)
