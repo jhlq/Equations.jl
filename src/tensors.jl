@@ -206,17 +206,17 @@ function sumconv!(t::Term)
 		if t1f
 			newinds=deepcopy(t1.indices)
 			newinds[iii[1]]=1
-			nt1=Ten(t1.x,newinds)
+			nt1=Ten(t1.x,newinds,t1.td)
 		else
-			nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]))
+			nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]),t1.td)
 		end
 		nt1.td=t1.td
 		if t2f
 			newinds=deepcopy(t2.indices)
 			newinds[iii[2]]=1
-			nt2=Ten(t2.x,newinds)
+			nt2=Ten(t2.x,newinds,t2.td)
 		else
-			 nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]))
+			 nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]),t2.td)
 		end
 		nt2.td=t2.td
 		newterm[ti1]=nt1;newterm[ti2]=nt2
@@ -228,17 +228,17 @@ function sumconv!(t::Term)
 			if t1f
 				newinds=deepcopy(t1.indices)
 				newinds[iii[1]]=iti1[end-lit1+iii[1]]
-				nt1=Ten(t1.x,newinds)
+				nt1=Ten(t1.x,newinds,t1.td)
 			else
-				nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]))
+				nt1=Ten(t1.x[iti1...],deleteat!(deepcopy(t1.indices),iii[1]),t1.td)
 			end
 			nt1.td=t1.td
 			if t2f
 				newinds=deepcopy(t2.indices)
 				newinds[iii[2]]=iti2[end-lit2+iii[2]]
-				nt2=Ten(t2.x,newinds)
+				nt2=Ten(t2.x,newinds,t2.td)
 			else
-				nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]))
+				nt2=Ten(t2.x[iti2...],deleteat!(deepcopy(t2.indices),iii[2]),t2.td)
 			end
 			nt2.td=t2.td
 			newnewterm[ti1]=nt1;newnewterm[ti2]=nt2
@@ -273,7 +273,7 @@ function sumconv(t::Ten)
 					push!(slind,:)
 				end
 			end
-			nex=Ten(t.x[slind...],deleteat!(deepcopy(t.indices),iii))
+			nex=Ten(t.x[slind...],deleteat!(deepcopy(t.indices),iii),t.td)
 			for s1 in 1:si[iii[1]+idif]-1
 				slind[iii[1]+idif]+=1
 				slind[iii[2]+idif]+=1
@@ -534,7 +534,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 								newm[i,j]=T1.x[i]*fac.x[j]
 							end
 						end
-						push!(nfacs,Ten(newm,[T1.indices[1],fac.indices[1]]))
+						push!(nfacs,Ten(newm,[T1.indices[1],fac.indices[1]]),T1.td)
 						=#
 						nind=Any[]
 						pushall!(nind,T1.indices)
@@ -662,10 +662,12 @@ function simplify(t::Ten)
 					end
 				end
 				if allequal
-					return tx1*Ten(funmat,t.indices)
+					t=tx1*Ten(funmat,t.indices,t.td)
+				else
+					#return TenDot(t.x,t.indices)*Ten(funmat,t.indices)
+					t=Ten(funmat,t.indices,t.x .* t.td)
+					@warn "Array values of td have not been tested. Value of td: $(t.td)"
 				end
-				#return TenDot(t.x,t.indices)*Ten(funmat,t.indices)
-				t=Ten(funmat,t.indices,t.x)
 				break
 			end
 		end	
@@ -736,7 +738,7 @@ function simplify(t::Ten)
 							push!(i,:)
 						end
 						push!(i,t.indices[end])
-						return Ten(t.x[i...],t.indices[1:end-1])
+						return Ten(t.x[i...],t.indices[1:end-1],t.td)
 					elseif !isa(t.x[t.indices[end]],Array)&&!isa(t.x[t.indices[end]],Fun)
 						return t.x[t.indices[end]]
 					end
@@ -967,7 +969,7 @@ end
 function simplify(t::Transp)
 	t=Transp(simplify(t.x))
 	if isa(t.x,Ten)&&isa(t.x.x,Matrix)&&length(t.x.indices)==2&&allnum(t.x.x)
-		return Ten(convert(Array{Any},t.x.x'),[t.x.indices[2],t.x.indices[1]]) #t.x.indices) #[t.x.indices[2],t.x.indices[1]]) #switching indices is inverse of transposing. But if we switch the indices we can sum transposed matrix with its equivalent
+		return Ten(convert(Array{Any},t.x.x'),[t.x.indices[2],t.x.indices[1]],t.td) #t.x.indices) #[t.x.indices[2],t.x.indices[1]]) #switching indices is inverse of transposing. But if we switch the indices we can sum transposed matrix with its equivalent
 	end
 	if isa(t.x,Matrix)&&allnum(t.x)
 		return convert(Array{Any},t.x')
@@ -1007,7 +1009,7 @@ function simplify(t::GenTrans)
 			oldk[i2]=k[i1]
 			newm[k...]=t.x.x[oldk...]
 		end
-		return Ten(newm,ninds)
+		return Ten(newm,ninds,t.td)
 	end
 	if isa(t.x,Array)
 		#TODO
@@ -1031,7 +1033,7 @@ function simplify(c::Inv)
 	end
 	if isa(c.x,Ten)
 		if isa(c.x.x,Matrix)&&allnum(c.x.x)
-			return Ten(inv(convert(Array{Number},c.x.x)),c.x.indices)
+			return Ten(inv(convert(Array{Number},c.x.x)),c.x.indices,c.x.td)
 		end
 	end
 	return c
@@ -1052,7 +1054,7 @@ function simplify(c::Det)
 	end
 	if isa(c.x,Ten)
 		if isa(c.x.x,Matrix)&&allnum(c.x.x)
-			return Ten(Det(convert(Array{Number},c.x.x)),c.x.indices)
+			return Ten(Det(convert(Array{Number},c.x.x)),c.x.indices,c.x.td)
 		end
 	end
 	return c
