@@ -31,11 +31,11 @@ function applytd!(t::Ten)
 				push!(its,i)
 			end
 			for k in Iterators.product(Base.OneTo.(its)...)
-				t[k...]=t.td[k[1:tddims]...]*t[k...]
+				t[k...]=simplify(t.td[k[1:tddims]...]*t[k...])
 			end
 		else 
 			for txi in 1:length(t.x)
-				t.x[txi]=t.td*t.x[txi]
+				t.x[txi]=simplify(t.td*t.x[txi])
 			end
 		end
 		t.td=1
@@ -576,16 +576,18 @@ function simplify(ex::Expression,typ::Type{Ten})
 						#pushall!(nind,fac.indices)
 						sr1=size(T1.x)
 						sr1l=length(sr1)
+						sr2=size(fac.x)
+						sr2l=length(sr2)
 						for i in 1:sr1l
 							push!(nind,T1.indices[i])
 						end
-						for i in 1:sr1l
+						for i in 1:sr2l
 							push!(nind,fac.indices[i])
 						end
 						for i in sr1l+1:length(T1.indices)
 							push!(nind,T1.indices[i])
 						end
-						for i in sr1l+1:length(T1.indices)
+						for i in sr2l+1:length(fac.indices)
 							push!(nind,fac.indices[i])
 						end
 						sr2=size(fac.x)
@@ -627,7 +629,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 							end
 							newtd=Array{Any}(undef,td...)
 							for k in Iterators.product(Base.OneTo.(td)...)
-								newtd[k...]=T1.td[k[1:sr1l]...]*fac.td[k[sr1l+1:end]...]
+								newtd[k...]=simplify(T1.td[k[1:sr1l]...]*fac.td[k[sr1l+1:end]...])
 							end
 						end
 						tpt=Ten(newm,nind,newtd)
