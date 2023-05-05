@@ -21,9 +21,20 @@ end
 function applytd!(t::Ten)
 	if t.td!=1&&dimsmatch(t,false)
 		if isa(t.td,Array)
-			println(t)
-			println(t.td)
-			@warn("td is an array! Not implemented")
+			#println(t)
+			#println(t.td)
+			#@warn("td is an array! Not implemented")
+			if dimsmatch(t)
+				tddims=length(size(t.td))
+				ts=size(t.x)
+				its=Int64[]
+				for i in ts
+					push!(its,i)
+				end
+				for k in Iterators.product(Base.OneTo.(its)...)
+					t[k...]=td[k[1:tddims]...]*t[k...]
+				end
+			end
 		else 
 			for txi in 1:length(t.x)
 				t.x[txi]=t.td*t.x[txi]
@@ -310,7 +321,7 @@ function sumlify(tt::Array{Term})
 		tt1=popfirst!(tt)
 		tensi=indsin(tt1,Ten)
 		typ=N
-		if length(tensi)==1&&(isempty(tt1[1:tensi1[1]-1])||alltyp(tt1[1:tensi[1]-1],typ))&&(isempty(tt1[tensi1[1]+1:end])||alltyp(tt1[tensi[1]+1:end],typ))&&isa(tt1[tensi[1]].x,Array)
+		if length(tensi)==1&&(isempty(tt1[1:tensi[1]-1])||alltyp(tt1[1:tensi[1]-1],typ))&&(isempty(tt1[tensi[1]+1:end])||alltyp(tt1[tensi[1]+1:end],typ))&&isa(tt1[tensi[1]].x,Array)
 			nt=tt1[tensi[1]]
 			#=num=1
 			for n in [tt1[1:tensi[1]-1];tt1[tensi[1]+1:end]]
@@ -391,7 +402,10 @@ function sumlify(tt::Array{Term})
 							t2.x[txi]=simplify(n*t2.x[txi])
 						end=#
 						if isa(t2.td,Array)
-							t2.td=n .* t2.td
+							for tdi in 1:length(t2.td)
+								t2.td[tdi]=n*t2.td[tdi]
+							end
+							#t2.td=n .* t2.td
 						else
 							t2.td=n * t2.td
 						end
@@ -401,23 +415,31 @@ function sumlify(tt::Array{Term})
 							t2.x[txi]=simplify(t2.x[txi]*n)
 						end=#
 						if isa(t2.td,Array)
-							t2.td=t2.td .* n
+							for tdi in 1:length(t2.td)
+								t2.td[tdi]=t2.td[tdi]*n
+							end
+							#t2.td=t2.td .* n
 						else
 							t2.td=t2.td * n
 						end
 					end
 					if dimsmatch(nt,false)&&dimsmatch(t2,false)
+						applytd!(nt)
+						applytd!(t2)
 						for xi in 1:length(nt.x)
+							nt.x[xi]=nt.x[xi]+t2.x[xi]
+						end
+						#=for xi in 1:length(nt.x)
 							nt.x[xi]=nt.td*nt.x[xi]+t2.td*t2.x[xi]
 						end
 						nt.td=1
-						t2.td=1
+						t2.td=1=#
 					else
 						if nt.td!=1||t2.td!=1
-							error("td+td undefined")
+							@warn("td+td undefined, ignoring tds: $(nt.td) and $(t2.td).")
 						end
 						nt.x=simplify(nt.x+t2.x)#==#
-						nt.td=1 #simplify(nt.td + t2.td)
+						#nt.td=1 #simplify(nt.td + t2.td)
 					end
 					push!(del,ti2)
 				end
@@ -638,48 +660,71 @@ function simplify(t::Ten)
 		return nf
 	end
 	if isa(t.x,Array)
-		funmat=convert(Array{Any},ones(size(t.x)))
-		for ltxi in 1:length(t.x)
-			if isa(t.x[ltxi],Expression)
-				t.x[ltxi]=simplify(t.x[ltxi])
-				if isa(t.x[ltxi],Expression)&&length(t.x[ltxi])==1 #matrixmulting should never add a second term. Unless it has such an expression already...
-					delfis=Int64[]
-					for exi in 1:length(t.x[ltxi][1])
-						if isa(t.x[ltxi][1][exi],Fun)&&length(size(sample(t.x[ltxi][1][exi])))>0 #components containing functions causes undefined behaviour
-							push!(delfis,exi)
+		if has(t.x,Expression)
+			fifun=fetch(t.x,Fun)
+			if fifun!=false&&length(size(sample(fifun)))>0
+				funmat=convert(Array{Any},ones(size(t.x)))
+				for ltxi in 1:length(t.x)
+					if isa(t.x[ltxi],Expression)
+						t.x[ltxi]=simplify(t.x[ltxi])
+						if isa(t.x[ltxi],Expression)&&length(t.x[ltxi])==1 #matrixmulting should never add a second term. Unless it has such an expression already...
+							delfis=Int64[]
+							for exi in 1:length(t.x[ltxi][1])
+								if isa(t.x[ltxi][1][exi],Fun)#&&length(size(sample(t.x[ltxi][1][exi])))>0 #components containing functions causes undefined behaviour
+									push!(delfis,exi)
+								end
+							end
+							if length(delfis)>0
+								fun=t.x[ltxi][1][delfis[1]]
+								for funi in 2:length(delfis)
+									fun=fun*t.x[ltxi][1][delfis[1]]
+								end
+								funmat[ltxi]=fun
+								deleteat!(t.x[ltxi][1],delfis)
+							end
+						elseif isa(t.x[ltxi],Expression)&&length(t.x[ltxi])>1
+							@warn "Expression $(t.x[ltxi]) contains more than one terms, only implemented for the possibility of one. Ignoring all but the first."
 						end
-					end
-					if length(delfis)>0
-						fun=t.x[ltxi][1][delfis[1]]
-						for funi in 2:length(delfis)
-							fun=fun*t.x[ltxi][1][delfis[1]]
-						end
-						funmat[ltxi]=fun
-						deleteat!(t.x[ltxi][1],delfis)
+					elseif isa(t.x[ltxi],Fun)
+						funmat[ltxi]=t.x[ltxi]
+						t.x[ltxi]=1
 					end
 				end
+				#for funa in funmat
+				#	if funa!=1
+						allequal=true
+						tx1=t.x[1]
+						for tx in t.x
+							if tx!=tx1
+								allequal=false
+								break
+							end
+						end
+						if allequal
+							return tx1*Ten(funmat,t.indices,t.td)
+						else
+							#return TenDot(t.x,t.indices)*Ten(funmat,t.indices)
+							ptd=t.td
+							t=Ten(funmat,t.indices,t.x)
+							if isa(ptd,N)
+								if ptd!=1
+									t.td=t.td .* ptd
+								end
+							elseif isa(ptd,Factor)
+								for tdi in 1:length(t.td)
+									t.td[i]=t.td[i]*ptd
+								end
+							else
+								@warn "Multiplying two td arrays not implemented, ignoring $ptd"
+							end
+							t.td=simplify(t.td)
+							@warn "Array values of td have not been tested. Value of td: $(t.td)"
+						end
+				#		break
+				#	end
+				#end
 			end
 		end
-		for funa in funmat
-			if funa!=1
-				allequal=true
-				tx1=t.x[1]
-				for tx in t.x
-					if tx!=tx1
-						allequal=false
-						break
-					end
-				end
-				if allequal
-					t=tx1*Ten(funmat,t.indices,t.td)
-				else
-					#return TenDot(t.x,t.indices)*Ten(funmat,t.indices)
-					t=Ten(funmat,t.indices,t.x .* t.td)
-					@warn "Array values of td have not been tested. Value of td: $(t.td)"
-				end
-				break
-			end
-		end	
 		if t.x==zeros(size(t.x))
 			return 0
 		end
@@ -818,14 +863,15 @@ function simplify(t::Ten)
 					return simplify(Ten(t.x[i...],ninds,t.td))
 				end
 			end
-			if allnum(t.indices[length(s)+1:end])&&alltyp(t.x,Fun)
+			#=if allnum(t.indices[length(s)+1:end])&&alltyp(t.x,Fun) #this causes stack overflow...
 				for txi in 1:length(t.x)
 					nf=deepcopy(t.x[txi])
-					nf.y=a->t.x[txi].y(a)[t.indices[length(s)+1:end]...]
-					t.x[txi]=nf
+					of=t.x[txi]
+					nf.y=a->of.y(a)[t.indices[length(s)+1:end]...]
+					t.x[txi]=nf #maybe because t.x[txi] gets redefined in the function
 				end
 				t.indices=t.indices[1:length(s)]
-			end
+			end=#
 		end
 	end
 	t
@@ -986,7 +1032,7 @@ end
 function simplify(t::Transp)
 	t=Transp(simplify(t.x))
 	if isa(t.x,Ten)&&isa(t.x.x,Matrix)&&length(t.x.indices)==2&&allnum(t.x.x)
-		return Ten(convert(Array{Any},t.x.x'),[t.x.indices[2],t.x.indices[1]],t.td) #t.x.indices) #[t.x.indices[2],t.x.indices[1]]) #switching indices is inverse of transposing. But if we switch the indices we can sum transposed matrix with its equivalent
+		return Ten(convert(Array{Any},t.x.x'),[t.x.indices[2],t.x.indices[1]],t.x.td) #t.x.indices) #[t.x.indices[2],t.x.indices[1]]) #switching indices is inverse of transposing. But if we switch the indices we can sum transposed matrix with its equivalent
 	end
 	if isa(t.x,Matrix)&&allnum(t.x)
 		return convert(Array{Any},t.x')
@@ -1026,10 +1072,10 @@ function simplify(t::GenTrans)
 			oldk[i2]=k[i1]
 			newm[k...]=t.x.x[oldk...]
 		end
-		return Ten(newm,ninds,t.td)
+		return Ten(newm,ninds,t.x.td)
 	end
 	if isa(t.x,Array)
-		#TODO
+		error("No way to determine which indices to GenTrans in raw Array.") #allow Int64 indices in GenTrans?
 	end
 	return t
 end

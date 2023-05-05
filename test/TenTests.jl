@@ -205,3 +205,47 @@ dV=Ten([1 0;0 :r^2],[:a,:b])*Ten([:Vr,:Vth],[:a])
 @test simplify(dV)==Ten(Any[:Vr,:Vth*:r*:r],Any[:b])
 
 @test isa(simplify(Ten([Fun(a->ones(2),:x),Fun(a->ones(2),:x)],[1,1])),Fun)
+
+t=simplify(Ten([0.5*Fun(a->[a,-a],:b),0.5*Fun(a->[a^2,a],:b)],[:c,:d]))
+@test t[1][1]==0.5
+t=simplify(Ten([0.5*Fun(a->[a,-a],:b),Fun(a->[a^2,a],:b)],[:c,:d]))
+@test t.td==Any[0.5,1]
+tb=t&@equ b=3
+@test tb==Ten(Any[1.5 -1.5; 9 3],Any[:c,:d],1)
+
+
+#=
+t=simplify(Ten([0.5*Fun(a->[a,-a],:b),Fun(a->[a^2,a],:b)],[:c,:d]))
+tb=t&@equ b=3
+t=Ten([0.5*Fun(a->a,:b),Fun(a->a^2,:b)],:c)
+t2=Ten([0.5*Fun(a->a,:b),Fun(a->a^2,:b)],:d)
+s=simplify(t*t2)
+
+funmat=convert(Array{Any},ones(size(t.x)))
+for ltxi in 1:length(t.x)
+	if isa(t.x[ltxi],Expression)
+		print(1)
+		t.x[ltxi]=simplify(t.x[ltxi])
+		if isa(t.x[ltxi],Expression)&&length(t.x[ltxi])==1 #matrixmulting should never add a second term. Unless it has such an expression already...
+			delfis=Int64[]
+			print(2)
+			for exi in 1:length(t.x[ltxi][1])
+				if isa(t.x[ltxi][1][exi],Fun)&&length(size(sample(t.x[ltxi][1][exi])))>0 #components containing functions causes undefined behaviour
+					push!(delfis,exi)
+					print(3)
+				end
+				print(4)
+			end
+			if length(delfis)>0
+				print(4)
+				fun=t.x[ltxi][1][delfis[1]]
+				for funi in 2:length(delfis)
+					fun=fun*t.x[ltxi][1][delfis[1]]
+				end
+				funmat[ltxi]=fun
+				deleteat!(t.x[ltxi][1],delfis)
+			end
+		end
+	end
+end
+=#

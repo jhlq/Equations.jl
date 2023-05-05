@@ -125,6 +125,7 @@ function simplify(ex::Expression,typ::Type{Fun})
 				push!(pdi,tii)
 			end
 		end
+		sort!(fti)
 		sort!(pdi)
 		fil=length(fi)
 		pdil=length(pdi)
