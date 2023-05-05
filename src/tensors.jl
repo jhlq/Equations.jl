@@ -19,21 +19,19 @@ function Ten(x,i::Union{Array,Factor},td=1)
 	Ten(x,i,td)
 end
 function applytd!(t::Ten)
-	if t.td!=1&&dimsmatch(t,false)
+	if t.td!=1&&dimsmatch(t)
 		if isa(t.td,Array)
 			#println(t)
 			#println(t.td)
 			#@warn("td is an array! Not implemented")
-			if dimsmatch(t)
-				tddims=length(size(t.td))
-				ts=size(t.x)
-				its=Int64[]
-				for i in ts
-					push!(its,i)
-				end
-				for k in Iterators.product(Base.OneTo.(its)...)
-					t[k...]=td[k[1:tddims]...]*t[k...]
-				end
+			tddims=length(size(t.td))
+			ts=size(t.x)
+			its=Int64[]
+			for i in ts
+				push!(its,i)
+			end
+			for k in Iterators.product(Base.OneTo.(its)...)
+				t[k...]=t.td[k[1:tddims]...]*t[k...]
 			end
 		else 
 			for txi in 1:length(t.x)
@@ -335,7 +333,10 @@ function sumlify(tt::Array{Term})
 					nt.x[txi]=simplify(n*nt.x[txi])
 				end=#
 				if isa(nt.td,Array)
-					nt.td=n .* nt.td
+					for tdi in 1:length(nt.td)
+						nt.td[tdi]=n*nt.td[tdi]
+					end
+					#nt.td=n .* nt.td
 				else
 					nt.td=n * nt.td
 				end
@@ -345,7 +346,10 @@ function sumlify(tt::Array{Term})
 					nt.x[txi]=simplify(nt.x[txi]*n)
 				end=#
 				if isa(nt.td,Array)
-					nt.td=nt.td .* n
+					for tdi in 1:length(nt.td)
+						nt.td[tdi]=nt.td[tdi]*n
+					end
+					#nt.td=nt.td .* n
 				else
 					nt.td=nt.td * n
 				end
@@ -584,7 +588,38 @@ function simplify(ex::Expression,typ::Type{Ten})
 						for k in Iterators.product(Base.OneTo.(td)...)
 							newm[k...]=T1.x[k[1:sr1l]...]*fac.x[k[sr1l+1:end]...]
 						end
-						tpt=Ten(newm,nind,T1.td*fac.td)
+						if isa(T1.td,Factor)
+							if isa(fac.td,Factor)
+								newtd=T1.td*fac.td
+							else
+								newtd=[]
+								for ftd in fac.td
+									push!(newtd,T1.td*ftd)
+								end
+							end
+						elseif isa(fac.td,Factor)
+							newtd=[]
+							for Ttd in T1.td
+								push!(newtd,Ttd*fac.td)
+							end
+						else
+							sr1=size(T1.td)
+							sr1l=length(sr1)
+							sr2=size(fac.td)
+							td=Int64[]
+							for i in sr1
+								push!(td,i)
+							end
+							for i in sr2
+								push!(td,i)
+							end
+							newtd=Array{Any}(undef,td...)
+							for k in Iterators.product(Base.OneTo.(td)...)
+								newtd[k...]=T1.td[k[1:sr1l]...]*fac.td[k[sr1l+1:end]...]
+							end
+						end
+						tpt=Ten(newm,nind,newtd)
+						#tpt=Ten(newm,nind,T1.td*fac.td)
 						push!(nfacs,tpt)
 						tenprodded=true
 					elseif isa(fac,NonAbelian)
@@ -837,8 +872,10 @@ function simplify(t::Ten)
 				newm[k...]=t.x[k[1:d1l]...][k[d1l+1:end]...]
 			end
 			if !isa(newm[1],Union{Array,Fun})
-				t.x=t.td .* newm
-				t.td=1
+				#t.x=t.td .* newm
+				#t.td=1
+				t.x=newm
+				applytd!(t)
 			else
 				t.x=newm
 			end
