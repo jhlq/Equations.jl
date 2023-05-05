@@ -63,6 +63,9 @@ end=#
 	print(io,")")
 end=#
 function allnum(a::Array)
+	if isempty(a)
+		return false
+	end
 	for n in a
 		if !isa(n,Number)
 			return false
@@ -71,6 +74,9 @@ function allnum(a::Array)
 	return true
 end
 function alltyp(a::Array,typ)
+	if isempty(a)
+		return false
+	end
 	for n in a
 		if !isa(n,typ)
 			return false
@@ -808,6 +814,14 @@ function simplify(t::Ten)
 					end
 					return simplify(Ten(t.x[i...],ninds,t.td))
 				end
+			end
+			if allnum(t.indices[length(s)+1:end])&&alltyp(t.x,Fun)
+				for txi in 1:length(t.x)
+					nf=deepcopy(t.x[txi])
+					nf.y=a->t.x[txi].y(a)[t.indices...]
+					t.x[txi]=nf
+				end
+				t.indices=t.indices[1:length(s)]
 			end
 		end
 	end
