@@ -576,16 +576,16 @@ function simplify(ex::Expression,typ::Type{Ten})
 						#pushall!(nind,fac.indices)
 						sr1=size(T1.x)
 						sr1l=length(sr1)
-						for i in 1:sril
+						for i in 1:sr1l
 							push!(nind,T1.indices[i])
 						end
-						for i in 1:sril
+						for i in 1:sr1l
 							push!(nind,fac.indices[i])
 						end
-						for i in sril+1:length(T1.indices)
+						for i in sr1l+1:length(T1.indices)
 							push!(nind,T1.indices[i])
 						end
-						for i in sril+1:length(T1.indices)
+						for i in sr1l+1:length(T1.indices)
 							push!(nind,fac.indices[i])
 						end
 						sr2=size(fac.x)
@@ -762,10 +762,11 @@ function simplify(t::Ten)
 									t.td[i]=t.td[i]*ptd
 								end
 							else
-								@warn "Multiplying two td arrays not implemented, ignoring $ptd"
+								#@warn "Multiplying two td arrays not implemented, ignoring $ptd"
+								t.td=tenprod(t.td,ptd)
 							end
 							t.td=simplify(t.td)
-							@warn "Array values of td have not been tested. Value of td: $(t.td)"
+							#@warn "Array values of td have not been tested. Value of td: $(t.td)"
 						end
 				#		break
 				#	end
@@ -891,7 +892,7 @@ function simplify(t::Ten)
 			else
 				t.x=newm
 			end
-		else
+		else#if length(t.indices)>=length(size(t.x))
 			s=size(t.x)
 			for tindi in 1:length(s)
 				if isa(t.indices[tindi],Number)
