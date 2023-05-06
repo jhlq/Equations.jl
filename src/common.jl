@@ -527,7 +527,8 @@ function unnest(ex::Expression)
 	return Expression(nt)
 end
 function componify(ex::Expression,raw=false)
-	ap=dcterms(ex)
+	#ap=dcterms(ex)
+	ap=terms(ex)
 	lap=length(ap)
 	for term in 1:lap
 		exs=Expression[]
@@ -746,10 +747,11 @@ function simplify(d::Dict)
 	return nd
 end
 function sumnum(ex::Expression)
-	terms=dcterms(ex)
+	#terms=dcterms(ex)
+	eterms=terms(ex)
 	nterms=Term[]
 	numsum=0
-	for term in terms
+	for term in eterms
 		prod=1
 		allnum=true
 		nterm=Factor[]
@@ -789,7 +791,8 @@ end
 sumnum(c::Component)=typeof(c)(sumnum(getarg(c)))
 sumnum(x::N)=x 
 function sumsym(ex::Expression)
-	ap=terms(deepcopy(ex))
+	#ap=terms(deepcopy(ex))
+	ap=terms(ex)
 	nap=length(ap)
 	cs=Array{Components}(undef,0)
 	for add in 1:nap
