@@ -380,25 +380,27 @@ function sumlify(tt::Array{Term})
 							end
 						end
 						if allin
-							transis=Symbol[]
-							for nti in 1:length(nt.indices)
-								i=nt.indices[nti]
-								if !isa(i,Symbol)
-									continue
-								end
-								j=nt2.indices[nti]
-								if !isa(j,Symbol)
-									continue
-								end
-								if i!=j
-									push!(transis,i)
-								end
-								if length(transis)>1
-									nt=trans(nt,transis[1],transis[2])
-									break
+							while isa(nt,Ten)&&nt.indices!=nt2.indices
+								transis=Symbol[]
+								for nti in 1:length(nt.indices)
+									i=nt.indices[nti]
+									if !isa(i,Symbol)
+										continue
+									end
+									j=nt2.indices[nti]
+									if !isa(j,Symbol)
+										continue
+									end
+									if i!=j
+										push!(transis,i)
+									end
+									if length(transis)>1
+										nt=trans(nt,transis[1],transis[2])
+										break
+									end
 								end
 							end
-						end	
+						end
 					end
 				end
 				if isa(nt,Ten)&&length(tensi2)==1&&dimsmatch(tt2[tensi2[1]])&&size(nt.x)==size(tt[ti2][tensi2[1]].x)&&nt.indices==tt[ti2][tensi2[1]].indices&&(isempty(tt2[1:tensi2[1]-1])||alltyp(tt2[1:tensi2[1]-1],typ))&&(isempty(tt2[tensi2[1]+1:end])||alltyp(tt2[tensi2[1]+1:end],typ))#&&isa(tt2[tensi2[1]].x,Array)
