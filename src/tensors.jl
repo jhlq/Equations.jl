@@ -940,6 +940,34 @@ function simplify(t::Ten)
 					return simplify(Ten(t.x[i...],ninds,t.td))
 				end
 			end
+			if has(t.indices[length(s)+1:end],Number)&&alltyp(t.x,Fun)
+				for tindi in length(s)+1:length(t.indices)
+					if isa(t.indices[tindi],Number)
+						i=Any[]
+						for l in length(s)+1:length(t.indices)
+							if l==tindi
+								push!(i,t.indices[tindi])
+							else
+								push!(i,:)
+							end
+						end
+						ninds=Any[]
+						for tindii in 1:length(t.indices)
+							if tindii!=tindi
+								push!(ninds,t.indices[tindii])
+							end
+						end
+						for txi in 1:length(t.x)
+							nf=deepcopy(t.x[txi])
+							of=t.x[txi]
+							nf.y=a->of.y(a)[i...]
+							t.x[txi]=nf
+						end
+						t.indices=ninds
+						return simplify(t)
+					end
+				end
+			end
 			#=if allnum(t.indices[length(s)+1:end])&&alltyp(t.x,Fun) #this causes stack overflow...
 				for txi in 1:length(t.x)
 					nf=deepcopy(t.x[txi])
