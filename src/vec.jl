@@ -1,4 +1,4 @@
-import LinearAlgebra: norm, dot, cross
+import LinearAlgebra: norm, dot, cross, diagm
 
 mutable struct Vec <: NonAbelian
 	v

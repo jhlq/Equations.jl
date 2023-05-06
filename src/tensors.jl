@@ -422,6 +422,9 @@ function sumlify!(tt::Array{Term})
 						end
 					end
 				end
+				if nt==0
+					break
+				end
 				if isa(nt,Ten)&&length(tensi2)==1&&dimsmatch(tt2[tensi2[1]])&&size(nt.x)==size(tt[ti2][tensi2[1]].x)&&nt.indices==tt[ti2][tensi2[1]].indices&&(isempty(tt2[1:tensi2[1]-1])||alltyp(tt2[1:tensi2[1]-1],typ))&&(isempty(tt2[tensi2[1]+1:end])||alltyp(tt2[tensi2[1]+1:end],typ))#&&isa(tt2[tensi2[1]].x,Array)
 					t2=tt[ti2][tensi2[1]]
 					#=nums=1
@@ -533,7 +536,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 	for t in ex
 		pushall!(nat,sumconv(t))
 	end
-	nnat=sumconv(nat)
+	nnat=sumconv(nat) 
 	#=for n in 1:length(nnat)
 		for m in 1:length(nnat[n])
 			nnat[n][m]=simplify(nnat[n][m])
