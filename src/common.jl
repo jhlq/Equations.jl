@@ -379,7 +379,7 @@ dcterms(ex::Expression)=terms(deepcopy(ex))
 dcterms(x::X)=x
 function has(a::Array,t::Type)
 	for it in a
-		if isa(it,t)
+		if has(it,t)
 			return true
 		end
 	end
@@ -387,7 +387,7 @@ function has(a::Array,t::Type)
 end
 function has(a::Array,t::EX)
 	for it in a
-		if it==t
+		if has(it,t)
 			return true
 		end
 	end
@@ -700,9 +700,11 @@ function simplify(ex::Expression)
 		ex=extract(expression(ap)) #better to check if res::N before calling expression instead of extracting?
 		if has(ex,Ten)
 			ex=simplify(ex,Ten)
+		elseif has(ex,Fun)
+			ex=simplify!(ex,Fun)
 		end
-		if has(ex,Fun)
-			ex=simplify(ex,Fun)
+		if has(ex,PD)
+			ex=simplify(ex,PD)
 		end
 		if nit>90
 			@warn("Stuck in simplify! Iteration $nit: $ex")

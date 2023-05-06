@@ -6,6 +6,9 @@ mutable struct Fun <: Component
 end
 #show(io::IO,f::Fun)=print(io,"Fun(func,$(f.x),$(f.pds))")
 Fun(y,x)=Fun(deepcopy(y),x,Symbol[])
+mutable struct PD<:NonAbelian #partial derivative
+	d::Symbol
+end
 function fun(ex::Factor,x::Union{Array{Symbol},Symbol})
 	ex=simplify(ex)
 	if isa(x,Symbol)
@@ -91,12 +94,87 @@ function simplify(f::Fun)
 		return f.y(fx)
 	end
 	return f
-end 
-function simplify(ex::Expression,typ::Type{Fun})
+end
+function simplify!(ex::Expression,typ::Type{Fun})
 	next=Term[]
 	for t in ex
 		fi=indsin(t,Fun)
-		if length(fi)>1
+		ti=indsin(t,Ten)
+		fti=Int64[]
+		pushall!(fti,fi)
+		pushall!(fti,ti)
+		sort!(fti)
+		if length(fti)>1&&length(fi)>0
+			delfa=[]
+			checking=1
+			while checking<length(fi)||(!isempty(ti)&&fi[checking]<ti[end])
+				delf=Int64[]
+				nf=t[fi[checking]]
+				for tit in fi[checking]+1:length(t)
+					if in(tit,fi)
+						checking+=1
+					end
+					if in(tit,fti)
+						if isa(t[tit],Fun)
+							nnf=nf*t[tit]
+							if isa(nnf,Fun)
+								push!(delf,tit)
+								nf=nnf
+							else
+								break
+							end
+						elseif isa(t[tit],Ten)
+							if isa(t[tit].x,Fun)
+								nnf=nf*t[tit].x
+								if isa(nnf,Fun)
+									push!(delf,tit)
+									ntf=t[tit] #deepcopy(t[tit])
+									ntf.x=nnf
+									nf=ntf
+								else
+									break
+								end
+							elseif isa(t[tit].x,Array)
+								if !isa(nf*t[tit].x[1],Fun)
+									break
+								end
+								nt=t[tit]
+								for i in 1:length(nt.x)
+									nt.x[i]=nf*nt.x[i]
+								end
+								push!(delf,tit)
+								nf=nt
+							else
+								break
+							end
+						end
+					elseif isa(t[tit],NonAbelian)
+						break
+					end
+				end
+				if !isempty(delf)
+					t[fi[checking]]=nf
+					push!(delfa,delf)
+					#deleteat!(t,delf)
+					#fi=indsin(t,Fun)
+				end
+			end
+			tdelf=Int64[]
+			for a in delfa
+				pushall!(tdelf,a)
+			end
+			deleteat!(t,tdelf)
+		end
+		push!(next,t)
+	end
+	return Expression(next)
+end
+simplify(ex::Expression,typ::Type{Fun})=simplify!(deepcopy(ex),typ)
+function simplify(ex::Expression,typ::Type{PD})
+	next=Term[]
+	for t in ex
+		fi=indsin(t,Fun)
+		#=if length(fi)>1
 			delf=Int64[]
 			nf=t[fi[1]]
 			for tit in fi[1]+1:length(t)
@@ -117,7 +195,7 @@ function simplify(ex::Expression,typ::Type{Fun})
 				deleteat!(t,delf)
 				fi=indsin(t,Fun)
 			end
-		end
+		end=#
 		ti=indsin(t,Ten)
 		pdi=indsin(t,PD)
 		fti=[]
@@ -277,9 +355,6 @@ function sample(f::Fun,seed=0)
 	return r
 end
 
-mutable struct PD<:NonAbelian
-	d::Symbol
-end
 function *(d::PD,f::Fun)
 	npds=deepcopy(f.pds)
 	push!(npds,d.d)

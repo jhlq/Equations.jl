@@ -43,6 +43,9 @@ print(i," ")
 include("SqrtTests.jl")
 i+=1
 print(i," ")
+include("FunTests.jl")
+i+=1
+print(i," ")
 include("examplesTests.jl")
 i+=1
 println(i," ")

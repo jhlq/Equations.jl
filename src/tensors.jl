@@ -526,6 +526,9 @@ function simplify(ex::Expression,typ::Type{Ten})
 	end
 	untensify!(nnat)
 	nnat=sumlify(nnat)
+	if has(nnat,Fun)
+		nnat=terms(simplify(Expression(nnat),Fun))
+	end
 	#check each tensor, stride and break on nonabelian, then do tensor multiplication
 	nnnat=nnat
 	dofirst=true
@@ -687,6 +690,21 @@ function simplify(ex::Expression,typ::Type{Ten})
 	end=#
 	return Expression(nnat)
 end
+#=function tdprod(td1,td2)
+	ntd=td1
+	if isa(td2,N)
+		if td2!=1
+			ntd=td1 .* td2
+		end
+	elseif isa(td2,Factor)
+		for tdi in 1:length(t.td)
+			ntd[i]=t.td[i]*ptd
+		end
+	else
+		t.td=tenprod(t.td,ptd)
+	end
+	t.td=simplify(t.td)
+end=#
 function simplify(t::Ten)
 	if t.td==0
 		return 0
@@ -750,7 +768,14 @@ function simplify(t::Ten)
 							end
 						end
 						if allequal
-							return tx1*Ten(funmat,t.indices,t.td)
+							if isa(t.td,Array)
+								for i in 1:length(t.td)
+									t.td[i]=tx1*t.td[i]
+								end
+							else
+								t.td=tx1*t.td
+							end
+							t=Ten(funmat,t.indices,t.td)
 						else
 							#return TenDot(t.x,t.indices)*Ten(funmat,t.indices)
 							ptd=t.td
