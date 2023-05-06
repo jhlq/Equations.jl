@@ -319,8 +319,7 @@ function indsmatch(inds1,inds2)
 	end
 	false
 end
-function sumlify(tt::Array{Term})
-	tt=deepcopy(tt)
+function sumlify!(tt::Array{Term})
 	ntt=Term[]
 	while !isempty(tt)
 		tt1=popfirst!(tt)
@@ -467,6 +466,7 @@ function sumlify(tt::Array{Term})
 	end
 	ntt
 end
+sumlify(tt::Array{Term})=sumlify(deepcopy(tt))
 function untensify!(tt::Array{Term})
 	del=Integer[]
 	for ti in 1:length(tt)
@@ -534,7 +534,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 		end
 	end
 	untensify!(nnat)
-	nnat=sumlify(nnat)
+	#nnat=sumlify!(nnat)
 	if has(nnat,Fun)
 		nnat=terms(simplify(Expression(nnat),Fun))
 	end
@@ -706,6 +706,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 		end
 		deleteat!(nnat[termi],deli)
 	end=#
+	nnat=sumlify!(nnat)
 	return Expression(nnat)
 end
 #=function tdprod(td1,td2)
