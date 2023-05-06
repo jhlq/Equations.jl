@@ -221,7 +221,9 @@ function simplify(ex::Expression,typ::Type{PD})
 		for tii in ti
 			if has(t[tii].x,Fun)
 				push!(fti,tii)
-			elseif alltyp(t[tii].x,PD)
+			end
+			#elseif alltyp(t[tii].x,PD)
+			if has(t[tii].x,PD)
 				push!(pdi,tii)
 			end
 		end
@@ -245,14 +247,15 @@ function simplify(ex::Expression,typ::Type{PD})
 					f=nt[ffi]
 					if isa(pd,Ten)
 						deone=false
-						for pdx in pd.x
+						for pdxe in pd.x
+							pdx=fetch(pdxe,PD)
 							if pdx.d==f.x||(isa(f.x,Array)&&in(pdx.d,f.x))
 								deone=true
 							end
 						end
 						if deone
 							for pdxi in 1:length(pd.x)
-								pd.x[pdxi]=pd.x[pdxi]*f
+								pd.x[pdxi]=simplify(pd.x[pdxi]*f)
 							end
 							push!(deli,ffi)
 							break
