@@ -547,7 +547,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 				skipfac=false
 				fac=ter[faci]
 				if !foundT1
-					if isa(fac,Ten)&&isa(fac.x,Array)
+					if isa(fac,Ten)&&dimsmatch(fac,true)#isa(fac.x,Array)
 						if !alltyp(fac.indices,Symbol)
 							break
 						end
@@ -556,7 +556,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 						skipfac=true
 					end
 				elseif !foundT2
-					if isa(fac,Ten)&&isa(fac.x,Array)
+					if isa(fac,Ten)&&dimsmatch(fac,true)#&&isa(fac.x,Array)
 						if !alltyp(fac.indices,Symbol)
 							break
 						end
@@ -593,7 +593,6 @@ function simplify(ex::Expression,typ::Type{Ten})
 						for i in sr2l+1:length(fac.indices)
 							push!(nind,fac.indices[i])
 						end
-						sr2=size(fac.x)
 						td=Int64[]
 						for i in sr1
 							push!(td,i)
@@ -601,9 +600,19 @@ function simplify(ex::Expression,typ::Type{Ten})
 						for i in sr2
 							push!(td,i)
 						end
-						newm=Array{Any}(undef,td...)
-						for k in Iterators.product(Base.OneTo.(td)...)
-							newm[k...]=simplify(T1.x[k[1:sr1l]...]*fac.x[k[sr1l+1:end]...])
+						if isempty(td)
+							newm=T1.x*fac.x
+						else
+							newm=Array{Any}(undef,td...)
+							for k in Iterators.product(Base.OneTo.(td)...)
+								if isa(T1.x,Fun)
+									newm[k...]=simplify(T1.x*fac.x[k...])
+								elseif isa(fac.x,Fun)
+									newm[k...]=simplify(T1.x[k...]*fac.x)
+								else
+									newm[k...]=simplify(T1.x[k[1:sr1l]...]*fac.x[k[sr1l+1:end]...])
+								end
+							end
 						end
 						if isa(T1.td,Factor)
 							if isa(fac.td,Factor)
@@ -770,10 +779,10 @@ function simplify(t::Ten)
 						if allequal
 							if isa(t.td,Array)
 								for i in 1:length(t.td)
-									t.td[i]=tx1*t.td[i]
+									t.td[i]=simplify(tx1*t.td[i])
 								end
 							else
-								t.td=tx1*t.td
+								t.td=simplify(tx1*t.td)
 							end
 							t=Ten(funmat,t.indices,t.td)
 						else

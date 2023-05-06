@@ -207,7 +207,7 @@ dV=Ten([1 0;0 :r^2],[:a,:b])*Ten([:Vr,:Vth],[:a])
 @test isa(simplify(Ten([Fun(a->ones(2),:x),Fun(a->ones(2),:x)],[1,1])),Fun)
 
 t=simplify(Ten([0.5*Fun(a->[a,-a],:b),0.5*Fun(a->[a^2,a],:b)],[:c,:d]))
-@test t[1][1]==0.5
+@test t.td==0.5
 t=simplify(Ten([0.5*Fun(a->[a,-a],:b),Fun(a->[a^2,a],:b)],[:c,:d]))
 @test t.td==Any[0.5,1]
 tb=t&@equ b=3
@@ -227,7 +227,14 @@ t=Ten(Fun(a->ones(2,2),:x),[:i,:j])
 t=t&@equ j=1
 @test length(t.indices)==1
 
+t=simplify(Ten([1 0;0 1],[:i,:j])*Ten([Fun(a->ones(2),:x),Fun(a->ones(2),:x)],:k))
+t&@equ x=1
+#test this!
+
+
 #=
+
+
 s=size(t.x)
 has(t.indices[length(s)+1:end],Number)&&alltyp(t.x,Fun)
 

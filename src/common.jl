@@ -14,6 +14,7 @@ function ==(c1::Component, c2::Component)
 	end
 	return false
 end
+size(x::Union{Symbol, Component})=()
 abstract type SingleArg <: Component end
 ==(sa1::SingleArg,sa2::SingleArg)=isa(sa1,typeof(sa2))&&sa1.x==sa2.x 
 abstract type NonAbelian <: Component end
@@ -393,6 +394,7 @@ function has(a::Array,t::EX)
 	end
 	return false
 end
+has(t1::N,t2::Factor)=t1==t2
 function has(term1::Array,term2::Array)
 	if length(term1)<length(term2)
 		return false
@@ -428,7 +430,7 @@ function has(ex::Expression,t::Type)
 	end
 	return false
 end
-function has(c::Component,x::Symbol)
+function has(c::Component,x::Factor)
 	for a in getargs(c)
 		if has(a,x)
 			return true
