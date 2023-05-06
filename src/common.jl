@@ -14,7 +14,6 @@ function ==(c1::Component, c2::Component)
 	end
 	return false
 end
-size(x::Union{Symbol, Component})=()
 abstract type SingleArg <: Component end
 ==(sa1::SingleArg,sa2::SingleArg)=isa(sa1,typeof(sa2))&&sa1.x==sa2.x 
 abstract type NonAbelian <: Component end
@@ -150,6 +149,7 @@ convert(::Type{Array{Array{Factor,1},1}},a::Array{Any,1})=Term[a]
 zero(f::Factor)=0
 Expression(x::Factor)=expression(x)
 convert(::Type{Expression},f::Factor)=expression(f)
+size(x::Ex)=()
 
 macro delegate(source, targets) # by JMW
     typename = esc(source.args[1])

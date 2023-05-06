@@ -159,13 +159,20 @@ function sumconv(ex::Expression)
 end
 function dimsmatch(t::Ten,allowfun=false)
 	dims=length(t.indices)
-	if isa(t.x,Array)
-		if isa(t.x[1],Fun)&&allowfun
-			return dims==length(size(t.x))+length(size(sample(t.x[1])))
+	fdims=0
+	if allowfun
+		f=fetch(t.x,Fun)
+		if f!=false
+			fdims=length(size(sample(f)))
 		end
-		return dims==length(size(t.x))
+	end
+	if isa(t.x,Array)
+		#if isa(t.x[1],Fun)&&allowfun
+		#	return dims==length(size(t.x))+length(size(sample(t.x[1])))
+		#end
+		return dims==length(size(t.x))+fdims
 	elseif isa(t.x,Fun)&&allowfun
-		return dims==length(size(sample(t.x)))
+		return dims==fdims#length(size(sample(t.x)))
 	end
 	return false
 end
@@ -319,7 +326,7 @@ function sumlify(tt::Array{Term})
 		tt1=popfirst!(tt)
 		tensi=indsin(tt1,Ten)
 		typ=N
-		if length(tensi)==1&&(isempty(tt1[1:tensi[1]-1])||alltyp(tt1[1:tensi[1]-1],typ))&&(isempty(tt1[tensi[1]+1:end])||alltyp(tt1[tensi[1]+1:end],typ))&&isa(tt1[tensi[1]].x,Array)
+		if length(tensi)==1&&(isempty(tt1[1:tensi[1]-1])||alltyp(tt1[1:tensi[1]-1],typ))&&(isempty(tt1[tensi[1]+1:end])||alltyp(tt1[tensi[1]+1:end],typ))&&dimsmatch(tt1[tensi[1]])#&&isa(tt1[tensi[1]].x,Array)
 			nt=tt1[tensi[1]]
 			#=num=1
 			for n in [tt1[1:tensi[1]-1];tt1[tensi[1]+1:end]]
@@ -359,9 +366,9 @@ function sumlify(tt::Array{Term})
 			for ti2 in 1:length(tt)
 				tt2=tt[ti2]
 				tensi2=indsin(tt2,Ten)
-				if length(tensi2)==1
+				if length(tensi2)==1 #this can be simplified to remove the second such check
 					nt2=tt[ti2][tensi2[1]]
-					if isa(nt2.x,Array)&&length(nt2.indices)==length(nt.indices)&&nt2.indices!=nt.indices&&dimsmatch(nt2,false)&&dimsmatch(nt,false)
+					if isa(nt2.x,Array)&&length(nt2.indices)==length(nt.indices)&&nt2.indices!=nt.indices&&dimsmatch(nt2,false)#&&dimsmatch(nt,false)
 						allin=true
 						for i in nt.indices
 							if !isa(i,Symbol)
@@ -394,7 +401,7 @@ function sumlify(tt::Array{Term})
 						end	
 					end
 				end
-				if isa(nt,Ten)&&length(tensi2)==1&&isa(tt2[tensi2[1]].x,Array)&&size(nt.x)==size(tt[ti2][tensi2[1]].x)&&nt.indices==tt[ti2][tensi2[1]].indices&&(isempty(tt2[1:tensi2[1]-1])||alltyp(tt2[1:tensi2[1]-1],typ))&&(isempty(tt2[tensi2[1]+1:end])||alltyp(tt2[tensi2[1]+1:end],typ))
+				if isa(nt,Ten)&&length(tensi2)==1&&dimsmatch(tt2[tensi2[1]])&&size(nt.x)==size(tt[ti2][tensi2[1]].x)&&nt.indices==tt[ti2][tensi2[1]].indices&&(isempty(tt2[1:tensi2[1]-1])||alltyp(tt2[1:tensi2[1]-1],typ))&&(isempty(tt2[tensi2[1]+1:end])||alltyp(tt2[tensi2[1]+1:end],typ))#&&isa(tt2[tensi2[1]].x,Array)
 					t2=tt[ti2][tensi2[1]]
 					#=nums=1
 					for n in [tt2[1:tensi2[1]-1];tt2[tensi2[1]+1:end]]
@@ -440,7 +447,7 @@ function sumlify(tt::Array{Term})
 						t2.td=1=#
 					else
 						if nt.td!=1||t2.td!=1
-							@warn("td+td undefined, ignoring tds: $(nt.td) and $(t2.td).")
+							@warn("td+td undefined, ignoring tds: $(nt.td) and $(t2.td) of $nt and $t2.")
 						end
 						nt.x=simplify(nt.x+t2.x)#==#
 						#nt.td=1 #simplify(nt.td + t2.td)
@@ -547,7 +554,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 				skipfac=false
 				fac=ter[faci]
 				if !foundT1
-					if isa(fac,Ten)&&dimsmatch(fac,true)#isa(fac.x,Array)
+					if isa(fac,Ten)&&dimsmatch(fac,true)#&&isa(fac.x,Array)
 						if !alltyp(fac.indices,Symbol)
 							break
 						end
@@ -601,13 +608,13 @@ function simplify(ex::Expression,typ::Type{Ten})
 							push!(td,i)
 						end
 						if isempty(td)
-							newm=T1.x*fac.x
+							newm=simplify(T1.x*fac.x)
 						else
 							newm=Array{Any}(undef,td...)
 							for k in Iterators.product(Base.OneTo.(td)...)
-								if isa(T1.x,Fun)
+								if isempty(sr1)#isa(T1.x,Fun)
 									newm[k...]=simplify(T1.x*fac.x[k...])
-								elseif isa(fac.x,Fun)
+								elseif isempty(sr2)#isa(fac.x,Fun)
 									newm[k...]=simplify(T1.x[k...]*fac.x)
 								else
 									newm[k...]=simplify(T1.x[k[1:sr1l]...]*fac.x[k[sr1l+1:end]...])
@@ -664,7 +671,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 		end
 		nit+=1
 		if nit>90
-			@warn("Stuck in Tensor multiplication loop")
+			@warn("Stuck in Tensor multiplication loop with \n$nnat\nnot equal to\n$nnnat\nBreaking.")
 			break
 		end
 	end

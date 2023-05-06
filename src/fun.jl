@@ -107,10 +107,14 @@ function simplify!(ex::Expression,typ::Type{Fun})
 		if length(fti)>1&&length(fi)>0
 			delfa=[]
 			checking=1
-			while checking<length(fi)||(!isempty(ti)&&fi[checking]<ti[end])
+			while checking<=length(fi)#||(!isempty(ti)&&fi[checking]<ti[end])
 				delf=Int64[]
 				nf=t[fi[checking]]
-				for tit in fi[checking]+1:length(t)
+				fic=fi[checking]
+				if checking==length(fi)
+					checking+=1
+				end
+				for tit in fic+1:length(t)
 					if in(tit,fi)
 						checking+=1
 					end
@@ -132,28 +136,43 @@ function simplify!(ex::Expression,typ::Type{Fun})
 									ntf.x=nnf
 									nf=ntf
 								else
+									checking+=1
 									break
 								end
 							elseif isa(t[tit].x,Array)
-								if !isa(nf*t[tit].x[1],Fun)
+								txf=fetch(t[tit].x,Fun)
+								if txf==false||!isa(nf*txf,Fun)#!isa(nf*t[tit].x[1],Fun)
+									checking+=1
 									break
 								end
 								nt=t[tit]
 								for i in 1:length(nt.x)
-									nt.x[i]=nf*nt.x[i]
+									nt.x[i]=simplify(nf*nt.x[i])
 								end
 								push!(delf,tit)
 								nf=nt
-							else
-								break
+							elseif isa(t[tit].x,Expression)
+								txf=fetch(t[tit].x,Fun)
+								if txf==false||!isa(nf*txf,Fun)#!isa(nf*t[tit].x[1],Fun)
+									checking+=1
+									break
+								end
+								nt=t[tit]
+								nt.x[i]=simplify(nf*nt)
+								push!(delf,tit)
+								nf=nt
 							end
+							checking+=1
+							break
 						end
 					elseif isa(t[tit],NonAbelian)
+						checking+=1
 						break
 					end
 				end
+				#checking+=1
 				if !isempty(delf)
-					t[fi[checking]]=nf
+					t[fic]=nf
 					push!(delfa,delf)
 					#deleteat!(t,delf)
 					#fi=indsin(t,Fun)
