@@ -379,24 +379,39 @@ function sumlify!(tt::Array{Term})
 							end
 						end
 						if allin
+							nit=0
 							while isa(nt,Ten)&&nt.indices!=nt2.indices
+								nit+=1
 								transis=Symbol[]
 								for nti in 1:length(nt.indices)
 									i=nt.indices[nti]
-									if !isa(i,Symbol)
+									if !isa(i,Symbol)||i==nt2.indices[nti]
 										continue
 									end
-									j=nt2.indices[nti]
-									if !isa(j,Symbol)
-										continue
+									push!(transis,i)
+									for nti2 in nti+1:length(nt2.indices)
+										j=nt2.indices[nti2]
+										if !isa(j,Symbol)
+											continue
+										end
+										#if isempty(transis)
+										#	if i!=j
+										#		push!(transis,i)
+										#	end
+										#else
+											if j==transis[1]
+												push!(transis,nt.indices[nti2])
+											end
+										#end
+										if length(transis)>1
+											nt=trans(nt,transis[1],transis[2])
+											break
+										end
 									end
-									if i!=j
-										push!(transis,i)
-									end
-									if length(transis)>1
-										nt=trans(nt,transis[1],transis[2])
-										break
-									end
+								end
+								if nit>10
+									@warn "Stuck in transloop.\n$(nt.indices)\n$(nt2.indices)\n"
+									break
 								end
 							end
 						end
