@@ -379,7 +379,7 @@ dcterms(ex::Expression)=terms(deepcopy(ex))
 dcterms(x::X)=x
 function has(a::Array,t::Type)
 	for it in a
-		if has(it,t)
+		if isa(it,t)||has(it,t)
 			return true
 		end
 	end
@@ -387,7 +387,7 @@ function has(a::Array,t::Type)
 end
 function has(a::Array,t::EX)
 	for it in a
-		if has(it,t)
+		if it==t||has(it,t)
 			return true
 		end
 	end

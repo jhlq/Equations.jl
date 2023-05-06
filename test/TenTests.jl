@@ -220,10 +220,14 @@ tss=simplify(ts*t2s)
 tsb=(ts*t2s)&@equ b=2
 @test tsb[2,1,1,2,1,2]==:a3*:b2*:f5*:g4
 
-t=Ten([Fun(a->ones(2),:x),Fun(a-zeros(2),:x)],[:i,:j]
-tj1=t&@equ j=1
+t=Ten([Fun(a->ones(2),:x),Fun(a->zeros(2),:x)],[:i,:j])
+t=t&@equ j=1
+@test length(t.indices)==1
 
 #=
+s=size(t.x)
+has(t.indices[length(s)+1:end],Number)&&alltyp(t.x,Fun)
+
 t=simplify(Ten([:a1*Fun(a->[a,-a],:b),:a2*Fun(a->[a^2,a],:b)],[:c,:d]))
 
 ts=simplify(Ten([Fun(a->[:f1,:f2],:b) Fun(a->[:f3,:f4],:b);Fun(a->[:f5,:f6],:b) Fun(a->[:f7,:f8],:b)],[:c,:d,:e]))
