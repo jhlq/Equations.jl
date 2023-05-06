@@ -223,6 +223,9 @@ tsb=(ts*t2s)&@equ b=2
 t=Ten([Fun(a->ones(2),:x),Fun(a->zeros(2),:x)],[:i,:j])
 t=t&@equ j=1
 @test length(t.indices)==1
+t=Ten(Fun(a->ones(2,2),:x),[:i,:j])
+t=t&@equ j=1
+@test length(t.indices)==1
 
 #=
 s=size(t.x)

@@ -978,6 +978,31 @@ function simplify(t::Ten)
 				t.indices=t.indices[1:length(s)]
 			end=#
 		end
+	elseif isa(t.x,Fun)&&has(t.indices,Number)
+		for tindi in 1:length(t.indices)
+			if isa(t.indices[tindi],Number)
+				i=Any[]
+				for l in 1:length(t.indices)
+					if l==tindi
+						push!(i,t.indices[tindi])
+					else
+						push!(i,:)
+					end
+				end
+				ninds=Any[]
+				for tindii in 1:length(t.indices)
+					if tindii!=tindi
+						push!(ninds,t.indices[tindii])
+					end
+				end
+				nf=deepcopy(t.x)
+				of=t.x
+				nf.y=a->of.y(a)[i...]
+				t.x=nf
+				t.indices=ninds
+				return simplify(t)
+			end
+		end
 	end
 	t
 end
