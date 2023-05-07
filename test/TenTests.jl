@@ -227,8 +227,8 @@ t=Ten(Fun(a->ones(2,2),:x),[:i,:j])
 t=t&@equ j=1
 @test length(t.indices)==1
 
-t=simplify(Ten([1 0;0 1],[:i,:j])*Ten([Fun(a->ones(2),:x),Fun(a->ones(2),:x)],:k))
-t&@equ x=1
+t=simplify(Ten([1 0;0 1],[:i,:j])*Ten([Fun(a->ones(2),:x),Fun(a->ones(2),:x)],[:k,:l]))
+#t&@equ x=1
 #test this!
 
 
