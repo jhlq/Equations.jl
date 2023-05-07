@@ -266,6 +266,12 @@ function sumconv!(t::Term)
 			newnewterm[ti1]=nt1;newnewterm[ti2]=nt2
 			push!(at,newnewterm)
 		end
+		tex=expression(at)
+		tex=simplify!(tex)
+		at=terms(tex)
+		if isa(at,Factor)
+			at=Term[Factor[at]]
+		end
 		return at
 	end
 	return Term[t]
@@ -301,7 +307,7 @@ function sumconv(t::Ten)
 				slind[iii[2]+idif]+=1
 				nex=nex+Ten(t.x[slind...],deleteat!(deepcopy(t.indices),iii),t.td)
 			end
-			return nex
+			return simplify(nex)
 		end
 	end
 	t

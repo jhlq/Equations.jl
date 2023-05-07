@@ -678,41 +678,80 @@ function simplify!(ex::Expression)
 	if hasnan!=false
 		return NaN
 	end=#
+	ap=terms(ex)
+	for term in 1:length(ap)
+		for fac in 1:length(ap[term])
+			saptf=simplify(ap[term][fac])
+			if !isa(saptf,Factor);println(ap[term][fac]);end
+			ap[term][fac]=saptf
+		end
+		if !isempty(ap[term])
+			ap[term]=divify!(ap[term])
+			ap[term]=divbine!(ap[term])
+			ap[term]=divbinedify!(ap[term])
+			unsqrt!(ap[term])
+		end
+	end
+	ex=sumsym(sumnum(componify(expression(ex))))
+	#ex=componify(expression(ex))
 	tex=0
 	nit=0
 	while tex!=ex
 		nit+=1
 		tex=ex
+		#ex=sumsym(sumnum(componify(ex)))
+		#ex=componify(ex)
+		ap=terms(ex)
+		if isa(ap,X)
+			return simplify(ap)
+		end
+		#=for term in 1:length(ap)
+			ap[term]=divify!(ap[term])
+			ap[term]=divbine!(ap[term])
+			ap[term]=divbinedify!(ap[term])
+			#for fac in 1:length(ap[term])
+			#	saptf=simplify(ap[term][fac])
+			#	if !isa(saptf,Factor);println(ap[term][fac]);end
+			#	ap[term][fac]=saptf
+			#end
+			unsqrt!(ap[term])
+			#sort!(ap[term])
+		end=#
+		ex=extract(expression(ap)) #better to check if res::N before calling expression instead of extracting?
+		if isa(ex,Expression)
+			if has(ex,Ten)
+				ex=simplify(ex,Ten)
+			elseif has(ex,Fun)
+				ex=simplify!(ex,Fun)
+			end
+		end
+		if isa(ex,Expression)&&has(ex,PD)
+			ex=simplify(ex,PD)
+		end
 		ex=sumsym(sumnum(componify(ex)))
+		#ex=componify(ex)
 		ap=terms(ex)
 		if isa(ap,X)
 			return simplify(ap)
 		end
 		for term in 1:length(ap)
-			ap[term]=divify!(ap[term])
-			ap[term]=divbine!(ap[term])
-			ap[term]=divbinedify!(ap[term])
 			for fac in 1:length(ap[term])
 				saptf=simplify(ap[term][fac])
 				if !isa(saptf,Factor);println(ap[term][fac]);end
 				ap[term][fac]=saptf
 			end
-			unsqrt!(ap[term])
-			#sort!(ap[term])
 		end
-		ex=extract(expression(ap)) #better to check if res::N before calling expression instead of extracting?
-		if has(ex,Ten)
-			ex=simplify(ex,Ten)
-		elseif has(ex,Fun)
-			ex=simplify!(ex,Fun)
-		end
-		if has(ex,PD)
-			ex=simplify(ex,PD)
-		end
+		ex=extract(expression(ap))
+		#if nit>2;println("Simplify nit $nit");end
 		if nit>90
 			@warn("Stuck in simplify! Iteration $nit: $ex")
 			break
 		end
+	end
+	if isa(ex,Expression)#&&length(ex)>1
+		ex=componify(ex)
+		ex=sumnum(ex)
+		ex=sumsym(ex)
 	end
 	return ex#sort!(ex) 
 end
