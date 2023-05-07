@@ -753,11 +753,10 @@ end
 	end
 	t.td=simplify(t.td)
 end=#
-function simplify(t::Ten)
+function simplify!(t::Ten)
 	if t.td==0
 		return 0
 	end
-	t=deepcopy(t)
 	if isa(t.x,Adjoint)
 		t.x=convert(Array,t.x)
 	end
@@ -858,7 +857,7 @@ function simplify(t::Ten)
 			t.x[si]=simplify(t.x[si])
 		end
 		
-	end	
+	end
 	if duplicates(t.indices)!=0&&isa(t.x,Array)&&length(t.indices)==length(size(t.x)) #or Fun, TODO. Is it really necessary? Might just convoliute the expression
 		nt=sumconv(t)
 		for i in 1:30
@@ -880,6 +879,27 @@ function simplify(t::Ten)
 		#if isa(t.x[1],Fun)&&allnum(t.indices)
 		#	
 		#end
+		if isa(t.x[1],Array)
+			dims1=size(t.x)
+			dims2=size(t.x[1]) #assume all arrays are same size
+			td=Int64[dims1...]
+			for i in dims2
+				push!(td,i)
+			end
+			d1l=length(dims1)
+			newm=Array{Any}(undef,td...)
+			for k in Iterators.product(Base.OneTo.(td)...)
+				newm[k...]=t.x[k[1:d1l]...][k[d1l+1:end]...]
+			end
+			if !isa(newm[1],Union{Array,Fun})
+				#t.x=t.td .* newm
+				#t.td=1
+				t.x=newm
+				applytd!(t)
+			else
+				t.x=newm
+			end
+		end
 		if length(size(t.x))==length(t.indices)
 			if length(t.indices)==1&&isa(t.indices[1],Number)
 				return t.x[t.indices[1]]
@@ -947,26 +967,6 @@ function simplify(t::Ten)
 					t.x=newm
 				end
 			end=#
-		elseif isa(t.x[1],Array)
-			dims1=size(t.x)
-			dims2=size(t.x[1]) #assume all arrays are same size
-			td=Int64[dims1...]
-			for i in dims2
-				push!(td,i)
-			end
-			d1l=length(dims1)
-			newm=Array{Any}(undef,td...)
-			for k in Iterators.product(Base.OneTo.(td)...)
-				newm[k...]=t.x[k[1:d1l]...][k[d1l+1:end]...]
-			end
-			if !isa(newm[1],Union{Array,Fun})
-				#t.x=t.td .* newm
-				#t.td=1
-				t.x=newm
-				applytd!(t)
-			else
-				t.x=newm
-			end
 		else#if length(t.indices)>=length(size(t.x))
 			s=size(t.x)
 			for tindi in 1:length(s)
@@ -1054,6 +1054,7 @@ function simplify(t::Ten)
 	end
 	t
 end
+simplify(t::Ten)=simplify!(deepcopy(t))
 mutable struct Alt<:AbstractTensor #Alternating tensor
 	x
 	indices::Array{Any}
