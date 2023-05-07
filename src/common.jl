@@ -673,7 +673,7 @@ end
 sort(ex::Expression)=sort!(deepcopy(ex))
 include("tensors.jl")
 include("fun.jl")
-function simplify(ex::Expression)
+function simplify!(ex::Expression)
 	#=hasnan=fetch(ex,n->isa(n,AbstractFloat)&&isnan(n) ? true : false)
 	if hasnan!=false
 		return NaN
@@ -716,22 +716,25 @@ function simplify(ex::Expression)
 	end
 	return ex#sort!(ex) 
 end
-function simplify(c::Component)
-	args=deepcopy(getargs(c))
+simplify(ex::Expression)=simplify!(deepcopy(ex))
+function simplify!(c::Component)
+	#args=deepcopy(getargs(c))
+	args=getargs(c)
 	for arg in 1:length(args)
 		args[arg]=simplify(args[arg])
 	end
 	return typeof(c)(args...)
 end
+simplify(c::Component)=simplify!(deepcopy(c))
 simplify(x::N)=x
 simplify(x::N,a)=x
 simplify!(x::N)=x
 function simplify!(a::Array)
 	if length(a)==1
-		return simplify(a[1])
+		return simplify!(a[1])
 	else
 		for i in 1:length(a)
-			a[i]=simplify(a[i])
+			a[i]=simplify!(a[i])
 		end
 	end
 	return a
@@ -791,7 +794,7 @@ end
 sumnum(c::Component)=typeof(c)(sumnum(getarg(c)))
 sumnum(x::N)=x 
 function sumsym(ex::Expression)
-	#ap=terms(deepcopy(ex))
+	#ap=dcterms(ex) #terms(deepcopy(ex))
 	ap=terms(ex)
 	nap=length(ap)
 	cs=Array{Components}(undef,0)
