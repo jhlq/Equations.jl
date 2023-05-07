@@ -141,16 +141,24 @@ function applyamp(ex::Expression,eq::Equation,simp=true)
 				end
 			end
 		end
-		return simplify(expression(_terms))
+		nex=expression(_terms)
+		if simp
+			nex=simplify(nex)
+		end
+		return nex
 	end
 end
-function (&)(ex::Expression,eq::Equation)
-	return applyamp(ex,eq)
-end
-function (&)(ex::Component,eq::Equation)
-	ex=simplify(ex);eq=simplify(eq)
+function applyamp(ex::Component,eq::Equation,simp=true)
+	if simp
+		ex=simplify(ex)
+	end
+	eq=simplify(eq)
 	if isa(eq.lhs,Symbol)
-		return simplify(replace(ex,Dict(eq.lhs=>eq.rhs)))
+		nex=replace(ex,Dict(eq.lhs=>eq.rhs))
+		if simp
+			nex=simplify(nex)
+		end
+		return nex
 	end
 	m=matches(ex,eq)
 	if !isempty(m)
@@ -158,6 +166,12 @@ function (&)(ex::Component,eq::Equation)
 	else 
 		return ex
 	end
+end
+function (&)(ex::Expression,eq::Equation)
+	return applyamp(ex,eq)
+end
+function (&)(ex::Component,eq::Equation)
+	return applyamp(ex,eq)
 end
 function (&)(ex::Symbol,eq::Equation)
 	if isa(eq.lhs,Symbol)&&eq.lhs==ex
@@ -171,11 +185,17 @@ function (&)(ex::Symbol,eq::Equation)
 end
 (&)(x::Number,eq::Equation)=x
 function (&)(ex::Union{Ex,Equation},eqa::Array)
+	ex=simplify(ex)
 	for teq in eqa
-		#ex=applyamp(ex,teq,true)
+		#=if isa(teq,Function)
+			ex=ex&teq
+		else
+			ex=applyamp(ex,teq,false)
+		end=#
 		ex=ex&teq
 	end
-	return simplify(ex)
+	return simplify!(ex)
+	#return ex
 end
 function (&)(eq::Equation,sym::Symbol)
 	if isa(eq.lhs,Component)
