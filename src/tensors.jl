@@ -489,7 +489,7 @@ function sumlify!(tt::Array{Term})
 	end
 	ntt
 end
-sumlify(tt::Array{Term})=sumlify(deepcopy(tt))
+sumlify(tt::Array{Term})=sumlify!(deepcopy(tt))
 function untensify!(tt::Array{Term})
 	del=Integer[]
 	for ti in 1:length(tt)

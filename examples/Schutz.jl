@@ -9,6 +9,21 @@ function cchr(gF::Fun) #construct Christoffel symbol
 	chr=0.5*Ten(igF,[:cha,:ch1])*(Ten(pda,:ch3)*Ten(gF,[:cha,:ch2])+Ten(pda,:ch2)*Ten(gF,[:cha,:ch3])-Ten(pda,:cha)*Ten(gF,[:ch2,:ch3]))
 	return simplify(chr)
 end
+function cC(VF::Fun,gF::Fun) #construct Covariant derivative
+	pds=[]
+	for x in VF.x
+		push!(pds,PD(x))
+	end
+	chr=cchr(gF)
+	dims=length(size(sample(VF)))
+	if dims==1
+		return Ten(pds,:ch3)*Ten(VF,:ch1)+Ten(VF,:ch2)*chr
+	elseif dims==2
+		return Ten(pds,:ch3)*Ten(VF,[:ch1,:ch2])+Ten(VF,[:cha,:ch2])*(chr&@equ(ch2=cha))-Ten(VF,[:ch1,:cha])*(chr&@equ(ch1=cha))
+	else
+		error("The Fun must return a vector or matrix.")
+	end
+end
 function cRct(gF::Fun) #construct Riemann curvature tensor
 	pds=[]
 	for x in gF.x
