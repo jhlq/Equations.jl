@@ -95,6 +95,7 @@ function simplify(f::Fun)
 	end
 	return f
 end
+simplify!(f::Fun)=simplify(f)
 function simplify!(ex::Expression,typ::Type{Fun})
 	next=Term[]
 	for t in ex
