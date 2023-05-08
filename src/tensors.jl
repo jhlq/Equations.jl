@@ -574,35 +574,38 @@ function simplify(ex::Expression,typ::Type{Ten})
 	nit=0
 	while nnnat!=nnat||dofirst
 		dofirst=false
-		nnat=nnnat
+		nnat=deepcopy(nnnat)
 		nnnat=Term[]
 		for ter in nnat
 			foundT1=false
 			foundT2=false
 			tenprodded=false
-			nfacs=Factor[]
+			#nfacs=Factor[]
 			T1i=0
+			delfac=0
+			tpt="1"
 			lter=length(ter)
 			for facii in 1:lter
 				skipfac=false
 				faci=lter+1-facii
 				fac=ter[faci]
 				if !foundT1
-					if isa(fac,Ten)&&dimsmatch(fac,true)#&&isa(fac.x,Array)
+					if isa(fac,Ten)#&&dimsmatch(fac,true)#&&isa(fac.x,Array)
 						if !alltyp(fac.indices,Symbol)
 							break
 						end
 						foundT1=true
 						T1i=faci
-						skipfac=true
+						#skipfac=true
 					end
 				elseif !foundT2
-					if isa(fac,Ten)&&dimsmatch(fac,true)#&&isa(fac.x,Array)
+					if isa(fac,Ten)#&&dimsmatch(fac,true)#&&isa(fac.x,Array)
 						if !alltyp(fac.indices,Symbol)
 							break
 						end
 						foundT2=true
-						skipfac=true
+						delfac=faci
+						#skipfac=true
 						#T1=ter[T1i]
 						T1=fac
 						T2=ter[T1i] #yes the T1 and T2 are reversed because I reversed the direction in which to tenprod
@@ -689,22 +692,24 @@ function simplify(ex::Expression,typ::Type{Ten})
 						end
 						tpt=Ten(newm,nind,newtd)
 						#tpt=Ten(newm,nind,T1.td*fac.td)
-						push!(nfacs,tpt)
+						#push!(nfacs,tpt)
 						tenprodded=true
-						
-					elseif isa(fac,NonAbelian)
 						break
+					elseif isa(fac,NonAbelian)
+						foundT1=false
+						continue
 					end
 				end
-				if !skipfac
-					push!(nfacs,fac)
-				end
+				#if !skipfac
+				#	push!(nfacs,fac)
+				#end
 			end
 			if tenprodded
-				push!(nnnat,nfacs)
-			else
-				push!(nnnat,ter)
+				#push!(nnnat,nfacs)
+				ter[T1i]=tpt
+				deleteat!(ter,delfac)
 			end
+			push!(nnnat,ter)
 		end
 		nit+=1
 		if nit>90
