@@ -277,13 +277,14 @@ function sumconv!(t::Term)
 	return Term[t]
 end
 sumconv(t::Term)=sumconv!(deepcopy(t))
-function sumconv(tt::Array{Term})
+function sumconv!(tt::Array{Term})
 	nat=Term[]
 	for t in tt
-		pushall!(nat,sumconv(t))
+		pushall!(nat,sumconv!(t))
 	end
 	nat
 end
+sumconv(tt::Array{Term})=sumconv!(deepcopy(tt))
 function sumconv(t::Ten)
 	if isa(t.indices,Array)&&isa(t.x,Array)&&length(t.indices)==length(size(t.x))
 		iii=duplicates(t.indices)
@@ -542,7 +543,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 	for t in ex
 		pushall!(nat,sumconv(t))
 	end
-	nnat=sumconv(nat) 
+	nnat=sumconv!(nat) 
 	#=for n in 1:length(nnat)
 		for m in 1:length(nnat[n])
 			nnat[n][m]=simplify(nnat[n][m])
@@ -551,7 +552,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 	nit=0
 	while nnat!=nat
 		nit+=1
-		nat=nnat;nnat=sumconv(nnat)
+		nat=nnat;nnat=sumconv!(nnat)
 		if nit>90
 			@warn "Stuck in sumconv loop, breaking."
 			break
@@ -559,13 +560,13 @@ function simplify(ex::Expression,typ::Type{Ten})
 	end
 	for n in 1:length(nnat)
 		for m in 1:length(nnat[n])
-			nnat[n][m]=simplify(nnat[n][m])
+			nnat[n][m]=simplify!(nnat[n][m])
 		end
 	end
 	untensify!(nnat)
 	#nnat=sumlify!(nnat)
 	if has(nnat,Fun)
-		nnat=terms(simplify(Expression(nnat),Fun))
+		nnat=terms(simplify!(Expression(nnat),Fun))
 	end
 	#check each tensor, stride and break on nonabelian, then do tensor multiplication
 	nnnat=nnat
@@ -581,8 +582,10 @@ function simplify(ex::Expression,typ::Type{Ten})
 			tenprodded=false
 			nfacs=Factor[]
 			T1i=0
-			for faci in 1:length(ter)
+			lter=length(ter)
+			for facii in 1:lter
 				skipfac=false
+				faci=lter+1-facii
 				fac=ter[faci]
 				if !foundT1
 					if isa(fac,Ten)&&dimsmatch(fac,true)#&&isa(fac.x,Array)
@@ -600,7 +603,9 @@ function simplify(ex::Expression,typ::Type{Ten})
 						end
 						foundT2=true
 						skipfac=true
-						T1=ter[T1i]
+						#T1=ter[T1i]
+						T1=fac
+						T2=ter[T1i] #yes the T1 and T2 are reversed because I reversed the direction in which to tenprod
 						#=
 						T1l=length(T1.x)
 						T2l=length(fac.x)
@@ -617,19 +622,19 @@ function simplify(ex::Expression,typ::Type{Ten})
 						#pushall!(nind,fac.indices)
 						sr1=size(T1.x)
 						sr1l=length(sr1)
-						sr2=size(fac.x)
+						sr2=size(T2.x)
 						sr2l=length(sr2)
 						for i in 1:sr1l
 							push!(nind,T1.indices[i])
 						end
 						for i in 1:sr2l
-							push!(nind,fac.indices[i])
+							push!(nind,T2.indices[i])
 						end
 						for i in sr1l+1:length(T1.indices)
 							push!(nind,T1.indices[i])
 						end
-						for i in sr2l+1:length(fac.indices)
-							push!(nind,fac.indices[i])
+						for i in sr2l+1:length(T2.indices)
+							push!(nind,T2.indices[i])
 						end
 						td=Int64[]
 						for i in sr1
@@ -639,37 +644,37 @@ function simplify(ex::Expression,typ::Type{Ten})
 							push!(td,i)
 						end
 						if isempty(td)
-							newm=simplify(T1.x*fac.x)
+							newm=simplify(T1.x*T2.x)
 						else
 							newm=Array{Any}(undef,td...)
 							for k in Iterators.product(Base.OneTo.(td)...)
 								if isempty(sr1)#isa(T1.x,Fun)
-									newm[k...]=simplify(T1.x*fac.x[k...])
+									newm[k...]=simplify(T1.x*T2.x[k...])
 								elseif isempty(sr2)#isa(fac.x,Fun)
-									newm[k...]=simplify(T1.x[k...]*fac.x)
+									newm[k...]=simplify(T1.x[k...]*T2.x)
 								else
-									newm[k...]=simplify(T1.x[k[1:sr1l]...]*fac.x[k[sr1l+1:end]...])
+									newm[k...]=simplify(T1.x[k[1:sr1l]...]*T2.x[k[sr1l+1:end]...])
 								end
 							end
 						end
 						if isa(T1.td,Factor)
-							if isa(fac.td,Factor)
-								newtd=T1.td*fac.td
+							if isa(T2.td,Factor)
+								newtd=T1.td*T2.td
 							else
 								newtd=[]
-								for ftd in fac.td
+								for ftd in T2.td
 									push!(newtd,T1.td*ftd)
 								end
 							end
-						elseif isa(fac.td,Factor)
+						elseif isa(T2.td,Factor)
 							newtd=[]
 							for Ttd in T1.td
-								push!(newtd,Ttd*fac.td)
+								push!(newtd,Ttd*T2.td)
 							end
 						else
 							sr1=size(T1.td)
 							sr1l=length(sr1)
-							sr2=size(fac.td)
+							sr2=size(T2.td)
 							td=Int64[]
 							for i in sr1
 								push!(td,i)
@@ -679,13 +684,14 @@ function simplify(ex::Expression,typ::Type{Ten})
 							end
 							newtd=Array{Any}(undef,td...)
 							for k in Iterators.product(Base.OneTo.(td)...)
-								newtd[k...]=simplify(T1.td[k[1:sr1l]...]*fac.td[k[sr1l+1:end]...])
+								newtd[k...]=simplify(T1.td[k[1:sr1l]...]*T2.td[k[sr1l+1:end]...])
 							end
 						end
 						tpt=Ten(newm,nind,newtd)
 						#tpt=Ten(newm,nind,T1.td*fac.td)
 						push!(nfacs,tpt)
 						tenprodded=true
+						
 					elseif isa(fac,NonAbelian)
 						break
 					end

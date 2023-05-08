@@ -711,11 +711,11 @@ function simplify!(ex::Expression)
 		if isa(ap,N)
 			return ap
 		elseif isa(ap,Component)
-			return simplify(ap)
+			return simplify!(ap)
 		end
 		for term in 1:length(ap)
 			for fac in 1:length(ap[term])
-				saptf=simplify(ap[term][fac])
+				saptf=simplify!(ap[term][fac])
 				if !isa(saptf,Factor);println(ap[term][fac]);end
 				ap[term][fac]=saptf
 			end
