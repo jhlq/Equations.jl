@@ -108,7 +108,7 @@ function (&)(eq::Equation,eqa::Array{Equation})
 end
 (&)(eq::Equation,fun::Function)=fun(eq)
 (&)(ex::EX,fun::Function)=fun(ex)
-function applyamp(ex::Expression,eq::Equation,simp=true)
+function applyamp(ex::Expression,eq::Equation,simp::Bool=true)
 	if simp
 		ex=simplify(ex)
 	end
@@ -148,7 +148,7 @@ function applyamp(ex::Expression,eq::Equation,simp=true)
 		return nex
 	end
 end
-function applyamp(ex::Component,eq::Equation,simp=true)
+function applyamp(ex::Component,eq::Equation,simp::Bool=true)
 	if simp
 		ex=simplify(ex)
 	end
@@ -167,7 +167,7 @@ function applyamp(ex::Component,eq::Equation,simp=true)
 		return ex
 	end
 end
-applyamp(x::Number,eq:.Equation,simp=true)=x
+applyamp(x::Number,eq::Equation,simp::Bool=true)=x
 function (&)(ex::Expression,eq::Equation)
 	return applyamp(ex,eq)
 end
