@@ -186,7 +186,7 @@ function (&)(ex::Symbol,eq::Equation)
 end
 (&)(x::Number,eq::Equation)=x
 function (&)(ex::Union{Ex,Equation},eqa::Array)
-	ex=simplify(ex)
+	#ex=simplify(ex)
 	for teq in eqa
 		#=if isa(teq,Function)
 			ex=ex&teq

@@ -781,7 +781,7 @@ function simplify!(t::Ten)
 		if nit==90
 			@warn "Stuck in Ten simplification.\n$t\nnot equal to\n$pt"
 		end
-		pt=t
+		pt=deepcopy(t)
 		if isa(t.x,Array)
 			if has(t.x,Expression)
 				fifun=fetch(t.x,Fun)

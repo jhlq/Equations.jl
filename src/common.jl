@@ -676,25 +676,30 @@ sort(ex::Expression)=sort!(deepcopy(ex))
 include("tensors.jl")
 include("fun.jl")
 function simplify!(ex::Expression)
-	#==#ap=terms(ex)
-	for term in 1:length(ap) #this does not agree with R=0...
+	#nex=componify(deepcopy(ex))
+	#if nex!=ex
+	#	println("Componified $ex\n\ninto\n\n$nex")
+	#	ex=nex
+	#end
+	#=ap=terms(ex)
+	for term in 1:length(ap) #this does not agree with R=0... chr*chr' becomes different if chr isn't componified first.
 		for fac in 1:length(ap[term])
 			if isa(ap[term][fac],Expression)
 				saptf=simplify(ap[term][fac])
-				println("Simplified\n$(ap[term][fac])\ninto\n$saptf\nin\n$ex\n\n")
-				if !isa(saptf,Factor);println(ap[term][fac]);end
+				println(1)#println("Simplified\n$(ap[term][fac])\n\ninto\n\n$saptf\nin\n$ex\n\n")
+				#if !isa(saptf,Factor);println(ap[term][fac]);end
 				ap[term][fac]=saptf
 			end
 		end
-		if !isempty(ap[term])
-			ap[term]=divify!(ap[term])
-			ap[term]=divbine!(ap[term])
-			ap[term]=divbinedify!(ap[term])
-			unsqrt!(ap[term])
-		end
+		#if !isempty(ap[term])
+		#	ap[term]=divify!(ap[term])
+		#	ap[term]=divbine!(ap[term])
+		#	ap[term]=divbinedify!(ap[term])
+		#	unsqrt!(ap[term])
+		#end
 	end
 	#ex=sumsym(sumnum(componify(expression(ex))))
-	ex=componify(expression(ap))#==#
+	ex=componify(expression(ap))=#
 	tex=0
 	nit=0
 	while tex!=ex
