@@ -132,10 +132,11 @@ end
 matches(::N, ::Pow)=[]
 matches(::Pow, ::Expression)=[]
 	
-function simplify(p::Pow)
-	p,e=(simplify(p.x),simplify(p.y))
+function simplify!(p::Pow)
+	p,e=(simplify!(p.x),simplify!(p.y))
 	return p^e
 end
+simplify(p::Pow)=simplify!(deepcopy(p))
 function simplify(term::Array,t::Type{Pow})
 	potpows=matches(term,t)
 	if !isempty(potpows)

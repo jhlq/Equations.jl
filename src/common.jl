@@ -754,7 +754,7 @@ function simplify!(c::Component)
 	#args=deepcopy(getargs(c))
 	args=getargs(c)
 	for arg in 1:length(args)
-		args[arg]=simplify(args[arg])
+		args[arg]=simplify!(args[arg])
 	end
 	return typeof(c)(args...)
 end

@@ -9,7 +9,7 @@ function print(io::IO,s::Sqrt)
 	print(io,')')
 end
 function simplify(sq::Sqrt)
-	sq=Sqrt(simplify(sq.x))
+	sq=Sqrt(simplify!(sq.x))
 	if isa(sq.x,Number)
 		if isreal(sq.x)&&sq.x<0
 			return sqrt(complex(sq.x))
@@ -24,7 +24,7 @@ function simplify(sq::Sqrt)
 			if iseven(nfacs)
 				for p in permutations(facs)
 					if p[1:Int(nfacs/2)]==p[Int(nfacs/2+1):nfacs]
-						return simplify(expression(p[1:Int(nfacs/2)]))
+						return simplify!(expression(p[1:Int(nfacs/2)]))
 					end
 				end
 			end
@@ -34,6 +34,7 @@ function simplify(sq::Sqrt)
 	end
 	return sq
 end
+simplify!(sq::Sqrt)=simplify(deepcopy(sq))
 function matches(eq::Equation,t::Type{Sqrt})
 	lhs=deepcopy(eq.lhs)
 	rhs=deepcopy(eq.rhs)

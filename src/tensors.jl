@@ -590,7 +590,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 				faci=lter+1-facii
 				fac=ter[faci]
 				if !foundT1
-					if isa(fac,Ten)#&&dimsmatch(fac,true)#&&isa(fac.x,Array)
+					if isa(fac,Ten)&&dimsmatch(fac,true)#&&isa(fac.x,Array)
 						if !alltyp(fac.indices,Symbol)
 							break
 						end
@@ -599,7 +599,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 						#skipfac=true
 					end
 				elseif !foundT2
-					if isa(fac,Ten)#&&dimsmatch(fac,true)#&&isa(fac.x,Array)
+					if isa(fac,Ten)&&dimsmatch(fac,true)#&&isa(fac.x,Array)
 						if !alltyp(fac.indices,Symbol)
 							break
 						end
@@ -1229,8 +1229,8 @@ end
 mutable struct Transp<:SingleArg
 	x
 end
-function simplify(t::Transp)
-	t=Transp(simplify(t.x))
+function simplify!(t::Transp)
+	t=Transp(simplify!(t.x))
 	if isa(t.x,Ten)&&isa(t.x.x,Matrix)&&length(t.x.indices)==2&&allnum(t.x.x)
 		return Ten(convert(Array{Any},t.x.x'),[t.x.indices[2],t.x.indices[1]],t.x.td) #t.x.indices) #[t.x.indices[2],t.x.indices[1]]) #switching indices is inverse of transposing. But if we switch the indices we can sum transposed matrix with its equivalent
 	end
@@ -1239,13 +1239,14 @@ function simplify(t::Transp)
 	end
 	return t
 end
+simplify(t::Transp)=simplify!(deepcopy(t))
 mutable struct GenTrans<:Component
 	x
 	i1::Symbol
 	i2::Symbol
 end
-function simplify(t::GenTrans)
-	t=GenTrans(simplify(t.x),t.i1,t.i2)
+function simplify!(t::GenTrans)
+	t=GenTrans(simplify!(t.x),t.i1,t.i2)
 	if t.x==0
 		return 0
 	end
@@ -1279,13 +1280,14 @@ function simplify(t::GenTrans)
 	end
 	return t
 end
+simplify(t::GenTrans)=simplify!(deepcopy(t))
 trans(t::Ten,i::Symbol,j::Symbol)=simplify(GenTrans(t,i,j))
 mutable struct Inv<:SingleArg
 	x
 end
 inv(ex::Ex)=Inv(ex)
-function simplify(c::Inv)
-	c=Inv(simplify(c.x))
+function simplify!(c::Inv)
+	c=Inv(simplify!(c.x))
 	if isa(c.x,Matrix)
 		for cxc in c.x
 			if !isa(cxc,Number)
@@ -1301,12 +1303,13 @@ function simplify(c::Inv)
 	end
 	return c
 end
+simplify(c::Inv)=simplify!(deepcopy(c))
 mutable struct Det<:SingleArg
 	x
 end
 det(ex::Ex)=Det(ex)
-function simplify(c::Det)
-	c=Det(simplify(c.x))
+function simplify!(c::Det)
+	c=Det(simplify!(c.x))
 	if isa(c.x,Matrix)
 		for cxc in c.x
 			if !isa(cxc,Number)
@@ -1322,6 +1325,7 @@ function simplify(c::Det)
 	end
 	return c
 end
+simplify(c::Det)=simplify!(deepcopy(c))
 function tenprod(a1::Array,a2::Array)
 	sr1=size(a1)
 	sr1l=length(sr1)

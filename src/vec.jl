@@ -56,6 +56,7 @@ function simplify(c::Cross)
 	end
 	return c
 end
+simplify!(c::Cross)=simplify(c)
 print(io::IO,c::Cross)=print(io,c.x,'×',c.y)
 mutable struct Norm <: Component
 	x
@@ -79,6 +80,7 @@ function simplify(n::Norm)
 	end
 	norm(n.x)
 end
+simplify!(n::Norm)=simplify(n)
 mutable struct Dot <: Component
 	x
 	y
@@ -101,3 +103,4 @@ function simplify(d::Dot)
 	end
 	return d
 end
+simplify!(d::Dot)=simplify(d)

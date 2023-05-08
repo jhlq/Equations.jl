@@ -231,6 +231,9 @@ t=simplify(Ten([1 0;0 1],[:i,:j])*Ten([Fun(a->ones(2),:x),Fun(a->ones(2),:x)],[:
 #t&@equ x=1
 #test this!
 
+f=Fun(a->ones(2),:x)
+t=Ten([f+:x,f],[:i,:j])*Ten([f,f+:y],[:k,:l])
+#ts=simplify(t)
 
 #=
 

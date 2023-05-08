@@ -130,13 +130,14 @@ function simplify(ex::Expression,t::Type{Div})
 	end
 	return simplify(expression(ap))
 end
-function simplify(d::Div)
-	x=simplify(d.x)
+function simplify!(d::Div)
+	x=simplify!(d.x)
 	if isa(x,Number)
 		return 1/x
 	end
 	return Div(x)
 end
+simplify(d::Div)=simplify!(deepcopy(d))
 function matches(eq::Equation,t::Type{Div})
 	lhs=terms(eq.lhs)
 	rhs=terms(eq.rhs)
