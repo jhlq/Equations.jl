@@ -780,6 +780,7 @@ function simplify!(t::Ten)
 		end
 		if nit==90
 			@warn "Stuck in Ten simplification.\n$t\nnot equal to\n$pt"
+		end
 		pt=t
 		if isa(t.x,Array)
 			if has(t.x,Expression)
