@@ -9,7 +9,7 @@ function cchr(gF::Fun) #construct Christoffel symbol
 	chr=0.5*Ten(igF,[:cha,:ch1])*(Ten(pda,:ch3)*Ten(gF,[:cha,:ch2])+Ten(pda,:ch2)*Ten(gF,[:cha,:ch3])-Ten(pda,:cha)*Ten(gF,[:ch2,:ch3]))
 	return simplify(chr)
 end
-function cC(VF::Fun,gF::Fun) #construct Covariant derivative
+function cC(VF::Fun,gF::Fun) #construct Covariant derivative of rank (1,0) or (1,1) tensor
 	pds=[]
 	for x in VF.x
 		push!(pds,PD(x))
@@ -30,7 +30,8 @@ function cRct(gF::Fun) #construct Riemann curvature tensor
 		push!(pds,PD(x))
 	end
 	chr=cchr(gF)
-	return Ten(pds,:ch3)*(chr&@equ(ch3=ch4))-Ten(pds,:ch4)*chr+(chr&@equ(ch2=ch5))*(chr&@equs(ch1=ch5,ch3=ch4))-(chr&@equs(ch2=ch5,ch3=ch4))*(chr&@equ(ch1=ch5))
+	return Ten(pds,:ch3)*replace(chr,Dict(:ch3=>:ch4))-Ten(pds,:ch4)*chr+replace(chr,Dict(:ch2=>:ch5))*replace(chr,Dict(:ch1=>:ch5,:ch3=>:ch4))-replace(chr,Dict(:ch2=>:ch5,:ch3=>:ch4))*replace(chr,Dict(:ch1=>:ch5))
+	#return Ten(pds,:ch3)*(chr&@equ(ch3=ch4))-Ten(pds,:ch4)*chr+(chr&@equ(ch2=ch5))*(chr&@equs(ch1=ch5,ch3=ch4))-(chr&@equs(ch2=ch5,ch3=ch4))*(chr&@equ(ch1=ch5))
 end
 function cRctfv(gF::Fun) #construct Riemann curvature tensor, fun version
 	pds=[]

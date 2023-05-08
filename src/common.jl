@@ -676,11 +676,12 @@ sort(ex::Expression)=sort!(deepcopy(ex))
 include("tensors.jl")
 include("fun.jl")
 function simplify!(ex::Expression)
-	#=ap=terms(ex)
+	#==#ap=terms(ex)
 	for term in 1:length(ap) #this does not agree with R=0...
 		for fac in 1:length(ap[term])
 			if isa(ap[term][fac],Expression)
 				saptf=simplify(ap[term][fac])
+				println("Simplified\n$(ap[term][fac])\ninto\n$saptf\nin\n$ex\n\n")
 				if !isa(saptf,Factor);println(ap[term][fac]);end
 				ap[term][fac]=saptf
 			end
@@ -693,7 +694,7 @@ function simplify!(ex::Expression)
 		end
 	end
 	#ex=sumsym(sumnum(componify(expression(ex))))
-	ex=componify(expression(ap))=#
+	ex=componify(expression(ap))#==#
 	tex=0
 	nit=0
 	while tex!=ex

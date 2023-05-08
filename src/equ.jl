@@ -167,6 +167,7 @@ function applyamp(ex::Component,eq::Equation,simp=true)
 		return ex
 	end
 end
+applyamp(x::Number,eq:.Equation,simp=true)=x
 function (&)(ex::Expression,eq::Equation)
 	return applyamp(ex,eq)
 end
@@ -194,8 +195,8 @@ function (&)(ex::Union{Ex,Equation},eqa::Array)
 		end=#
 		ex=ex&teq
 	end
-	return simplify!(ex)
-	#return ex
+	#return simplify!(ex)
+	return ex
 end
 function (&)(eq::Equation,sym::Symbol)
 	if isa(eq.lhs,Component)

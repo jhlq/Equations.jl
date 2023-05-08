@@ -773,143 +773,212 @@ function simplify!(t::Ten)
 		nf.y=a->t.x.y(a)[t.indices...]
 		return nf
 	end
-	if isa(t.x,Array)
-		if has(t.x,Expression)
-			fifun=fetch(t.x,Fun)
-			if fifun!=false&&length(size(sample(fifun)))>0
-				funmat=convert(Array{Any},ones(size(t.x)))
-				for ltxi in 1:length(t.x)
-					if isa(t.x[ltxi],Expression)
-						t.x[ltxi]=simplify(t.x[ltxi])
-						if isa(t.x[ltxi],Expression)&&length(t.x[ltxi])==1 #matrixmulting should never add a second term. Unless it has such an expression already...
-							delfis=Int64[]
-							for exi in 1:length(t.x[ltxi][1])
-								if isa(t.x[ltxi][1][exi],Fun)#&&length(size(sample(t.x[ltxi][1][exi])))>0 #components containing functions causes undefined behaviour
-									push!(delfis,exi)
+	pt=0
+	for nit in 1:90
+		if t==pt
+			break
+		end
+		if nit==90
+			@warn "Stuck in Ten simplification.\n$t\nnot equal to\n$pt"
+		pt=t
+		if isa(t.x,Array)
+			if has(t.x,Expression)
+				fifun=fetch(t.x,Fun)
+				if fifun!=false&&length(size(sample(fifun)))>0
+					funmat=convert(Array{Any},ones(size(t.x)))
+					for ltxi in 1:length(t.x)
+						if isa(t.x[ltxi],Expression)
+							t.x[ltxi]=simplify(t.x[ltxi])
+							if isa(t.x[ltxi],Expression)&&length(t.x[ltxi])==1 #matrixmulting should never add a second term. Unless it has such an expression already...
+								delfis=Int64[]
+								for exi in 1:length(t.x[ltxi][1])
+									if isa(t.x[ltxi][1][exi],Fun)#&&length(size(sample(t.x[ltxi][1][exi])))>0 #components containing functions causes undefined behaviour
+										push!(delfis,exi)
+									end
 								end
-							end
-							if length(delfis)>0
-								fun=t.x[ltxi][1][delfis[1]]
-								for funi in 2:length(delfis)
-									fun=fun*t.x[ltxi][1][delfis[1]]
+								if length(delfis)>0
+									fun=t.x[ltxi][1][delfis[1]]
+									for funi in 2:length(delfis)
+										fun=fun*t.x[ltxi][1][delfis[1]]
+									end
+									funmat[ltxi]=fun
+									deleteat!(t.x[ltxi][1],delfis)
 								end
-								funmat[ltxi]=fun
-								deleteat!(t.x[ltxi][1],delfis)
+							elseif isa(t.x[ltxi],Expression)&&length(t.x[ltxi])>1
+								@warn "Expression $(t.x[ltxi]) contains more than one terms, only implemented for the possibility of one. Ignoring all but the first."
 							end
-						elseif isa(t.x[ltxi],Expression)&&length(t.x[ltxi])>1
-							@warn "Expression $(t.x[ltxi]) contains more than one terms, only implemented for the possibility of one. Ignoring all but the first."
+						elseif isa(t.x[ltxi],Fun)
+							funmat[ltxi]=t.x[ltxi]
+							t.x[ltxi]=1
 						end
-					elseif isa(t.x[ltxi],Fun)
-						funmat[ltxi]=t.x[ltxi]
-						t.x[ltxi]=1
 					end
-				end
-				#for funa in funmat
-				#	if funa!=1
-						allequal=true
-						tx1=t.x[1]
-						for tx in t.x
-							if tx!=tx1
-								allequal=false
-								break
-							end
-						end
-						if allequal
-							if isa(t.td,Array)
-								for i in 1:length(t.td)
-									t.td[i]=simplify(tx1*t.td[i])
+					#for funa in funmat
+					#	if funa!=1
+							allequal=true
+							tx1=t.x[1]
+							for tx in t.x
+								if tx!=tx1
+									allequal=false
+									break
 								end
+							end
+							if allequal
+								if isa(t.td,Array)
+									for i in 1:length(t.td)
+										t.td[i]=simplify(tx1*t.td[i])
+									end
+								else
+									t.td=simplify(tx1*t.td)
+								end
+								t=Ten(funmat,t.indices,t.td)
 							else
-								t.td=simplify(tx1*t.td)
-							end
-							t=Ten(funmat,t.indices,t.td)
-						else
-							#return TenDot(t.x,t.indices)*Ten(funmat,t.indices)
-							ptd=t.td
-							t=Ten(funmat,t.indices,t.x)
-							if isa(ptd,N)
-								if ptd!=1
-									t.td=t.td .* ptd
+								#return TenDot(t.x,t.indices)*Ten(funmat,t.indices)
+								ptd=t.td
+								t=Ten(funmat,t.indices,t.x)
+								if isa(ptd,N)
+									if ptd!=1
+										t.td=t.td .* ptd
+									end
+								elseif isa(ptd,Factor)
+									for tdi in 1:length(t.td)
+										t.td[i]=t.td[i]*ptd
+									end
+								else
+									#@warn "Multiplying two td arrays not implemented, ignoring $ptd"
+									t.td=tenprod(t.td,ptd)
 								end
-							elseif isa(ptd,Factor)
-								for tdi in 1:length(t.td)
-									t.td[i]=t.td[i]*ptd
-								end
-							else
-								#@warn "Multiplying two td arrays not implemented, ignoring $ptd"
-								t.td=tenprod(t.td,ptd)
+								t.td=simplify(t.td)
+								#@warn "Array values of td have not been tested. Value of td: $(t.td)"
 							end
-							t.td=simplify(t.td)
-							#@warn "Array values of td have not been tested. Value of td: $(t.td)"
-						end
-				#		break
-				#	end
-				#end
-			end
-		end
-		if t.x==zeros(size(t.x))
-			return 0
-		end
-		if !isa(t.x,Array{Any})
-			t.x=convert(Array{Any},t.x)
-		end
-		for si in 1:length(t.x)
-			t.x[si]=simplify(t.x[si])
-		end
-		
-	end
-	if duplicates(t.indices)!=0&&isa(t.x,Array)&&length(t.indices)==length(size(t.x)) #or Fun, TODO. Is it really necessary? Might just convoliute the expression
-		nt=sumconv(t)
-		for i in 1:30
-			if nt==t
-				break
-			else
-				t=nt
-			end
-			if isa(t,Ten)&&duplicates(t.indices)!=0
-				nt=sumconv(t)
-			else
-				break
-			end
-		end
-		return simplify(t)
-	elseif isempty(t.indices)&&!isa(t.x,Array)
-		return t.x
-	elseif isa(t.x,Array)
-		#if isa(t.x[1],Fun)&&allnum(t.indices)
-		#	
-		#end
-		if isa(t.x[1],Array)
-			dims1=size(t.x)
-			dims2=size(t.x[1]) #assume all arrays are same size
-			td=Int64[dims1...]
-			for i in dims2
-				push!(td,i)
-			end
-			d1l=length(dims1)
-			newm=Array{Any}(undef,td...)
-			for k in Iterators.product(Base.OneTo.(td)...)
-				newm[k...]=t.x[k[1:d1l]...][k[d1l+1:end]...]
-			end
-			if !isa(newm[1],Union{Array,Fun})
-				#t.x=t.td .* newm
-				#t.td=1
-				t.x=newm
-				applytd!(t)
-			else
-				t.x=newm
-			end
-		end
-		if length(size(t.x))==length(t.indices)
-			if length(t.indices)==1&&isa(t.indices[1],Number)
-				return t.x[t.indices[1]]
-			else#if isa(t.indices,Array)
-				if allnum(t.indices)#&&dimsmatch(t)
-					return t.x[t.indices...]
+					#		break
+					#	end
+					#end
 				end
-				for tindi in 1:length(t.indices)
+			end
+			if t.x==zeros(size(t.x))
+				return 0
+			end
+			if !isa(t.x,Array{Any})
+				t.x=convert(Array{Any},t.x)
+			end
+			for si in 1:length(t.x)
+				t.x[si]=simplify(t.x[si])
+			end
+			
+		end
+		if duplicates(t.indices)!=0&&isa(t.x,Array)&&length(t.indices)==length(size(t.x)) #or Fun, TODO. Is it really necessary? Might just convoliute the expression
+			nt=sumconv(t)
+			for i in 1:30
+				if nt==t
+					break
+				else
+					t=nt
+				end
+				if isa(t,Ten)&&duplicates(t.indices)!=0
+					nt=sumconv(t)
+				else
+					break
+				end
+			end
+			return simplify(t)
+		elseif isempty(t.indices)&&!isa(t.x,Array)
+			return t.x
+		elseif isa(t.x,Array)
+			#if isa(t.x[1],Fun)&&allnum(t.indices)
+			#	
+			#end
+			if isa(t.x[1],Array)
+				dims1=size(t.x)
+				dims2=size(t.x[1]) #assume all arrays are same size
+				td=Int64[dims1...]
+				for i in dims2
+					push!(td,i)
+				end
+				d1l=length(dims1)
+				newm=Array{Any}(undef,td...)
+				for k in Iterators.product(Base.OneTo.(td)...)
+					newm[k...]=t.x[k[1:d1l]...][k[d1l+1:end]...]
+				end
+				if !isa(newm[1],Union{Array,Fun})
+					#t.x=t.td .* newm
+					#t.td=1
+					t.x=newm
+					applytd!(t)
+				else
+					t.x=newm
+				end
+			end
+			if length(size(t.x))==length(t.indices)
+				if length(t.indices)==1&&isa(t.indices[1],Number)
+					return t.x[t.indices[1]]
+				else#if isa(t.indices,Array)
+					if allnum(t.indices)#&&dimsmatch(t)
+						return t.x[t.indices...]
+					end
+					for tindi in 1:length(t.indices)
+						if isa(t.indices[tindi],Number)
+							s=size(t.x)
+							i=Any[]
+							for l in 1:length(s)
+								if l==tindi
+									push!(i,t.indices[tindi])
+								else
+									push!(i,:)
+								end
+							end
+							ninds=Any[]
+							for tindii in 1:length(t.indices)
+								if tindii!=tindi
+									push!(ninds,t.indices[tindii])
+								end
+							end
+							return simplify(Ten(t.x[i...],ninds,t.td))
+						end
+					end
+					#=if isa(t.indices[end],Number)
+						if length(t.indices)>1
+							s=size(t.x)
+							i=Any[]
+							for l in 1:length(s)-1
+								push!(i,:)
+							end
+							push!(i,t.indices[end])
+							return Ten(t.x[i...],t.indices[1:end-1],t.td)
+						elseif !isa(t.x[t.indices[end]],Array)&&!isa(t.x[t.indices[end]],Fun)
+							return t.x[t.indices[end]]
+						end
+					end=#
+				end
+			#=elseif isa(t.x,Vector)
+				if isa(t.indices[1],Number)
+					t.x=t.x[t.indices[1]]
+					popfirst!(t.indices)
+				elseif isa(t.x[1],Array)
+					sp=size(t.x[1])
+					samesize=true
+					nelem=length(t.x)
+					for i in 2:nelem
+						if sp!=size(t.x[i])
+							samesize=false
+						end
+					end
+					if samesize
+						#spl=length(sp)
+						td=Int64[nelem]
+						for i in sp
+							push!(td,i)
+						end
+						newm=Array{Any}(undef,td...)
+						for k in Iterators.product(Base.OneTo.(td)...)
+							newm[k...]=t.x[k[1]][k[2:end]...]
+						end
+						t.x=newm
+					end
+				end=#
+			else#if length(t.indices)>=length(size(t.x))
+				s=size(t.x)
+				for tindi in 1:length(s)
 					if isa(t.indices[tindi],Number)
-						s=size(t.x)
 						i=Any[]
 						for l in 1:length(s)
 							if l==tindi
@@ -927,52 +996,49 @@ function simplify!(t::Ten)
 						return simplify(Ten(t.x[i...],ninds,t.td))
 					end
 				end
-				#=if isa(t.indices[end],Number)
-					if length(t.indices)>1
-						s=size(t.x)
-						i=Any[]
-						for l in 1:length(s)-1
-							push!(i,:)
+				if has(t.indices[length(s)+1:end],Number)&&alltyp(t.x,Fun)
+					for tindi in length(s)+1:length(t.indices)
+						if isa(t.indices[tindi],Number)
+							i=Any[]
+							for l in length(s)+1:length(t.indices)
+								if l==tindi
+									push!(i,t.indices[tindi])
+								else
+									push!(i,:)
+								end
+							end
+							ninds=Any[]
+							for tindii in 1:length(t.indices)
+								if tindii!=tindi
+									push!(ninds,t.indices[tindii])
+								end
+							end
+							for txi in 1:length(t.x)
+								nf=deepcopy(t.x[txi])
+								of=t.x[txi]
+								nf.y=a->of.y(a)[i...]
+								t.x[txi]=nf
+							end
+							t.indices=ninds
+							return simplify(t)
 						end
-						push!(i,t.indices[end])
-						return Ten(t.x[i...],t.indices[1:end-1],t.td)
-					elseif !isa(t.x[t.indices[end]],Array)&&!isa(t.x[t.indices[end]],Fun)
-						return t.x[t.indices[end]]
 					end
+				end
+				#=if allnum(t.indices[length(s)+1:end])&&alltyp(t.x,Fun) #this causes stack overflow...
+					for txi in 1:length(t.x)
+						nf=deepcopy(t.x[txi])
+						of=t.x[txi]
+						nf.y=a->of.y(a)[t.indices[length(s)+1:end]...]
+						t.x[txi]=nf #maybe because t.x[txi] gets redefined in the function
+					end
+					t.indices=t.indices[1:length(s)]
 				end=#
 			end
-		#=elseif isa(t.x,Vector)
-			if isa(t.indices[1],Number)
-				t.x=t.x[t.indices[1]]
-				popfirst!(t.indices)
-			elseif isa(t.x[1],Array)
-				sp=size(t.x[1])
-				samesize=true
-				nelem=length(t.x)
-				for i in 2:nelem
-					if sp!=size(t.x[i])
-						samesize=false
-					end
-				end
-				if samesize
-					#spl=length(sp)
-					td=Int64[nelem]
-					for i in sp
-						push!(td,i)
-					end
-					newm=Array{Any}(undef,td...)
-					for k in Iterators.product(Base.OneTo.(td)...)
-						newm[k...]=t.x[k[1]][k[2:end]...]
-					end
-					t.x=newm
-				end
-			end=#
-		else#if length(t.indices)>=length(size(t.x))
-			s=size(t.x)
-			for tindi in 1:length(s)
+		elseif isa(t.x,Fun)&&has(t.indices,Number)
+			for tindi in 1:length(t.indices)
 				if isa(t.indices[tindi],Number)
 					i=Any[]
-					for l in 1:length(s)
+					for l in 1:length(t.indices)
 						if l==tindi
 							push!(i,t.indices[tindi])
 						else
@@ -985,70 +1051,13 @@ function simplify!(t::Ten)
 							push!(ninds,t.indices[tindii])
 						end
 					end
-					return simplify(Ten(t.x[i...],ninds,t.td))
+					nf=deepcopy(t.x)
+					of=t.x
+					nf.y=a->of.y(a)[i...]
+					t.x=nf
+					t.indices=ninds
+					return simplify(t)
 				end
-			end
-			if has(t.indices[length(s)+1:end],Number)&&alltyp(t.x,Fun)
-				for tindi in length(s)+1:length(t.indices)
-					if isa(t.indices[tindi],Number)
-						i=Any[]
-						for l in length(s)+1:length(t.indices)
-							if l==tindi
-								push!(i,t.indices[tindi])
-							else
-								push!(i,:)
-							end
-						end
-						ninds=Any[]
-						for tindii in 1:length(t.indices)
-							if tindii!=tindi
-								push!(ninds,t.indices[tindii])
-							end
-						end
-						for txi in 1:length(t.x)
-							nf=deepcopy(t.x[txi])
-							of=t.x[txi]
-							nf.y=a->of.y(a)[i...]
-							t.x[txi]=nf
-						end
-						t.indices=ninds
-						return simplify(t)
-					end
-				end
-			end
-			#=if allnum(t.indices[length(s)+1:end])&&alltyp(t.x,Fun) #this causes stack overflow...
-				for txi in 1:length(t.x)
-					nf=deepcopy(t.x[txi])
-					of=t.x[txi]
-					nf.y=a->of.y(a)[t.indices[length(s)+1:end]...]
-					t.x[txi]=nf #maybe because t.x[txi] gets redefined in the function
-				end
-				t.indices=t.indices[1:length(s)]
-			end=#
-		end
-	elseif isa(t.x,Fun)&&has(t.indices,Number)
-		for tindi in 1:length(t.indices)
-			if isa(t.indices[tindi],Number)
-				i=Any[]
-				for l in 1:length(t.indices)
-					if l==tindi
-						push!(i,t.indices[tindi])
-					else
-						push!(i,:)
-					end
-				end
-				ninds=Any[]
-				for tindii in 1:length(t.indices)
-					if tindii!=tindi
-						push!(ninds,t.indices[tindii])
-					end
-				end
-				nf=deepcopy(t.x)
-				of=t.x
-				nf.y=a->of.y(a)[i...]
-				t.x=nf
-				t.indices=ninds
-				return simplify(t)
 			end
 		end
 	end
