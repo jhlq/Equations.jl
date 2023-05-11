@@ -235,6 +235,14 @@ f=Fun(a->ones(2),:x)
 t=Ten([f+:x,f],[:i,:j])*Ten([f,f+:y],[:k,:l])
 #ts=simplify(t)
 
+t=Ten([0 1;-1 0],[:i,:j])
+ta=asymmetrize(t)
+@test ta[1,2]==-ta[2,1]
+
+t=Ten([0 1;0.1 0],[:i,:j])
+ta=asymmetrize(t)
+@test ta[1,2]==-ta[2,1]
+
 #=
 
 

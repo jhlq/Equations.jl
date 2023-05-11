@@ -1153,6 +1153,56 @@ function asymmetrize(t::Ten,inds::Array=[])
 	ex=ex/factorial(length(inds))
 	return simplify(ex)
 end
+mutable struct ExtD<:Component #exterior derivative
+	x
+	d
+end
+function simplify!(d::ExtD)
+	d.x=simplify!(d.x)
+	if isa(d.x,Fun)
+		fp=a->ForwardDiff.gradient(d.x.y,a)
+		nf=Fun(fp,d.x.x,d.x.pds)
+		return Ten(nf,[d.d])
+	end
+	t=false
+	if isa(d.x,Ten)
+		t=d.x
+	elseif isa(d.x,Expression)&&length(d.x)==1
+		ti=indsin(d.x[1],Ten)
+		if length(ti)==1
+			t=d.x[1][ti[1]]
+		end
+	end
+	if t!=false
+		f=false
+		if isa(t.x,Fun)
+			f=t.x
+		elseif isa(t.x,Array)&&isa(t.x[1],Fun)
+			f=t.x[1]
+		end
+		if f!=false
+			pda=[]
+			if isa(f.x,Symbol)
+				push!(pda,PD(f.x)
+			else
+				for x in f.x
+					push!(pda,PD(x))
+				end
+			end
+			nt=simplify(Ten(pda,d.d)*t)
+			if isa(nt,Ten)
+				ex=length(nt.indices)*asymmetrize(nt)
+				if isa(d.x,Expression)
+					d.x[1][ti[1]]=ex
+					ex=d.x
+				end
+				return simplify(ex)
+			end
+		end
+	end
+	d
+end
+simplify(d::ExtD)=simplify!(deepcopy(d))
 mutable struct Bra<:Component
 	x
 end
