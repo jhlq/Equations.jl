@@ -1105,7 +1105,7 @@ function permsign(p)
 		try
 			A[i,p[i]] = 1
 		catch er
-			error("Correct the indices of the Alt tensor: $p")
+			error("Invalid indices: $p")
 		end
 	end
 	det(A)
@@ -1122,6 +1122,37 @@ function simplify(a::Alt)
 	return a
 end
 simplify(a::Alt,t::Type)=simplify(a)
+function asymmetrize(t::Ten,inds::Array=[])
+	if isempty(inds)
+		inds=deepcopy(t.indices)
+	end
+	pinds=collect(1:length(inds))
+	iinds=Int64[]
+	for i in 1:length(t.indices)
+		for ii in 1:length(inds)
+			if t.indices[i]==inds[ii]
+				push!(iinds,i)
+				break
+			end
+		end
+	end
+	nts=Expression[]
+	for ppinds in permutations(pinds)
+		ninds=deepcopy(t.indices)
+		for i in 1:length(iinds)
+			ninds[iinds[i]]=inds[ppinds[i]]
+		end
+		nt=Ten(t.x,ninds,t.td)
+		push!(nts,permsign(ppinds)*nt)
+	end
+	ex=nts[2]
+	for i in 3:length(nts)
+		ex=ex+nts[i]
+	end
+	ex=ex+nts[1]
+	ex=ex/factorial(length(inds))
+	return simplify(ex)
+end
 mutable struct Bra<:Component
 	x
 end
