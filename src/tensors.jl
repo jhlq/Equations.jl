@@ -1183,7 +1183,7 @@ function simplify!(d::ExtD)
 		if f!=false
 			pda=[]
 			if isa(f.x,Symbol)
-				push!(pda,PD(f.x)
+				push!(pda,PD(f.x))
 			else
 				for x in f.x
 					push!(pda,PD(x))
@@ -1275,7 +1275,7 @@ function print(io::IO,tp::TensorProduct)
 	print(io," $(tp.tensors[end])")
 end
 mutable struct Wedge <: AbstractTensor
-	tensors::Array#Term
+	tensors::Array{Any,1}#Term
 end
 function ∧(tp1::Wedge,tp2::Wedge)
 	tp=deepcopy(tp1)

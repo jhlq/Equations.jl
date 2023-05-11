@@ -700,13 +700,34 @@ function simplify!(ex::Expression)
 	end
 	#ex=sumsym(sumnum(componify(expression(ex))))
 	ex=componify(expression(ap))=#
+	ex=componify(ex)
+	ap=terms(ex)
+	if isa(ap,N)
+		return ap
+	elseif isa(ap,Component)
+		return simplify!(ap)
+	end
+	for term in 1:length(ap)
+		for fac in 1:length(ap[term])
+			saptf=simplify!(ap[term][fac])
+			if !isa(saptf,Factor);println(ap[term][fac]);end
+			ap[term][fac]=saptf
+		end
+		if !isempty(ap[term])
+			ap[term]=divify!(ap[term])
+			ap[term]=divbine!(ap[term])
+			ap[term]=divbinedify!(ap[term])
+			unsqrt!(ap[term])
+		end
+	end
+	ex=extract(expression(ap))
 	tex=0
 	nit=0
 	while tex!=ex
 		nit+=1
 		tex=ex
 		#ex=sumsym(sumnum(componify(ex)))
-		ex=componify(ex)
+		#=ex=componify(ex)
 		ap=terms(ex)
 		if isa(ap,N)
 			return ap
@@ -726,7 +747,7 @@ function simplify!(ex::Expression)
 				unsqrt!(ap[term])
 			end
 		end
-		ex=extract(expression(ap)) #better to check if res::N before calling expression instead of extracting?
+		ex=extract(expression(ap))=# #better to check if res::N before calling expression instead of extracting?
 		if isa(ex,Expression)
 			if has(ex,Ten)
 				ex=simplify(ex,Ten)
