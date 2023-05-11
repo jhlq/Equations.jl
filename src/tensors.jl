@@ -1275,7 +1275,7 @@ function print(io::IO,tp::TensorProduct)
 	print(io," $(tp.tensors[end])")
 end
 mutable struct Wedge <: AbstractTensor
-	tensors::Term
+	tensors::Array#Term
 end
 function ∧(tp1::Wedge,tp2::Wedge)
 	tp=deepcopy(tp1)
@@ -1287,6 +1287,15 @@ end
 ∧(tp::Wedge,t)=begin;tp=deepcopy(tp);push!(tp.tensors,t);tp;end
 ∧(t,tp::Wedge)=begin;tp=deepcopy(tp);unshift!(tp.tensors,t);tp;end
 ∧(t1,t2)=Wedge([t1,t2])
+function ∧(t1::Ten,t2::Ten)
+	t3=simplify(t1*t2)
+	if isa(t3,Ten)
+		p=length(t1.indices)
+		q=length(t2.indices)
+		return simplify(factorial(p+q)/(factorial(p)*factorial(q))*asymmetrize(t3))
+	end
+	return Wedge([t1,t2])
+end
 function print(io::IO,tp::Wedge)
 	print(io,"$(tp.tensors[1]) ∧")
 	for i in 2:length(tp.tensors)-1
