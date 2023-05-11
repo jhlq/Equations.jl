@@ -817,7 +817,7 @@ function simplify!(t::Ten)
 									deleteat!(t.x[ltxi][1],delfis)
 								end
 							elseif isa(t.x[ltxi],Expression)&&length(t.x[ltxi])>1
-								@warn "Expression $(t.x[ltxi]) contains more than one terms, only implemented for the possibility of one. Ignoring all but the first."
+								error("Expression $(t.x[ltxi]) contains more than one term, only implemented for the possibility of one.")
 							end
 						elseif isa(t.x[ltxi],Fun)
 							funmat[ltxi]=t.x[ltxi]
@@ -1082,7 +1082,7 @@ mutable struct Alt<:AbstractTensor #Alternating tensor
 	td
 end
 Alt(inds::Array)=Alt(maltx(length(inds)),inds,1)
-Alt(inds...)=Alt(Any[inds...],1)
+Alt(inds...)=Alt(Any[inds...])
 dimsmatch(a::Alt,b=false)=true
 function maltx(r)
 	x=zeros(fill!(zeros(Integer,r),r)...)
@@ -1099,7 +1099,7 @@ function permsign(p)
 	n = length(p)
 	A = zeros(n,n)
 	if minimum(p)==0
-	p+=1
+		p+=1
 	end
 	for i in 1:n
 		try
@@ -1113,7 +1113,8 @@ end
 function simplify(a::Alt)
 	if isa(a.indices,Array)
 		if allnum(a.indices)
-			return permsign(a.indices)
+			#return permsign(a.indices)
+			return a.x[a.indices...]
 		elseif duplicates(a.indices)!=0
 			return 0
 		end
