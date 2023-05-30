@@ -802,7 +802,7 @@ end
 sumnum(c::Component)=typeof(c)(sumnum(getarg(c)))
 sumnum(x::N)=x 
 function sumsym(ex::Expression)
-	if length(ex)==1
+	if length(ex)==1||has(ex,Ten)
 		return ex
 	end
 	#ap=dcterms(ex) #terms(deepcopy(ex))
