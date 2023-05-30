@@ -627,15 +627,18 @@ function simplify!(t::Ten)
 		nf.y=a->t.x.y(a)[t.indices...]
 		return nf
 	end
-	pt=0
+	pti=0
+	ptxl=0
 	for nit in 1:90
-		if t==pt
+		if t.indices==pti&&ptxl==length(t.x)
 			break
 		end
 		if nit==90
 			@warn "Stuck in Ten simplification.\n$t\nnot equal to\n$pt"
+			break
 		end
-		pt=deepcopy(t)
+		pti=deepcopy(t.indices)
+		ptxl=length(t.x)
 		if isa(t.x,Array)
 			if has(t.x,Expression)
 				fifun=fetch(t.x,Fun)
