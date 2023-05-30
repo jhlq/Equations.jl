@@ -318,6 +318,9 @@ function sumlify!(tt::Array{Term})
 				end
 			end
 			nt.td=simplify(nt.td)
+			if dimsmatch(nt)
+				applytd!(nt)
+			end
 			del=Integer[]
 			for ti2 in 1:length(tt)
 				tt2=tt[ti2]
@@ -465,7 +468,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 	end
 	nnat=sumconv!(nat) 
 	nit=0
-	while nnat!=nat
+	while length(nnat)!=length(nat)
 		nit+=1
 		nat=nnat;nnat=sumconv!(nnat)
 		if nit>90
@@ -484,10 +487,10 @@ function simplify(ex::Expression,typ::Type{Ten})
 	end
 	#check each tensor, stride and break on nonabelian, then do tensor multiplication
 	nnnat=nnat
-	dofirst=true
+	redo=true
 	nit=0
-	while nnnat!=nnat||dofirst
-		dofirst=false
+	while redo
+		redo=false
 		nnat=deepcopy(nnnat)
 		nnnat=Term[]
 		for ter in nnat
@@ -499,7 +502,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 			tpt="1"
 			lter=length(ter)
 			for facii in 1:lter
-				skipfac=false
+				#skipfac=false
 				faci=lter+1-facii
 				fac=ter[faci]
 				if !foundT1
@@ -597,6 +600,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 				end
 			end
 			if tenprodded
+				redo=true
 				ter[T1i]=tpt
 				deleteat!(ter,delfac)
 			end
@@ -608,7 +612,7 @@ function simplify(ex::Expression,typ::Type{Ten})
 			break
 		end
 	end
-	nnat=sumlify!(nnat)
+	nnat=sumlify!(nnnat)
 	return Expression(nnat)
 end
 function simplify!(t::Ten)
@@ -620,17 +624,24 @@ function simplify!(t::Ten)
 	end
 	applytd!(t)
 	if isa(t.x,Union{Component,Expression})
-		t.x=simplify(t.x)
+		t.x=simplify!(t.x)
 	end
 	if isa(t.x,Fun)&&allnum(t.indices)
+		#nf=t.x
 		nf=deepcopy(t.x)
-		nf.y=a->t.x.y(a)[t.indices...]
+		y=t.x.y
+		nf.y=a->y(a)[t.indices...]
 		return nf
 	end
 	pti=0
 	ptxl=0
 	for nit in 1:90
-		if t.indices==pti&&ptxl==length(t.x)
+		if isa(t.x,Array)
+			txl=length(t.x)
+		else
+			txl=1
+		end
+		if t.indices==pti&&ptxl==txl
 			break
 		end
 		if nit==90
@@ -638,7 +649,11 @@ function simplify!(t::Ten)
 			break
 		end
 		pti=deepcopy(t.indices)
-		ptxl=length(t.x)
+		if isa(t.x,Array)
+			ptxl=length(t.x)
+		else
+			ptxl=1
+		end
 		if isa(t.x,Array)
 			if has(t.x,Expression)
 				fifun=fetch(t.x,Fun)

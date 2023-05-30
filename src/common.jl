@@ -699,7 +699,7 @@ function simplify!(ex::Expression)
 	ex=extract(expression(ap))
 	tex=0
 	nit=0
-	while tex!=ex
+	#while length(tex)!=length(ex)
 		nit+=1
 		tex=ex
 		if isa(ex,Expression)
@@ -714,9 +714,9 @@ function simplify!(ex::Expression)
 		end
 		if nit>90
 			@warn("Stuck in simplify! Iteration $nit: $ex")
-			break
+			#break
 		end
-	end
+	#end
 	if isa(ex,Expression)
 		ex=componify(ex)
 		ex=sumnum(ex)
