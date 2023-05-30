@@ -21,9 +21,6 @@ end
 function applytd!(t::Ten)
 	if t.td!=1&&dimsmatch(t)
 		if isa(t.td,Array)
-			#println(t)
-			#println(t.td)
-			#@warn("td is an array! Not implemented")
 			tddims=length(size(t.td))
 			ts=size(t.x)
 			its=Int64[]
@@ -42,35 +39,6 @@ function applytd!(t::Ten)
 	end
 	t
 end
-#=mutable struct TenDot<:AbstractTensor #tendot.*ten
-	x
-	indices::Array{Any}
-end
-function TenDot(x,i::Union{Array,Factor})
-	if isa(x,Array)&&!isa(x,Array{Any})
-		x=convert(Array{Any},x)
-	end
-	if !isa(i,Array)
-		i=Any[i]
-	elseif !isa(i,Array{Any})
-		i=convert(Array{Any},i)
-	end
-	TenDot(x,i)
-end=#
-#=function print(io::IO,t::Ten)
-	print(io,"$(t.x)(")
-	if isa(t.indices,Array)
-		if !isempty(t.indices)
-			print(io,t.indices[1])
-			for i in 2:length(t.indices)
-				print(io,' ',t.indices[i])
-			end
-		end
-	else
-		print(io,t.indices)
-	end
-	print(io,")")
-end=#
 function allnum(a::Array)
 	if isempty(a)
 		return false
@@ -149,7 +117,7 @@ function arrduplicates(arrs...)
 	end
 	return 0
 end
-sumconv(a)=simplify(a)#,Ten)
+sumconv(a)=simplify(a)
 function sumconv(ex::Expression)
 	nat=Term[]
 	for t in ex
@@ -167,12 +135,9 @@ function dimsmatch(t::Ten,allowfun=false)
 		end
 	end
 	if isa(t.x,Array)
-		#if isa(t.x[1],Fun)&&allowfun
-		#	return dims==length(size(t.x))+length(size(sample(t.x[1])))
-		#end
 		return dims==length(size(t.x))+fdims
 	elseif isa(t.x,Fun)&&allowfun
-		return dims==fdims#length(size(sample(t.x)))
+		return dims==fdims
 	end
 	return false
 end
@@ -332,41 +297,26 @@ function sumlify!(tt::Array{Term})
 		tt1=popfirst!(tt)
 		tensi=indsin(tt1,Ten)
 		typ=N
-		if length(tensi)==1&&(isempty(tt1[1:tensi[1]-1])||alltyp(tt1[1:tensi[1]-1],typ))&&(isempty(tt1[tensi[1]+1:end])||alltyp(tt1[tensi[1]+1:end],typ))&&dimsmatch(tt1[tensi[1]])#&&isa(tt1[tensi[1]].x,Array)
+		if length(tensi)==1&&(isempty(tt1[1:tensi[1]-1])||alltyp(tt1[1:tensi[1]-1],typ))&&(isempty(tt1[tensi[1]+1:end])||alltyp(tt1[tensi[1]+1:end],typ))&&dimsmatch(tt1[tensi[1]])
 			nt=tt1[tensi[1]]
-			#=num=1
-			for n in [tt1[1:tensi[1]-1];tt1[tensi[1]+1:end]]
-				num=num*n
-			end
-			nt.x=simplify(num*convert(Array{Any},nt.x))=#
-			#==#
-			#if !has(nt.x,Fun)
 			for n in tt1[1:tensi[1]-1]
-				#=for txi in 1:length(nt.x)
-					nt.x[txi]=simplify(n*nt.x[txi])
-				end=#
 				if isa(nt.td,Array)
 					for tdi in 1:length(nt.td)
 						nt.td[tdi]=n*nt.td[tdi]
 					end
-					#nt.td=n .* nt.td
 				else
 					nt.td=n * nt.td
 				end
 			end
 			for n in tt1[tensi[1]+1:end]
-				#=for txi in 1:length(nt.x)
-					nt.x[txi]=simplify(nt.x[txi]*n)
-				end=#
 				if isa(nt.td,Array)
 					for tdi in 1:length(nt.td)
 						nt.td[tdi]=nt.td[tdi]*n
 					end
-					#nt.td=nt.td .* n
 				else
 					nt.td=nt.td * n
 				end
-			end#==#
+			end
 			nt.td=simplify(nt.td)
 			del=Integer[]
 			for ti2 in 1:length(tt)
@@ -374,7 +324,7 @@ function sumlify!(tt::Array{Term})
 				tensi2=indsin(tt2,Ten)
 				if length(tensi2)==1 #this can be simplified to remove the second such check
 					nt2=tt[ti2][tensi2[1]]
-					if isa(nt2.x,Array)&&length(nt2.indices)==length(nt.indices)&&nt2.indices!=nt.indices&&dimsmatch(nt2,false)#&&dimsmatch(nt,false)
+					if isa(nt2.x,Array)&&length(nt2.indices)==length(nt.indices)&&nt2.indices!=nt.indices&&dimsmatch(nt2,false)
 						allin=true
 						for i in nt.indices
 							if !isa(i,Symbol)
@@ -402,15 +352,9 @@ function sumlify!(tt::Array{Term})
 										if !isa(j,Symbol)
 											continue
 										end
-										#if isempty(transis)
-										#	if i!=j
-										#		push!(transis,i)
-										#	end
-										#else
-											if j==transis[1]
-												push!(transis,nt.indices[nti2])
-											end
-										#end
+										if j==transis[1]
+											push!(transis,nt.indices[nti2])
+										end
 										if length(transis)>1
 											nt=trans(nt,transis[1],transis[2])
 											transed=true
@@ -432,35 +376,22 @@ function sumlify!(tt::Array{Term})
 				if nt==0
 					break
 				end
-				if isa(nt,Ten)&&length(tensi2)==1&&dimsmatch(tt2[tensi2[1]])&&size(nt.x)==size(tt[ti2][tensi2[1]].x)&&nt.indices==tt[ti2][tensi2[1]].indices&&(isempty(tt2[1:tensi2[1]-1])||alltyp(tt2[1:tensi2[1]-1],typ))&&(isempty(tt2[tensi2[1]+1:end])||alltyp(tt2[tensi2[1]+1:end],typ))#&&isa(tt2[tensi2[1]].x,Array)
+				if isa(nt,Ten)&&length(tensi2)==1&&dimsmatch(tt2[tensi2[1]])&&size(nt.x)==size(tt[ti2][tensi2[1]].x)&&nt.indices==tt[ti2][tensi2[1]].indices&&(isempty(tt2[1:tensi2[1]-1])||alltyp(tt2[1:tensi2[1]-1],typ))&&(isempty(tt2[tensi2[1]+1:end])||alltyp(tt2[tensi2[1]+1:end],typ))
 					t2=tt[ti2][tensi2[1]]
-					#=nums=1
-					for n in [tt2[1:tensi2[1]-1];tt2[tensi2[1]+1:end]]
-						nums=nums*n
-					end
-					nt.x=simplify(nt.x+nums*t2.x)=#
-					#==#for n in tt2[1:tensi2[1]-1]
-						#=for txi in 1:length(t2.x)
-							t2.x[txi]=simplify(n*t2.x[txi])
-						end=#
+					for n in tt2[1:tensi2[1]-1]
 						if isa(t2.td,Array)
 							for tdi in 1:length(t2.td)
 								t2.td[tdi]=n*t2.td[tdi]
 							end
-							#t2.td=n .* t2.td
 						else
 							t2.td=n * t2.td
 						end
 					end
 					for n in tt2[tensi2[1]+1:end]
-						#=for txi in 1:length(nt.x)
-							t2.x[txi]=simplify(t2.x[txi]*n)
-						end=#
 						if isa(t2.td,Array)
 							for tdi in 1:length(t2.td)
 								t2.td[tdi]=t2.td[tdi]*n
 							end
-							#t2.td=t2.td .* n
 						else
 							t2.td=t2.td * n
 						end
@@ -471,25 +402,19 @@ function sumlify!(tt::Array{Term})
 						for xi in 1:length(nt.x)
 							nt.x[xi]=nt.x[xi]+t2.x[xi]
 						end
-						#=for xi in 1:length(nt.x)
-							nt.x[xi]=nt.td*nt.x[xi]+t2.td*t2.x[xi]
-						end
-						nt.td=1
-						t2.td=1=#
 					else
 						if nt.td!=1||t2.td!=1
-							@warn("td+td undefined, ignoring tds: $(nt.td) and $(t2.td) of $nt and $t2.")
+							applytd!(nt)
+							applytd!(t2)
+							#@warn("td+td undefined, ignoring tds: $(nt.td) and $(t2.td) of $nt and $t2.")
 						end
-						nt.x=simplify(nt.x+t2.x)#==#
-						#nt.td=1 #simplify(nt.td + t2.td)
+						nt.x=simplify(nt.x+t2.x)
 					end
 					push!(del,ti2)
 				end
 			end
 			deleteat!(tt,del)
 			push!(ntt,Factor[nt])
-	#		elseif length(tensi)>1
-			#end
 		else
 			push!(ntt,tt1)
 		end
@@ -507,9 +432,7 @@ function untensify!(tt::Array{Term})
 					tt[ti][fi]=t.x
 				elseif isa(t.x,Array)
 					if t.x==zeros(size(t.x))
-						#if !in(ti,del)
-							push!(del,ti)
-						#end
+						push!(del,ti)
 						break
 					end
 					s=size(t.x)
@@ -536,19 +459,11 @@ function untensify!(tt::Array{Term})
 	tt
 end
 function simplify(ex::Expression,typ::Type{Ten})
-	#=if hasnan(ex)
-		return NaN
-	end=#
 	nat=Term[]
 	for t in ex
 		pushall!(nat,sumconv(t))
 	end
 	nnat=sumconv!(nat) 
-	#=for n in 1:length(nnat)
-		for m in 1:length(nnat[n])
-			nnat[n][m]=simplify(nnat[n][m])
-		end
-	end=#
 	nit=0
 	while nnat!=nat
 		nit+=1
@@ -564,7 +479,6 @@ function simplify(ex::Expression,typ::Type{Ten})
 		end
 	end
 	untensify!(nnat)
-	#nnat=sumlify!(nnat)
 	if has(nnat,Fun)
 		nnat=terms(simplify!(Expression(nnat),Fun))
 	end
@@ -580,7 +494,6 @@ function simplify(ex::Expression,typ::Type{Ten})
 			foundT1=false
 			foundT2=false
 			tenprodded=false
-			#nfacs=Factor[]
 			T1i=0
 			delfac=0
 			tpt="1"
@@ -590,39 +503,23 @@ function simplify(ex::Expression,typ::Type{Ten})
 				faci=lter+1-facii
 				fac=ter[faci]
 				if !foundT1
-					if isa(fac,Ten)&&dimsmatch(fac,true)#&&isa(fac.x,Array)
+					if isa(fac,Ten)&&dimsmatch(fac,true)
 						if !alltyp(fac.indices,Symbol)
 							break
 						end
 						foundT1=true
 						T1i=faci
-						#skipfac=true
 					end
 				elseif !foundT2
-					if isa(fac,Ten)&&dimsmatch(fac,true)#&&isa(fac.x,Array)
+					if isa(fac,Ten)&&dimsmatch(fac,true)
 						if !alltyp(fac.indices,Symbol)
 							break
 						end
 						foundT2=true
 						delfac=faci
-						#skipfac=true
-						#T1=ter[T1i]
 						T1=fac
 						T2=ter[T1i] #yes the T1 and T2 are reversed because I reversed the direction in which to tenprod
-						#=
-						T1l=length(T1.x)
-						T2l=length(fac.x)
-						newm=Array{Any,2}(undef,T1l,T2l)
-						for i in 1:T1l
-							for j in 1:T2l
-								newm[i,j]=T1.x[i]*fac.x[j]
-							end
-						end
-						push!(nfacs,Ten(newm,[T1.indices[1],fac.indices[1]]),T1.td)
-						=#
 						nind=Any[]
-						#pushall!(nind,T1.indices)
-						#pushall!(nind,fac.indices)
 						sr1=size(T1.x)
 						sr1l=length(sr1)
 						sr2=size(T2.x)
@@ -651,9 +548,9 @@ function simplify(ex::Expression,typ::Type{Ten})
 						else
 							newm=Array{Any}(undef,td...)
 							for k in Iterators.product(Base.OneTo.(td)...)
-								if isempty(sr1)#isa(T1.x,Fun)
+								if isempty(sr1)
 									newm[k...]=simplify(T1.x*T2.x[k...])
-								elseif isempty(sr2)#isa(fac.x,Fun)
+								elseif isempty(sr2)
 									newm[k...]=simplify(T1.x[k...]*T2.x)
 								else
 									newm[k...]=simplify(T1.x[k[1:sr1l]...]*T2.x[k[sr1l+1:end]...])
@@ -691,8 +588,6 @@ function simplify(ex::Expression,typ::Type{Ten})
 							end
 						end
 						tpt=Ten(newm,nind,newtd)
-						#tpt=Ten(newm,nind,T1.td*fac.td)
-						#push!(nfacs,tpt)
 						tenprodded=true
 						break
 					elseif isa(fac,NonAbelian)
@@ -700,12 +595,8 @@ function simplify(ex::Expression,typ::Type{Ten})
 						continue
 					end
 				end
-				#if !skipfac
-				#	push!(nfacs,fac)
-				#end
 			end
 			if tenprodded
-				#push!(nnnat,nfacs)
 				ter[T1i]=tpt
 				deleteat!(ter,delfac)
 			end
@@ -717,53 +608,9 @@ function simplify(ex::Expression,typ::Type{Ten})
 			break
 		end
 	end
-	#=
-	for termi in 1:length(nnat)
-		deli=Int64[]
-		for faci in 1:length(nnat[termi])-1
-			if isa(nnat[termi][faci],TenDot)
-				td=nnat[termi][faci]
-				for facii in faci+1:length(nnat[termi])
-					if isa(nnat[termi][facii],Ten)
-						t=nnat[termi][facii]
-						if td.indices==t.indices&&isa(t.x,Array)&&dimsmatch(t,true)
-							tddims=length(size(td.x))
-							ts=size(t.x)
-							its=Int64[]
-							for i in ts
-								push!(its,i)
-							end
-							for k in Iterators.product(Base.OneTo.(its)...)
-								t[k...]=td[k[1:tddims]...]*t[k...]
-							end
-							push!(deli,faci)
-						end
-					elseif isa(nnat[termi][facii],NonAbelian)
-						break
-					end
-				end
-			end
-		end
-		deleteat!(nnat[termi],deli)
-	end=#
 	nnat=sumlify!(nnat)
 	return Expression(nnat)
 end
-#=function tdprod(td1,td2)
-	ntd=td1
-	if isa(td2,N)
-		if td2!=1
-			ntd=td1 .* td2
-		end
-	elseif isa(td2,Factor)
-		for tdi in 1:length(t.td)
-			ntd[i]=t.td[i]*ptd
-		end
-	else
-		t.td=tenprod(t.td,ptd)
-	end
-	t.td=simplify(t.td)
-end=#
 function simplify!(t::Ten)
 	if t.td==0
 		return 0
@@ -771,10 +618,6 @@ function simplify!(t::Ten)
 	if isa(t.x,Adjoint)
 		t.x=convert(Array,t.x)
 	end
-	#=if t.td!=1&&dimsmatch(t,false)
-		t.x=t.td .* t.x
-		t.td=1
-	end=#
 	applytd!(t)
 	if isa(t.x,Union{Component,Expression})
 		t.x=simplify(t.x)
@@ -804,7 +647,7 @@ function simplify!(t::Ten)
 							if isa(t.x[ltxi],Expression)&&length(t.x[ltxi])==1 #matrixmulting should never add a second term. Unless it has such an expression already...
 								delfis=Int64[]
 								for exi in 1:length(t.x[ltxi][1])
-									if isa(t.x[ltxi][1][exi],Fun)#&&length(size(sample(t.x[ltxi][1][exi])))>0 #components containing functions causes undefined behaviour
+									if isa(t.x[ltxi][1][exi],Fun) #components containing functions causes undefined behaviour
 										push!(delfis,exi)
 									end
 								end
@@ -824,47 +667,39 @@ function simplify!(t::Ten)
 							t.x[ltxi]=1
 						end
 					end
-					#for funa in funmat
-					#	if funa!=1
-							allequal=true
-							tx1=t.x[1]
-							for tx in t.x
-								if tx!=tx1
-									allequal=false
-									break
-								end
+					allequal=true
+					tx1=t.x[1]
+					for tx in t.x
+						if tx!=tx1
+							allequal=false
+							break
+						end
+					end
+					if allequal
+						if isa(t.td,Array)
+							for i in 1:length(t.td)
+								t.td[i]=simplify(tx1*t.td[i])
 							end
-							if allequal
-								if isa(t.td,Array)
-									for i in 1:length(t.td)
-										t.td[i]=simplify(tx1*t.td[i])
-									end
-								else
-									t.td=simplify(tx1*t.td)
-								end
-								t=Ten(funmat,t.indices,t.td)
-							else
-								#return TenDot(t.x,t.indices)*Ten(funmat,t.indices)
-								ptd=t.td
-								t=Ten(funmat,t.indices,t.x)
-								if isa(ptd,N)
-									if ptd!=1
-										t.td=t.td .* ptd
-									end
-								elseif isa(ptd,Factor)
-									for tdi in 1:length(t.td)
-										t.td[i]=t.td[i]*ptd
-									end
-								else
-									#@warn "Multiplying two td arrays not implemented, ignoring $ptd"
-									t.td=tenprod(t.td,ptd)
-								end
-								t.td=simplify(t.td)
-								#@warn "Array values of td have not been tested. Value of td: $(t.td)"
+						else
+							t.td=simplify(tx1*t.td)
+						end
+						t=Ten(funmat,t.indices,t.td)
+					else
+						ptd=t.td
+						t=Ten(funmat,t.indices,t.x)
+						if isa(ptd,N)
+							if ptd!=1
+								t.td=t.td .* ptd
 							end
-					#		break
-					#	end
-					#end
+						elseif isa(ptd,Factor)
+							for tdi in 1:length(t.td)
+								t.td[i]=t.td[i]*ptd
+							end
+						else
+							t.td=tenprod(t.td,ptd)
+						end
+						t.td=simplify(t.td)
+					end
 				end
 			end
 			if t.x==zeros(size(t.x))
@@ -896,9 +731,6 @@ function simplify!(t::Ten)
 		elseif isempty(t.indices)&&!isa(t.x,Array)
 			return t.x
 		elseif isa(t.x,Array)
-			#if isa(t.x[1],Fun)&&allnum(t.indices)
-			#	
-			#end
 			if isa(t.x[1],Array)
 				dims1=size(t.x)
 				dims2=size(t.x[1]) #assume all arrays are same size
@@ -912,8 +744,6 @@ function simplify!(t::Ten)
 					newm[k...]=t.x[k[1:d1l]...][k[d1l+1:end]...]
 				end
 				if !isa(newm[1],Union{Array,Fun})
-					#t.x=t.td .* newm
-					#t.td=1
 					t.x=newm
 					applytd!(t)
 				else
@@ -923,8 +753,8 @@ function simplify!(t::Ten)
 			if length(size(t.x))==length(t.indices)
 				if length(t.indices)==1&&isa(t.indices[1],Number)
 					return t.x[t.indices[1]]
-				else#if isa(t.indices,Array)
-					if allnum(t.indices)#&&dimsmatch(t)
+				else
+					if allnum(t.indices)
 						return t.x[t.indices...]
 					end
 					for tindi in 1:length(t.indices)
@@ -947,47 +777,8 @@ function simplify!(t::Ten)
 							return simplify(Ten(t.x[i...],ninds,t.td))
 						end
 					end
-					#=if isa(t.indices[end],Number)
-						if length(t.indices)>1
-							s=size(t.x)
-							i=Any[]
-							for l in 1:length(s)-1
-								push!(i,:)
-							end
-							push!(i,t.indices[end])
-							return Ten(t.x[i...],t.indices[1:end-1],t.td)
-						elseif !isa(t.x[t.indices[end]],Array)&&!isa(t.x[t.indices[end]],Fun)
-							return t.x[t.indices[end]]
-						end
-					end=#
 				end
-			#=elseif isa(t.x,Vector)
-				if isa(t.indices[1],Number)
-					t.x=t.x[t.indices[1]]
-					popfirst!(t.indices)
-				elseif isa(t.x[1],Array)
-					sp=size(t.x[1])
-					samesize=true
-					nelem=length(t.x)
-					for i in 2:nelem
-						if sp!=size(t.x[i])
-							samesize=false
-						end
-					end
-					if samesize
-						#spl=length(sp)
-						td=Int64[nelem]
-						for i in sp
-							push!(td,i)
-						end
-						newm=Array{Any}(undef,td...)
-						for k in Iterators.product(Base.OneTo.(td)...)
-							newm[k...]=t.x[k[1]][k[2:end]...]
-						end
-						t.x=newm
-					end
-				end=#
-			else#if length(t.indices)>=length(size(t.x))
+			else
 				s=size(t.x)
 				for tindi in 1:length(s)
 					if isa(t.indices[tindi],Number)
@@ -1036,15 +827,6 @@ function simplify!(t::Ten)
 						end
 					end
 				end
-				#=if allnum(t.indices[length(s)+1:end])&&alltyp(t.x,Fun) #this causes stack overflow...
-					for txi in 1:length(t.x)
-						nf=deepcopy(t.x[txi])
-						of=t.x[txi]
-						nf.y=a->of.y(a)[t.indices[length(s)+1:end]...]
-						t.x[txi]=nf #maybe because t.x[txi] gets redefined in the function
-					end
-					t.indices=t.indices[1:length(s)]
-				end=#
 			end
 		elseif isa(t.x,Fun)&&has(t.indices,Number)
 			for tindi in 1:length(t.indices)

@@ -31,7 +31,6 @@ function cRct(gF::Fun) #construct Riemann curvature tensor
 	end
 	chr=cchr(gF)
 	return Ten(pds,:ch3)*replace(chr,Dict(:ch3=>:ch4))-Ten(pds,:ch4)*chr+replace(chr,Dict(:ch2=>:ch5))*replace(chr,Dict(:ch1=>:ch5,:ch3=>:ch4))-replace(chr,Dict(:ch2=>:ch5,:ch3=>:ch4))*replace(chr,Dict(:ch1=>:ch5))
-	#return Ten(pds,:ch3)*(chr&@equ(ch3=ch4))-Ten(pds,:ch4)*chr+(chr&@equ(ch2=ch5))*(chr&@equs(ch1=ch5,ch3=ch4))-(chr&@equs(ch2=ch5,ch3=ch4))*(chr&@equ(ch1=ch5))
 end
 function cRctfv(gF::Fun) #construct Riemann curvature tensor, fun version
 	pds=[]
