@@ -1201,7 +1201,16 @@ function simplify!(c::Inv)
 	end
 	if isa(c.x,Ten)
 		if isa(c.x.x,Matrix)&&allnum(c.x.x)
-			return Ten(inv(convert(Array{Number},c.x.x)),c.x.indices,c.x.td)
+			if !isa(c.x.x[1],ForwardDiff.Dual)
+				x=convert(Array{Number},c.x.x)
+			else
+				x=[c.x.x[1]]
+				for i in 2:length(c.x.x)
+					push!(x,c.x.x[i])
+				end
+			end
+			return Ten(inv(x),c.x.indices,c.x.td)
+			#return Ten(inv(convert(Array{Number},c.x.x)),c.x.indices,c.x.td)
 		end
 	end
 	return c
