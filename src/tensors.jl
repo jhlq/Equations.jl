@@ -749,9 +749,16 @@ function simplify!(t::Ten)
 		elseif isempty(t.indices)&&!isa(t.x,Array)
 			return t.x
 		elseif isa(t.x,Array)
-			if isa(t.x[1],Array)
+			arr=0
+			for x in t.x
+				if isa(x,Array)
+					arr=x
+					break
+				end
+			end
+			if arr!=0#isa(t.x[1],Array)
 				dims1=size(t.x)
-				dims2=size(t.x[1]) #assume all arrays are same size
+				dims2=size(arr) #assume all arrays are same size
 				td=Int64[dims1...]
 				for i in dims2
 					push!(td,i)
@@ -759,7 +766,12 @@ function simplify!(t::Ten)
 				d1l=length(dims1)
 				newm=Array{Any}(undef,td...)
 				for k in Iterators.product(Base.OneTo.(td)...)
-					newm[k...]=t.x[k[1:d1l]...][k[d1l+1:end]...]
+					try
+						newm[k...]=t.x[k[1:d1l]...][k[d1l+1:end]...]
+					catch
+						newm[k...]=0
+					end
+					#newm[k...]=t.x[k[1:d1l]...][k[d1l+1:end]...]
 				end
 				if !isa(newm[1],Union{Array,Fun})
 					t.x=newm
